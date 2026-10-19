@@ -25,6 +25,9 @@ protasena-ui-egui = { path = "crates/ui-egui" }
 # foundation
 serde_json = { version = "1", features = ["float_roundtrip"] }
 
+# testing (dev-dependencies only)
+proptest = { version = "1", default-features = false, features = ["std"] }
+
 [workspace.lints.rust]
 unsafe_code = "forbid"
 
