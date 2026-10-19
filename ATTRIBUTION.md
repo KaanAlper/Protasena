@@ -13,7 +13,9 @@ source, public domain / CC0, or Creative Commons that allows redistribution). Ki
 library data never enters this repository: it lives in `KaanAlper/Protasena-library`
 (CC-BY-SA 4.0, see `NOTICE`). Test fixtures are small files we write ourselves.
 
-Generated-in-code assets are original and have no file to list (none yet).
+Generated-in-code assets are original and have no file to list: the built-in generic parts of
+`crates/library/src/builtin/` (symbols and packages drawn in code by Protasena contributors,
+MIT OR Apache-2.0).
 
 | Asset | Author | Source | Licence | Notes |
 |---|---|---|---|---|
