@@ -1,0 +1,55 @@
+[workspace]
+resolver = "3"
+members = ["crates/*", "apps/*", "xtask"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+rust-version = "1.90"
+repository = "https://github.com/KaanAlper/Protasena"
+
+[workspace.dependencies]
+# internal (layering: AGENTS.md "Architecture rules", checked by `cargo xtask layers`)
+protasena-geom = { path = "crates/geom" }
+protasena-kicad = { path = "crates/kicad" }
+protasena-pdsprj = { path = "crates/pdsprj" }
+protasena-doc = { path = "crates/doc" }
+protasena-library = { path = "crates/library" }
+protasena-render = { path = "crates/render" }
+protasena-netlist = { path = "crates/netlist" }
+protasena-io = { path = "crates/io" }
+protasena-engine = { path = "crates/engine" }
+protasena-ui-egui = { path = "crates/ui-egui" }
+
+# foundation
+serde_json = { version = "1", features = ["float_roundtrip"] }
+
+[workspace.lints.rust]
+unsafe_code = "forbid"
+
+# Never crash (docs/standards/never-crash.md): no panicking shortcuts outside tests.
+# clippy.toml allows them inside tests.
+[workspace.lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+indexing_slicing = "deny"
+todo = "deny"
+unimplemented = "deny"
+unreachable = "deny"
+dbg_macro = "warn"
+too_many_arguments = "allow"
+type_complexity = "allow"
+
+[profile.dev.package."*"]
+opt-level = 2
+
+[profile.dev]
+opt-level = 1
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+codegen-units = 16
+debug = 0

@@ -1,0 +1,13 @@
+[package]
+name = "protasena-doc"
+description = "Protasena design model: projects, sheets, components, wires, labels, terminals"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
