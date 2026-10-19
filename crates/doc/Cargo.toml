@@ -10,4 +10,13 @@ repository.workspace = true
 [lints]
 workspace = true
 
+[features]
+# Serialize the design model and its operations (the project file format itself lives in `io`).
+serde = ["dep:serde", "protasena-geom/serde"]
+
 [dependencies]
+protasena-geom.workspace = true
+serde = { workspace = true, optional = true }
+
+[dev-dependencies]
+serde_json.workspace = true
