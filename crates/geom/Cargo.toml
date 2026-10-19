@@ -10,7 +10,13 @@ repository.workspace = true
 [lints]
 workspace = true
 
+[features]
+# Serialize points and vectors as `[x, y]` arrays.
+serde = ["dep:serde"]
+
 [dependencies]
+serde = { workspace = true, optional = true }
 
 [dev-dependencies]
+serde_json.workspace = true
 proptest.workspace = true

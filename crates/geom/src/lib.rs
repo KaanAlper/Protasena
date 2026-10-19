@@ -11,7 +11,8 @@
 //!   once, at the view transform.
 //! - Nothing here panics: non-finite input (NaN, ±∞) flows through arithmetic as IEEE 754
 //!   values, and the functions that make decisions document what they do with it.
-//! - No workspace dependencies (layer L0).
+//! - No workspace dependencies (layer L0). The optional `serde` feature writes [`Pt`] and
+//!   [`Vec2`] as `[x, y]` arrays.
 //!
 //! # Example
 //! ```
@@ -33,6 +34,8 @@ mod ortho;
 mod point;
 mod rect;
 mod segment;
+#[cfg(feature = "serde")]
+mod serde_impl;
 mod snap;
 mod transform;
 
