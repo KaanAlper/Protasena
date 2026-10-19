@@ -11,3 +11,8 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
+protasena-doc = { workspace = true, features = ["serde"] }
+protasena-geom.workspace = true
+protasena-library.workspace = true
+serde.workspace = true
+serde_json.workspace = true

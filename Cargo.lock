@@ -121,6 +121,11 @@ version = "0.1.0"
 [[package]]
 name = "protasena-doc"
 version = "0.1.0"
+dependencies = [
+ "protasena-geom",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "protasena-engine"
@@ -160,6 +165,13 @@ dependencies = [
 [[package]]
 name = "protasena-netlist"
 version = "0.1.0"
+dependencies = [
+ "protasena-doc",
+ "protasena-geom",
+ "protasena-library",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "protasena-pdsprj"

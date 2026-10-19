@@ -1,6 +1,6 @@
 # Where Protasena falls short of Proteus
 
-> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (S2: device model and pack loader landed) · **Target:** Labcenter Proteus 8 Professional (Windows)
+> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (S3: design model and netlist landed; S7 added) · **Target:** Labcenter Proteus 8 Professional (Windows)
 
 Every known shortfall, one row each, ranked within each section by user impact. This is the work
 list: agents pick from here (top of a section first), and remove or update a row in the same PR
@@ -12,10 +12,11 @@ that closes it. "Est." means a judgement, not a measurement.
 |---|---|---|---|
 | S1 | No application window yet: the apps are placeholders | Nothing can be drawn | M1 Task 9 |
 | S2 | No parts library: device model, pack loader and 11 built-in generic parts exist; the KiCad reader, converter and published pack do not | Pick Devices needs devices | M1 Tasks 3, 5 |
-| S3 | No design model, netlist or project files | Nothing to edit, save or export | M1 Tasks 6–7 |
+| S3 | No project files: the design model (sheets, parts, wires, labels, terminals, reversible ops, annotation) and the netlist (connectivity, ERC basics, JSON and SPICE export) exist; saving and loading do not | Nothing can be saved | M1 Task 7 |
 | S4 | No commands (placing, wiring, editing, undo) | Every tool is a command | M1 Task 8 |
 | S5 | No `.pdsprj` reading | Opening Proteus projects | M1 Task 10 |
 | S6 | No observed UI inventory in `docs/ui-parity.md` | Rows come from observation | M1 Task 9 |
+| S7 | Connectivity, naming and annotation rules not yet compared with Proteus: wires crossing or touching at bends, pin ends on wire interiors, label case and scope, terminal scope and unnamed power/ground terminals, hidden power pins, net name priority and `#NET` numbering, annotation order, default sheet names and sizes | Netlists must match Proteus for the same design | M1 Task 6 follow-up (observation) |
 
 ## Later sub-projects
 
@@ -31,3 +32,4 @@ that closes it. "Est." means a judgement, not a measurement.
 |---|---|---|
 | 2026-10-20 | major | First gaps list: milestone 1 tasks and later sub-projects |
 | 2026-10-20 | minor | S2 narrowed: device model, pack format and built-in parts (M1 Task 4) |
+| 2026-10-20 | minor | S3 narrowed to project files (M1 Task 6 landed the design model and netlist); S7 lists the rules still to observe |
