@@ -17,3 +17,4 @@ Generated-in-code assets are original and have no file to list (none yet).
 
 | Asset | Author | Source | Licence | Notes |
 |---|---|---|---|---|
+| `crates/kicad/tests/data/` | Protasena contributors | Written by hand for the `protasena-kicad` tests (synthetic designs, no KiCad library content) | CC0-1.0 | Small KiCad-format fixtures (`.kicad_sym`, `.kicad_mod`) |
