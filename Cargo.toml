@@ -29,7 +29,14 @@ toml = { version = "1", default-features = false, features = ["std", "serde", "p
 # raw deflate for the .pdsprj ZIP container (MIT OR Zlib OR Apache-2.0)
 miniz_oxide = { version = "0.8", default-features = false, features = ["with-alloc"] }
 
+# user interface (layer L5 and the apps only; versions as AsenaCAD's)
+egui = "0.36"
+eframe = { version = "0.36", default-features = false }
+image = { version = "0.25", default-features = false, features = ["png"] }
+rfd = "0.17"
+
 # testing (dev-dependencies only)
+egui_kittest = "0.36"
 proptest = { version = "1", default-features = false, features = ["std"] }
 
 [workspace.lints.rust]

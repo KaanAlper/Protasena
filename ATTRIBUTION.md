@@ -27,3 +27,4 @@ MIT OR Apache-2.0).
 |---|---|---|---|---|
 | `crates/kicad/tests/data/` | Protasena contributors | Written by hand for the `protasena-kicad` tests (synthetic designs, no KiCad library content) | CC0-1.0 | Small KiCad-format fixtures (`.kicad_sym`, `.kicad_mod`) |
 | `apps/protasena-libconv/tests/data/` | Protasena contributors | Written by hand for the `protasena-libconv` tests (synthetic parts, no KiCad library content) | CC0-1.0 | Small KiCad-format fixtures and a test map |
+| `crates/ui-egui/i18n/` | Protasena contributors | Written for Protasena: interface strings (control labels as Proteus names them, messages in our own words) | MIT OR Apache-2.0 | String catalogs (`en.tsv`, English) |
