@@ -6,6 +6,7 @@ use crate::error::DocError;
 use crate::graphic::Graphic;
 use crate::ids::ItemId;
 use crate::items::{Bus, BusEntry, Component, Junction, Label, Terminal, Text, Wire};
+use crate::subcircuit::Subcircuit;
 
 /// One item of any kind, owned (what [`Op::Add`](crate::Op::Add) and
 /// [`Op::Modify`](crate::Op::Modify) carry).
@@ -30,6 +31,8 @@ pub enum Item {
     Text(Text),
     /// A 2D graphic.
     Graphic(Graphic),
+    /// A subcircuit.
+    Subcircuit(Subcircuit),
 }
 
 impl Item {
@@ -45,6 +48,7 @@ impl Item {
             Self::BusEntry(e) => ItemId::BusEntry(e.id),
             Self::Text(t) => ItemId::Text(t.id),
             Self::Graphic(g) => ItemId::Graphic(g.id),
+            Self::Subcircuit(x) => ItemId::Subcircuit(x.id),
         }
     }
 
@@ -74,6 +78,7 @@ impl Item {
                 if t.size.is_finite() && t.size >= 0.0 { Ok(()) } else { Err(DocError::NonFinite("text size")) }
             }
             Self::Graphic(g) => g.shape.check(),
+            Self::Subcircuit(x) => x.check(),
         }
     }
 
@@ -98,6 +103,7 @@ impl Item {
             Self::BusEntry(e) => Self::BusEntry(BusEntry { bus_end: e.bus_end + by, wire_end: e.wire_end + by, ..*e }),
             Self::Text(t) => Self::Text(Text { at: t.at + by, ..t.clone() }),
             Self::Graphic(g) => Self::Graphic(Graphic { id: g.id, shape: g.shape.map(|p| p + by) }),
+            Self::Subcircuit(x) => Self::Subcircuit(x.map(|p| p + by)),
         };
         moved.check()?;
         Ok(moved)

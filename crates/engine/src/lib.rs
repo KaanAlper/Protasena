@@ -60,6 +60,7 @@ mod session;
 mod view;
 mod wiring;
 
+pub use cmd::port_kind_id;
 pub use error::{EngineError, Result};
 pub use hit::Hit;
 pub use interact::{Button, Feedback, Machine, Modifiers, PointerEvent, PointerKind, Preview, WireDraft};

@@ -152,6 +152,7 @@ impl Mode {
                 | Mode::WireLabel
                 | Mode::TextScript
                 | Mode::Buses
+                | Mode::Subcircuit
                 | Mode::Terminals
                 | Mode::Line2d
                 | Mode::Box2d

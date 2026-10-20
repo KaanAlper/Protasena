@@ -1,6 +1,6 @@
 //! The left pane: the overview window (the whole sheet with the visible area marked; a click
 //! or drag pans there) above the object selector (the P and L buttons, the caption of the
-//! current mode's list, and the list itself: picked devices, terminal kinds…).
+//! current mode's list, and the list itself: picked devices, terminal kinds, port kinds…).
 
 use std::collections::HashSet;
 
@@ -40,6 +40,7 @@ enum Clicked {
     Pick,
     Device(String, String),
     Terminal(&'static str),
+    Port(&'static str),
     Pan(protasena_geom::Pt),
 }
 
@@ -66,6 +67,11 @@ pub fn show(app: &mut App, ui: &mut Ui) {
         }
         Some(Clicked::Terminal(kind)) => {
             if let Err(e) = app.run("select-terminal", json!({ "kind": kind })) {
+                app.notify(e, true);
+            }
+        }
+        Some(Clicked::Port(kind)) => {
+            if let Err(e) = app.run("select-port", json!({ "kind": kind })) {
                 app.notify(e, true);
             }
         }
@@ -135,6 +141,14 @@ fn selector(app: &mut App, ui: &mut Ui, clicked: &mut Option<Clicked>) {
                     let selected = chosen.as_ref() == Some(d);
                     if row(ui, &d.name, selected).clicked() {
                         *clicked = Some(Clicked::Device(d.name.clone(), d.library.clone()));
+                    }
+                }
+            }
+            Some("PORTS") => {
+                let kind = app.session.port_kind();
+                for (k, name) in crate::dialogs::subcircuit::PORT_KINDS {
+                    if row(ui, name, k == kind).clicked() {
+                        *clicked = Some(Clicked::Port(protasena_engine::port_kind_id(k)));
                     }
                 }
             }

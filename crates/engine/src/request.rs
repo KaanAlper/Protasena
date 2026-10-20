@@ -2,7 +2,7 @@
 //! pick, key or click that needs one returns a [`Request`]; the UI shows the dialog and then
 //! runs the command's JSON form with the values entered.
 
-use protasena_doc::{ComponentId, LabelId, SheetId, TerminalId, TextId};
+use protasena_doc::{ComponentId, LabelId, SheetId, SubcircuitId, TerminalId, TextId};
 use protasena_geom::Pt;
 use serde::Serialize;
 
@@ -33,6 +33,18 @@ pub enum Request {
     EditTerminal {
         /// The terminal.
         id: TerminalId,
+    },
+    /// Name a new port on a subcircuit's edge (then `subcircuit-port`).
+    SubcircuitPort {
+        /// The subcircuit.
+        subcircuit: SubcircuitId,
+        /// The point on its edge.
+        at: Pt,
+    },
+    /// Edit Subcircuit: its name and ports (then `edit-subcircuit`, or `enter-child-sheet`).
+    EditSubcircuit {
+        /// The subcircuit.
+        id: SubcircuitId,
     },
     /// Enter the text of a new text or script (then `text`).
     Text {

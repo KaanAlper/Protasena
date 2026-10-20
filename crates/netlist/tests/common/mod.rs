@@ -59,12 +59,42 @@ impl Design {
 
     pub fn label(&mut self, at: (f64, f64), text: &str) {
         let id = self.p.fresh_id().unwrap();
-        self.add(Item::Label(Label { id, at: pt(at.0, at.1), text: text.to_owned(), orient: Orient::IDENTITY }));
+        self.add(Item::Label(Label { id, at: pt(at.0, at.1), text: text.to_owned(), orient: Orient::IDENTITY, global: false }));
     }
 
     pub fn terminal(&mut self, at: (f64, f64), kind: TerminalKind, name: &str) {
         let id = self.p.fresh_id().unwrap();
         self.add(Item::Terminal(Terminal { id, at: pt(at.0, at.1), kind, name: name.to_owned(), orient: Orient::IDENTITY }));
+    }
+
+    pub fn global_label(&mut self, at: (f64, f64), text: &str) {
+        let id = self.p.fresh_id().unwrap();
+        self.add(Item::Label(Label { id, at: pt(at.0, at.1), text: text.to_owned(), orient: Orient::IDENTITY, global: true }));
+    }
+
+    /// A subcircuit box from `a` to `b` named `name` with `ports` (`(at, name, kind)`), linked
+    /// to `child`.
+    pub fn subcircuit(
+        &mut self,
+        a: (f64, f64),
+        b: (f64, f64),
+        name: &str,
+        ports: &[((f64, f64), &str, PortKind)],
+        child: Option<SheetId>,
+    ) -> SubcircuitId {
+        let id = self.p.fresh_id().unwrap();
+        let mut s = Subcircuit::new(id, pt(a.0, a.1), pt(b.0, b.1), name);
+        s.ports = ports.iter().map(|&(at, name, kind)| Port { at: pt(at.0, at.1), name: name.to_owned(), kind }).collect();
+        s.child = child;
+        self.add(Item::Subcircuit(s));
+        id
+    }
+
+    /// Adds a sheet named `name` without making it current.
+    pub fn sheet_named(&mut self, name: &str) -> SheetId {
+        let id = self.p.fresh_id().unwrap();
+        self.p.apply(Op::AddSheet { sheet: Sheet::new(id, name, SheetSize::A4), index: None }).unwrap();
+        id
     }
 
     pub fn netlist(&self) -> Netlist {

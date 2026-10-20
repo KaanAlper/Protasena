@@ -3,11 +3,12 @@
 
 use std::collections::{BTreeMap, HashMap};
 
-use protasena_doc::{Component, Project, Sheet, TerminalKind, split_reference};
+use protasena_doc::{Component, Project, Sheet, SubcircuitId, TerminalKind, split_reference};
 use protasena_geom::{Pt, Segment};
 use protasena_library::{Device, PinKind};
 
 use crate::geometry::{SegmentIndex, key, usable};
+use crate::hier::{self, Scope};
 use crate::model::{ErcItem, ErcKind, Severity};
 use crate::order::UnionFind;
 use crate::pins::{PlacedPin, placed_pins};
@@ -64,16 +65,51 @@ struct SheetGeom {
 }
 
 impl<'a> Graph<'a> {
+    /// Every sheet instance in hierarchy order (a parent before its children, so a child
+    /// finds its subcircuit's port elements).
     pub(crate) fn build<S: DeviceSource + ?Sized>(project: &'a Project, devices: &'a S) -> Graph<'a> {
         let mut g = Graph::default();
-        for sheet in &project.sheets {
+        let tree = project.sheet_tree();
+        let mut ports: HashMap<SubcircuitId, HashMap<String, usize>> = HashMap::new();
+        for node in &tree {
+            let Some(sheet) = project.sheet(node.sheet) else { continue };
+            let parent_ports = node.parent.and_then(|(_, sub)| ports.remove(&sub)).unwrap_or_default();
+            let scope = Scope { path: node.path.clone(), ports: parent_ports };
             let mut geom = SheetGeom::default();
             g.components(sheet, devices, &mut geom);
-            g.conductors(sheet, &mut geom);
+            g.conductors(sheet, &scope, &mut geom);
+            ports.extend(g.subcircuit_ports(sheet, &mut geom));
             g.connect(&geom);
         }
+        g.erc.extend(hier::findings(project, &tree));
         g.merge_gates();
         g
+    }
+
+    /// One element per subcircuit port, at the port's connection point on this sheet; the
+    /// child sheet's terminals join them by name.
+    fn subcircuit_ports(&mut self, sheet: &Sheet, geom: &mut SheetGeom) -> Vec<(SubcircuitId, HashMap<String, usize>)> {
+        let mut out = Vec::new();
+        for sub in &sheet.subcircuits {
+            let mut by_name: HashMap<String, usize> = HashMap::new();
+            let mut bad = false;
+            for port in &sub.ports {
+                let elem = self.add(Elem::Conductor);
+                if usable(port.at) {
+                    geom.points.push((port.at, elem));
+                } else {
+                    bad = true;
+                }
+                // Ports of the same name are one connection.
+                let first = *by_name.entry(port.name.trim().to_owned()).or_insert(elem);
+                self.uf.union(first, elem);
+            }
+            if bad {
+                self.warn_geometry(sub.id.to_string());
+            }
+            out.push((sub.id, by_name));
+        }
+        out
     }
 
     fn add(&mut self, kind: Elem) -> usize {
@@ -144,7 +180,7 @@ impl<'a> Graph<'a> {
         }
     }
 
-    fn conductors(&mut self, sheet: &Sheet, geom: &mut SheetGeom) {
+    fn conductors(&mut self, sheet: &Sheet, scope: &Scope, geom: &mut SheetGeom) {
         for w in &sheet.wires {
             let elem = self.add(Elem::Conductor);
             let mut ok = w.points.iter().all(|&p| usable(p));
@@ -162,23 +198,32 @@ impl<'a> Graph<'a> {
                 self.warn_geometry(w.id.to_string());
             }
         }
-        let mut points: Vec<(Pt, String, Option<(String, u8)>)> = Vec::new();
-        points.extend(sheet.junctions.iter().map(|j| (j.at, j.id.to_string(), None)));
-        points.extend(sheet.labels.iter().map(|l| (l.at, l.id.to_string(), Some((l.text.clone(), SIGNAL_NAME)))));
+        // (point, what for messages, net name and priority, the parent's port it joins)
+        let mut points: Vec<(Pt, String, Option<(String, u8)>, Option<usize>)> = Vec::new();
+        points.extend(sheet.junctions.iter().map(|j| (j.at, j.id.to_string(), None, None)));
+        points.extend(sheet.labels.iter().map(|l| (l.at, l.id.to_string(), Some((scope.name(&l.text, l.global), SIGNAL_NAME)), None)));
         for t in &sheet.terminals {
+            let port = scope.port(t.kind, &t.name);
             let name = match t.kind {
                 TerminalKind::Bus => continue,
                 TerminalKind::Power if t.name.trim().is_empty() => Some(("VCC".to_owned(), POWER_NAME)),
                 TerminalKind::Ground if t.name.trim().is_empty() => Some(("GND".to_owned(), POWER_NAME)),
                 TerminalKind::Power | TerminalKind::Ground => Some((t.name.clone(), POWER_NAME)),
-                TerminalKind::Default | TerminalKind::Input | TerminalKind::Output | TerminalKind::Bidir => Some((t.name.clone(), SIGNAL_NAME)),
+                // A terminal that joins its subcircuit's port takes the parent's net, not a name.
+                _ if port.is_some() => None,
+                TerminalKind::Default | TerminalKind::Input | TerminalKind::Output | TerminalKind::Bidir => {
+                    Some((scope.name(&t.name, false), SIGNAL_NAME))
+                }
             };
-            points.push((t.at, t.id.to_string(), name));
+            points.push((t.at, t.id.to_string(), name, port));
         }
-        for (at, what, name) in points {
+        for (at, what, name, port) in points {
             let elem = self.add(Elem::Conductor);
             if let Some((name, priority)) = name {
                 self.name(&name, priority, elem);
+            }
+            if let Some(port) = port {
+                self.uf.union(port, elem);
             }
             if usable(at) {
                 geom.points.push((at, elem));

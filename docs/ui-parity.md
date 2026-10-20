@@ -1,6 +1,6 @@
 # UI parity
 
-> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (Edit ▸ Align Objects, Send To Back, Bring To Front, Tidy Design) · **Target:** Labcenter Proteus 8 Professional (Windows)
+> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (Subcircuit mode, child sheets, Exit to Parent Sheet) · **Target:** Labcenter Proteus 8 Professional (Windows)
 
 Protasena's Schematic Capture interface element by element against Proteus's: menus, toolbars,
 the mode toolbar, the overview window, the object selector, the editing window, the status bar
@@ -8,16 +8,17 @@ and dialogs. Rows come from the observed UI inventory (`plan/proteus/notes/ui-in
 local), written in our own words. Status: ✅ matches, ◐ partial (differences listed), ✗ missing,
 ★ intentional improvement approved by the owner. Work items: [gaps.md](gaps.md).
 
-**Headline (measured, counted from the rows below): 3 of 258 rows match** (✅ 3, ◐ 148, ✗ 107).
+**Headline (measured, counted from the rows below): 3 of 263 rows match** (✅ 3, ◐ 156, ✗ 104).
 Proteus could only be observed from its menus, window tree and one screenshot (it runs elevated
 on the reference PC, so no click, tooltip or dialog reached it): labels, order, shortcut texts
 and placement are taken from that observation; every behaviour, enabled rule and dialog is
 "not compared" until an observation session can drive Proteus. The look (colours, icons, fonts)
 is our own by design and is not a parity criterion.
 
-**Items without a command** (shown disabled, listed as ✗ below): 79 menu items (plus the
-recent-projects and graph lists) and 14 toolbar buttons have no engine command yet, nor do 14 of
-the 22 modes, the animation buttons, the design variant box and the L button.
+**Items without a command** (shown disabled, listed as ✗ below; measured from the menu and
+toolbar tables in `crates/ui-egui`): 78 menu items (plus the recent-projects and graph lists)
+and 13 toolbar buttons have no engine command yet, nor do 8 of the 22 modes, the animation
+buttons, the design variant box and the L button.
 
 ## Menu bar
 
@@ -93,11 +94,11 @@ enabled when its command's enabled rule allows it.
 | Design ▸ Configure Power Rails... |  | ✗ | Shown disabled: no command yet (item without a command) |
 | Design ▸ New (Root) Sheet |  | ◐ | Runs `new-sheet`. Label, place and shortcut as observed; enabled rule, behaviour and dialog not compared |
 | Design ▸ Remove/Delete Sheet |  | ◐ | Runs `remove-sheet`. Label, place and shortcut as observed; enabled rule, behaviour and dialog not compared |
-| Design ▸ Goto Previous Root or Sub-sheet | Page-Up | ◐ | Runs `previous-sheet`. Label, place and shortcut as observed; enabled rule, behaviour and dialog not compared |
-| Design ▸ Goto Next Root or Sub-sheet | Page-Down | ◐ | Runs `next-sheet`. Label, place and shortcut as observed; enabled rule, behaviour and dialog not compared |
-| Design ▸ Exit to Parent Sheet | Ctrl+X | ✗ | Shown disabled: no command yet (item without a command) |
+| Design ▸ Goto Previous Root or Sub-sheet | Page-Up | ◐ | Runs `previous-sheet` in hierarchy order (each root sheet, then its sub-sheets depth first). Label, place and shortcut as observed; Proteus's order to compare |
+| Design ▸ Goto Next Root or Sub-sheet | Page-Down | ◐ | Runs `next-sheet`, in the same order. Label, place and shortcut as observed; Proteus's order to compare |
+| Design ▸ Exit to Parent Sheet | Ctrl+X | ◐ | Runs `exit-to-parent`: on a child sheet, shows the parent sheet with the subcircuit selected; disabled on a root sheet. Label, place and shortcut as observed; behaviour to compare |
 | Design ▸ Goto Sheet |  | ◐ | Runs `goto-sheet`. Label, place and shortcut as observed; enabled rule, behaviour and dialog not compared |
-| Design ▸ (numbered sheet list) |  | ◐ | Lists the sheets, the current one checked; a pick runs `goto-sheet` |
+| Design ▸ (numbered sheet list) |  | ◐ | Lists the sheets in hierarchy order, the current one checked; a sub-sheet is indented under its parent with its instance path (`SUB1 (SUB1)`); a pick runs `goto-sheet`. Proteus's presentation of sub-sheets to compare |
 | Graph ▸ Edit Graph... |  | ✗ | Shown disabled: no command yet (item without a command) |
 | Graph ▸ Add Traces... | Ctrl+T | ✗ | Shown disabled: no command yet (item without a command) |
 | Graph ▸ Simulate Graph | Space | ✗ | Shown disabled: no command yet (item without a command) |
@@ -208,7 +209,7 @@ Buttons mirror the menu item of the same name.
 | Design Toolbar ▸ Property Assignment Tool |  | ◐ | Runs `property-assign` (its dialog). Name inferred from the icon; behaviour not compared |
 | Design Toolbar ▸ New (Root) Sheet |  | ◐ | Runs `new-sheet`. Name inferred from the icon (tooltips were not readable); behaviour not compared |
 | Design Toolbar ▸ Remove/Delete Sheet |  | ◐ | Runs `remove-sheet`. Name inferred from the icon (tooltips were not readable); behaviour not compared |
-| Design Toolbar ▸ Exit to Parent Sheet |  | ✗ | Shown disabled: no command yet |
+| Design Toolbar ▸ Exit to Parent Sheet |  | ◐ | Runs `exit-to-parent` (enabled on a child sheet). Name inferred from the icon; behaviour not compared |
 | Design Toolbar ▸ Electrical Rules Check |  | ◐ | Runs `erc`. Name inferred from the icon (tooltips were not readable); behaviour not compared |
 
 ## Mode toolbar
@@ -222,7 +223,7 @@ Buttons mirror the menu item of the same name.
 | Wire Label Mode |  | ◐ | Engine machine (set-mode `Wire Label Mode`); clicks, drags and defaults not compared. Object selector: none |
 | Text Script Mode |  | ◐ | Engine machine (set-mode `Text Script Mode`); clicks, drags and defaults not compared. Object selector: none |
 | Buses Mode |  | ◐ | Engine machine (set-mode `Buses Mode`); clicks, drags and defaults not compared. Object selector: none |
-| Subcircuit Mode |  | ✗ | Shown disabled: the engine has no machine for it yet. Object selector caption PORTS (list empty) |
+| Subcircuit Mode |  | ◐ | Engine machine (`subcircuit`): a box by two clicks or a drag, named the next free `SUBn`; a click on its left or right edge asks for a port (Subcircuit Port dialog, kind from the PORTS list; `subcircuit-port`); a click inside selects it, a double click opens Edit Subcircuit. Ports are drawn as module ports inside the box. **To compare** (Proteus not observed): clicks, port placement and shapes, default names. Object selector: PORTS |
 | Terminals Mode |  | ◐ | Engine machine (set-mode `Terminals Mode`); clicks, drags and defaults not compared. Object selector: TERMINALS |
 | Device Pins Mode |  | ✗ | Shown disabled: the engine has no machine for it yet. Object selector caption PINS (list empty) |
 | Graph Mode |  | ✗ | Shown disabled: the engine has no machine for it yet. Object selector caption GRAPHS (list empty) |
@@ -255,6 +256,7 @@ Buttons mirror the menu item of the same name.
 | Object selector ▸ L | Library manager | ✗ | Shown disabled: no library manager |
 | Object selector ▸ caption | DEVICES, TERMINALS, PORTS, PINS, GRAPHS, GENERATORS, PROBES, INSTRUMENTS, SYMBOLS, MARKERS, GRAPHICS by mode | ◐ | The captions are the observed list names; which mode shows which caption is our guess (Selection Mode shows DEVICES; Junction Dot, Wire Label, Text Script, Buses and Active Popup show none) — to compare |
 | Object selector ▸ DEVICES list | Devices picked into the design; a click chooses the one to place (`select-device`) | ◐ | Order is the order of picking; Proteus's order (alphabetical in the observed design) to compare |
+| Object selector ▸ PORTS list | DEFAULT, INPUT, OUTPUT, BIDIR; a click chooses the kind of port (`select-port`) | ◐ | Proteus's list not observed |
 | Object selector ▸ TERMINALS list | DEFAULT, INPUT, OUTPUT, BIDIR, POWER, GROUND, BUS; a click chooses the kind (`select-terminal`) | ◐ | Proteus's list (it may hold more kinds) not observed |
 | Left pane width | Resizable | ◐ | Proteus's pane is about 125 px; ours starts at 190 points |
 | Editing window ▸ sheet | Border of the sheet size, centred on the origin, paper inside | ◐ | Proteus draws its own border and margin; sizes and origin to compare |
@@ -265,6 +267,7 @@ Buttons mirror the menu item of the same name.
 | Editing window ▸ zoom | F6/F7 by 2 about the centre, F8 whole sheet, the wheel by 2 per notch about the cursor | ◐ | Proteus's wheel step and centring to compare |
 | Editing window ▸ pan | Middle-button drag; F5 centres at the cursor | ◐ | Not compared |
 | Editing window ▸ cursor | A small cross at the snapped point; X-Cursor (X) draws full-window lines | ◐ | Proteus's cursor shapes not compared |
+| Editing window ▸ Goto Child Sheet | Ctrl+C with a subcircuit selected (`enter-child-sheet`; also Edit Subcircuit's button): shows its child sheet, made empty and named after the subcircuit the first time | ◐ | No menu item (right-click context menus, where Proteus may offer it, are not built); key and behaviour to compare |
 | Editing window ▸ messages | Prompts and refusals as a short message at the bottom left | ◐ | Our own; Proteus reports these differently (not observed) |
 | Status bar: animation buttons, messages, design variant, sheet, coordinates, unit, left to right |  | ✅ | Order as observed |
 | Status bar ▸ Play, Step, Pause, Stop | Shown disabled | ✗ | No simulation yet |
@@ -293,11 +296,14 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | Edit Component ▸ Other Properties | the device's property definitions | ◐ | A grid of values; an empty value removes the property |
 | Find/Edit Component (nothing selected) | | ◐ | Asks for the reference, then opens Edit Component |
 | Edit Wire Label ▸ String | empty | ◐ | Runs `wire-label` (new) or `edit-item`; Proteus's tabs and options not observed |
+| Edit Wire Label ▸ Global | off | ◐ | Our own checkbox: a global label's name is not prefixed by the instance path in child sheets. How Proteus marks global labels to compare |
+| Subcircuit Port ▸ Port Name, Type | empty; the PORTS list's kind | ◐ | Our own dialog after a click on a subcircuit's edge; runs `subcircuit-port`. To compare |
+| Edit Subcircuit ▸ Name, Ports (name, type, Remove), Goto/Create Child Sheet | the subcircuit's | ◐ | Our own dialog (double click); runs `edit-subcircuit`, or `enter-child-sheet` from the button. Proteus's fields (its Circuit name) to compare |
 | Edit Terminal ▸ String, Type | the terminal's | ◐ | Runs `edit-item` |
 | Text (Text Script, 2D text) ▸ Text, Height | empty, default height | ◐ | Runs `text` or `edit-item` |
 | Edit Design Properties | the project's | ◐ | Project Name, Design Title, Doc. No, Revision, Author, Created, Modified; to compare |
 | Edit Sheet Properties | the sheet's | ◐ | Sheet Name and Sheet Size (A4…A0, ANSI A…E); Proteus's size list not observed |
-| Goto Sheet | the current sheet | ◐ | Numbered sheet list |
+| Goto Sheet | the current sheet | ◐ | Numbered sheet list in hierarchy order, sub-sheets indented with their instance path |
 | Global Annotator | Incremental | ◐ | Incremental or Total; Proteus's options not observed |
 | Unsaved changes (New, Open, Exit, window close) | | ◐ | Our own question "The design has unsaved changes. Save them?" with Save (saves, asking for a file when the project has none, and carries on once saved), Don't Save, Cancel; Proteus's prompt (wording, buttons, order, default) to compare |
 | Open Project, Save Project As, Netlist Compiler file | | ◐ | The system's file chooser (`.psproj`, `.pdsprj` opens by import); a path prompt when there is none. Proteus's Netlist Compiler options not observed |
@@ -321,3 +327,4 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | 2026-10-20 | minor | File ▸ Print Design prints to a PDF file and can open it in the system viewer (to compare); Print Setup and Printer Information not built |
 | 2026-10-20 | minor | Tool ▸ Search & Tag (T) and Property Assignment Tool (A), with their Design Toolbar buttons and dialogs, built the conventional way (to compare) |
 | 2026-10-20 | minor | Edit ▸ Align Objects (Ctrl+A), Send To Back (Ctrl+B), Bring To Front (Ctrl+F) and Tidy Design built the conventional way (to compare) |
+| 2026-10-20 | minor | Subcircuit Mode, the PORTS list, Subcircuit Port and Edit Subcircuit dialogs, Goto Child Sheet (Ctrl+C), Design ▸ Exit to Parent Sheet (Ctrl+X) and its toolbar button, sheets in hierarchy order; Edit Wire Label's Global box. Built the conventional way (to compare); 3 of 263 rows match |

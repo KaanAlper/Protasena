@@ -16,6 +16,9 @@
 //!   for the label text. **Buses**: clicks add corners, a double click or the right button
 //!   finishes. **Text Script**, **2D Graphics Text**: a click asks for the text.
 //! - **2D Graphics Line, Box, Circle, Arc, Closed Path**: see [`crate::graphics`].
+//! - **Subcircuit**: a box is drawn like a 2D box (the next free `SUBn`); a click on a
+//!   subcircuit's left or right edge asks for a new port's name (of the kind chosen in the
+//!   PORTS list); a click on a subcircuit selects it, a double click opens Edit Subcircuit.
 
 mod machine;
 mod modes;

@@ -49,7 +49,7 @@ fn hostile_ids_never_panic() {
     refused(&mut p, Op::Modify { item: Item::Wire(Wire { id: WireId(999), ..w.clone() }) });
     refused(&mut p, Op::Add { sheet: SheetId(999), item: Item::Wire(Wire { id: WireId(500), ..w.clone() }), index: None });
     // The same raw id under another kind is a duplicate too: ids are project-wide.
-    let clash = Item::Label(Label { id: LabelId(w.id.0), at: pt(0.0, 0.0), text: "A".into(), orient: Orient::IDENTITY });
+    let clash = Item::Label(Label { id: LabelId(w.id.0), at: pt(0.0, 0.0), text: "A".into(), orient: Orient::IDENTITY, global: false });
     refused(&mut p, Op::Add { sheet: s, item: clash, index: None });
     refused(&mut p, Op::Move { ids: vec![ItemId::Wire(w.id), ItemId::Bus(BusId(77))], by: Vec2::new(100.0, 0.0) });
     refused(&mut p, Op::SetTransform { id: ComponentId(w.id.0), transform: Transform::IDENTITY });

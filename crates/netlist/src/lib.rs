@@ -16,10 +16,18 @@
 //!   names the wire it sits on, a pin end on a wire connects.
 //! - All vertices of one wire are one conductor. Two wires that merely cross, or touch only at
 //!   interior vertices (bends), do **not** connect.
-//! - Labels with the same text (trimmed, case-sensitive) are one net across **all sheets**.
-//!   Terminals of kind default, input, output and bidir join by name the same way; power and
-//!   ground terminals join the net of their name (`VCC` / `GND` when unnamed). Bus terminals,
-//!   buses and bus entries carry no nets yet.
+//! - Labels with the same text (trimmed, case-sensitive) are one net across **all root
+//!   sheets**. Terminals of kind default, input, output and bidir join by name the same way;
+//!   power and ground terminals join the net of their name (`VCC` / `GND` when unnamed). Bus
+//!   terminals, buses and bus entries carry no nets yet.
+//! - **Hierarchy**: a subcircuit's ports are connection points on its sheet. On its child sheet
+//!   (one instance: the first subcircuit reaching it in
+//!   [`Project::sheet_tree`](protasena_doc::Project::sheet_tree) order) an input, output or
+//!   bidirectional terminal joins the port of its name. Every other name on a child sheet is
+//!   local to the instance and prefixed by its path (`SUB1.DATA`, `SUB1.SUB2.DATA`), except
+//!   the global ones: power and ground terminals, power symbols, hidden power pins and labels
+//!   marked global. Part references are not prefixed. Problems (no child sheet, a child sheet
+//!   two subcircuits name, ports without a terminal) are [`ErcKind::Hierarchy`] warnings.
 //! - Power-symbol devices (`Symbol::power`) join the net named by the component's value, or by
 //!   their pin name when the value is empty; they are not parts and their pins are not nodes.
 //! - Hidden power pins (power in / power out) join the net named by the pin name; other hidden
@@ -28,7 +36,8 @@
 //!   number; any other repeated reference is a [`ErcKind::DuplicateReference`] error.
 //!
 //! Proteus's exact rules (crossing wires, pins on wire interiors, label case, the scope of
-//! terminals, unnamed power terminals) still need observation; see `docs/gaps.md`.
+//! terminals and of names in child sheets, unnamed power terminals) still need observation;
+//! see `docs/gaps.md`.
 //!
 //! # Net names
 //! A net takes the best of its names: power names (power symbols, power/ground terminals,
@@ -68,6 +77,7 @@ mod collect;
 mod error;
 pub mod export;
 mod geometry;
+mod hier;
 mod model;
 mod order;
 mod pins;

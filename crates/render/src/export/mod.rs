@@ -222,7 +222,7 @@ pub fn colour(ink: Ink, mono: bool) -> Rgb {
         return if ink == Ink::BodyFill { Rgb::WHITE } else { Rgb::BLACK };
     }
     match ink {
-        Ink::Body | Ink::Pin | Ink::BodyText | Ink::Graphic => Rgb(138, 28, 28),
+        Ink::Body | Ink::Pin | Ink::BodyText | Ink::Graphic | Ink::Subcircuit | Ink::Port => Rgb(138, 28, 28),
         Ink::BodyFill => Rgb(253, 246, 227),
         Ink::PinName => Rgb(31, 63, 122),
         Ink::PinNumber => Rgb(85, 85, 85),

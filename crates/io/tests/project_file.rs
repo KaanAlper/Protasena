@@ -73,6 +73,21 @@ fn graphics_are_saved_by_kind_and_files_without_them_still_load() {
 }
 
 #[test]
+fn subcircuits_and_global_labels_round_trip_and_are_left_out_when_absent() {
+    let p = sample_project();
+    let text = encode(&p).unwrap();
+    assert!(text.contains("\"subcircuits\"") && text.contains("\"child\"") && text.contains("\"kind\": \"input\""), "{text}");
+    assert_eq!(text.matches("\"global\": true").count(), 1);
+    assert!(!text.contains("\"global\": false"), "the default is not written");
+    assert_eq!(p.sheet_tree().len(), 2);
+    let (back, _) = decode(text.as_bytes()).unwrap();
+    assert_eq!(back.sheets[0].subcircuits, p.sheets[0].subcircuits);
+    assert_eq!(back.parent_of(p.sheets[1].id), Some((p.sheets[0].id, p.sheets[0].subcircuits[0].id)));
+    let empty = encode(&Project::new("x")).unwrap();
+    assert!(!empty.contains("subcircuits"), "sheets without subcircuits write none");
+}
+
+#[test]
 fn unknown_fields_are_ignored() {
     let text = encode(&sample_project()).unwrap();
     let extended = text.replacen("\"version\": 1,", "\"version\": 1,\n  \"written_by\": {\"app\": \"future\"},", 1).replacen(

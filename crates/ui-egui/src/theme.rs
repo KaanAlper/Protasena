@@ -101,6 +101,8 @@ pub struct Tokens {
     pub label: Color32,
     /// Terminals.
     pub terminal: Color32,
+    /// Subcircuit boxes and their ports.
+    pub subcircuit: Color32,
     /// Free text.
     pub text_item: Color32,
     /// Parts whose device is missing.
@@ -150,6 +152,7 @@ impl Tokens {
         bus: hex(0x7A4CC2),
         label: hex(0x0E7C86),
         terminal: hex(0xB7791F),
+        subcircuit: hex(0x5B4A9E),
         text_item: hex(0x39404B),
         missing: hex(0xC2410C),
         selection: hex(0xF2711C),
@@ -190,6 +193,7 @@ impl Tokens {
         bus: hex(0xB794F4),
         label: hex(0x4FC3CF),
         terminal: hex(0xE0A84A),
+        subcircuit: hex(0xA99BEA),
         text_item: hex(0xD0D5DB),
         missing: hex(0xF08A4B),
         selection: hex(0xFF8F3F),
@@ -229,6 +233,7 @@ impl Tokens {
             Ink::Terminal | Ink::TerminalText => self.terminal,
             Ink::Text => self.text_item,
             Ink::Graphic => self.body,
+            Ink::Subcircuit | Ink::Port => self.subcircuit,
             Ink::SheetBorder => self.sheet_border,
             Ink::Pad => self.pad,
             Ink::Silk => self.silk,
@@ -347,7 +352,7 @@ mod tests {
     #[test]
     fn drawing_inks_stand_out_from_the_sheet_in_both_themes() {
         for t in [Tokens::LIGHT, Tokens::DARK] {
-            for ink in [Ink::Body, Ink::Wire, Ink::Label, Ink::Reference, Ink::Terminal, Ink::Bus] {
+            for ink in [Ink::Body, Ink::Wire, Ink::Label, Ink::Reference, Ink::Terminal, Ink::Bus, Ink::Subcircuit] {
                 let d = (luminance(t.ink(ink)) - luminance(t.sheet)).abs();
                 assert!(d > 0.3, "{ink:?} against the sheet: {d}");
             }

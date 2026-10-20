@@ -191,12 +191,13 @@ pub fn sheet_rect(sheet: &Sheet) -> Rect {
     Rect::new(Pt::new(-w / 2.0, -h / 2.0), Pt::new(w / 2.0, h / 2.0))
 }
 
-/// Everything on a sheet in drawing order: border, buses, wires, components, labels,
-/// terminals, 2D graphics, texts, junction dots on top.
+/// Everything on a sheet in drawing order: border, subcircuits, buses, wires, components,
+/// labels, terminals, 2D graphics, texts, junction dots on top.
 pub fn sheet_display_list(sheet: &Sheet, library: &Library) -> DisplayList {
     let mut list = DisplayList::default();
     let r = sheet_rect(sheet);
     list.push(Prim::new(Shape::Polyline { points: r.corners().to_vec(), closed: true }, Ink::SheetBorder));
+    sheet.subcircuits.iter().for_each(|s| list.extend(crate::subcircuit::subcircuit_prims(s)));
     sheet.buses.iter().for_each(|b| list.extend(bus_prims(b)));
     sheet.bus_entries.iter().for_each(|e| list.extend(bus_entry_prims(e)));
     sheet.wires.iter().for_each(|w| list.extend(wire_prims(w)));
@@ -222,6 +223,7 @@ pub fn item_prims(item: &protasena_doc::Item, library: &Library) -> Vec<Prim> {
         Item::BusEntry(e) => bus_entry_prims(e),
         Item::Text(t) => text_prims(t),
         Item::Graphic(g) => crate::graphics::graphic_prims(g),
+        Item::Subcircuit(s) => crate::subcircuit::subcircuit_prims(s),
     }
 }
 
@@ -282,7 +284,7 @@ mod tests {
 
     #[test]
     fn labels_lift_off_the_wire_and_turn_with_it() {
-        let l = Label { id: protasena_doc::LabelId(1), at: Pt::new(100.0, 0.0), text: "CLK".into(), orient: Orient::IDENTITY };
+        let l = Label { id: protasena_doc::LabelId(1), at: Pt::new(100.0, 0.0), text: "CLK".into(), orient: Orient::IDENTITY, global: false };
         let p = &label_prims(&l)[0];
         assert!(matches!(p.shape, Shape::Text { at, angle, .. } if at == Pt::new(100.0, 15.0) && angle == 0.0));
         let up = Label { orient: Orient::rotation(1), ..l };

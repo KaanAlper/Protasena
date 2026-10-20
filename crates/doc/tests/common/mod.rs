@@ -36,5 +36,5 @@ pub fn junction(p: &mut Project, at: (f64, f64)) -> Junction {
 }
 
 pub fn label(p: &mut Project, at: (f64, f64), text: &str) -> Label {
-    Label { id: p.fresh_id().unwrap(), at: pt(at.0, at.1), text: text.to_owned(), orient: Orient::IDENTITY }
+    Label { id: p.fresh_id().unwrap(), at: pt(at.0, at.1), text: text.to_owned(), orient: Orient::IDENTITY, global: false }
 }

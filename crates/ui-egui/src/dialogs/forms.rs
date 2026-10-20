@@ -63,6 +63,8 @@ pub struct LabelForm {
     pub target: Target<LabelId>,
     /// The label text (net name).
     pub text: String,
+    /// Global: the name is not prefixed in child sheets.
+    pub global: bool,
     /// The last refusal.
     pub error: Option<String>,
 }
@@ -70,18 +72,20 @@ pub struct LabelForm {
 impl LabelForm {
     /// A new label on the wire at `at`.
     pub fn new_at(at: Pt) -> Self {
-        Self { target: Target::New(at), text: String::new(), error: None }
+        Self { target: Target::New(at), text: String::new(), global: false, error: None }
     }
 
     /// An existing label.
     pub fn edit(s: &Session, id: LabelId) -> Option<Self> {
         let l = s.sheet()?.labels.iter().find(|l| l.id == id)?;
-        Some(Self { target: Target::Edit(id), text: l.text.clone(), error: None })
+        Some(Self { target: Target::Edit(id), text: l.text.clone(), global: l.global, error: None })
     }
 
     pub(super) fn ui(&mut self, ui: &mut Ui) -> Reply {
         let enter =
             egui::Grid::new("wire-label").num_columns(2).spacing([12.0, 8.0]).show(ui, |ui| field(ui, tl!("String"), &mut self.text, 260.0)).inner;
+        let g = ui.checkbox(&mut self.global, tl!("Global (the same net in every sub-sheet)"));
+        control::record(ui, &g, tl!("Global (the same net in every sub-sheet)"), "checkbox", Some(self.global));
         error_line(ui, self.error.as_ref());
         let (ok, cancel) = ok_cancel(ui, !self.text.trim().is_empty());
         if cancel {
@@ -90,8 +94,12 @@ impl LabelForm {
         if (ok || enter) && !self.text.trim().is_empty() {
             let text = self.text.trim();
             return match self.target {
-                Target::New(at) => Reply::Run { cmd: "wire-label", params: json!({ "at": [at.x, at.y], "text": text }), keep: false },
-                Target::Edit(id) => Reply::Run { cmd: "edit-item", params: json!({ "id": id.raw(), "text": text }), keep: false },
+                Target::New(at) => {
+                    Reply::Run { cmd: "wire-label", params: json!({ "at": [at.x, at.y], "text": text, "global": self.global }), keep: false }
+                }
+                Target::Edit(id) => {
+                    Reply::Run { cmd: "edit-item", params: json!({ "id": id.raw(), "text": text, "global": self.global }), keep: false }
+                }
             };
         }
         Reply::None
@@ -220,9 +228,9 @@ impl GotoForm {
 
     pub(super) fn ui(&mut self, ui: &mut Ui, s: &Session) -> Reply {
         egui::ScrollArea::vertical().max_height(260.0).show(ui, |ui| {
-            for (i, sheet) in s.project().sheets.iter().enumerate() {
-                let r = ui.selectable_value(&mut self.choice, sheet.id.0, format!("{}. {}", i + 1, sheet.name));
-                control::record(ui, &r, &sheet.name, "list-item", Some(self.choice == sheet.id.0));
+            for (i, (id, label)) in crate::menus::sheet_list(s).into_iter().enumerate() {
+                let r = ui.selectable_value(&mut self.choice, id, format!("{}. {label}", i + 1));
+                control::record(ui, &r, label.trim_start(), "list-item", Some(self.choice == id));
             }
         });
         let (ok, cancel) = ok_cancel(ui, true);

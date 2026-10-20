@@ -204,7 +204,7 @@ const DESIGN: &[Entry] = &[
     cmd("Remove/Delete Sheet", None, "remove-sheet"),
     cmd("Goto Previous Root or Sub-sheet", Some("Page-Up"), "previous-sheet"),
     cmd("Goto Next Root or Sub-sheet", Some("Page-Down"), "next-sheet"),
-    off("Exit to Parent Sheet", Some("Ctrl+X")),
+    cmd("Exit to Parent Sheet", Some("Ctrl+X"), "exit-to-parent"),
     cmd("Goto Sheet", None, "goto-sheet"),
     Sep,
     Entry::Sheets,

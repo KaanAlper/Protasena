@@ -41,7 +41,7 @@ pub fn sample_project() -> Project {
     let j: JunctionId = p.fresh_id().unwrap();
     add(&mut p, s1, Item::Junction(Junction { id: j, at: Pt::new(500.0, 0.0) }));
     let l: LabelId = p.fresh_id().unwrap();
-    add(&mut p, s1, Item::Label(Label { id: l, at: Pt::new(500.0, 0.0), text: "MID".into(), orient: Orient::rotation(2) }));
+    add(&mut p, s1, Item::Label(Label { id: l, at: Pt::new(500.0, 0.0), text: "MID".into(), orient: Orient::rotation(2), global: false }));
     p.apply(p.annotate()).unwrap();
 
     let s2: SheetId = p.fresh_id().unwrap();
@@ -69,6 +69,17 @@ pub fn sample_project() -> Project {
         let id: GraphicId = p.fresh_id().unwrap();
         add(&mut p, s2, Item::Graphic(Graphic { id, shape }));
     }
+    // A subcircuit on the first sheet whose child is the second, with two ports; a global label.
+    let sub: SubcircuitId = p.fresh_id().unwrap();
+    let mut x = Subcircuit::new(sub, pt(2000.0, -500.0), pt(3000.0, 500.0), "SUB1");
+    x.ports = vec![
+        Port { at: pt(2000.0, 0.0), name: "IN".into(), kind: PortKind::Input },
+        Port { at: pt(3000.0, 100.0), name: "OUT".into(), kind: PortKind::Output },
+    ];
+    x.child = Some(s2);
+    add(&mut p, s1, Item::Subcircuit(x));
+    let g: LabelId = p.fresh_id().unwrap();
+    add(&mut p, s2, Item::Label(Label { id: g, at: pt(0.0, 1000.0), text: "CLK".into(), orient: Orient::IDENTITY, global: true }));
     assert!(p.issues().is_empty(), "{:?}", p.issues());
     p
 }

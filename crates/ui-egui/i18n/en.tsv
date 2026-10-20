@@ -47,6 +47,7 @@ Category
 Center At Cursor
 Clear Graph Data...
 Clear Selection
+Click on the left or right edge in Subcircuit mode to add a port.
 Close Project
 Compile To Library
 Component Mode
@@ -56,6 +57,7 @@ Contains
 Copy To Clipboard
 Count
 Count and Increment must be whole numbers
+Create Child Sheet
 Created
 Current Sheet
 Custom
@@ -79,6 +81,7 @@ Edit Design Properties
 Edit Graph...
 Edit Project Description
 Edit Sheet Properties
+Edit Subcircuit
 Edit Terminal
 Edit Text
 Edit Wire Label
@@ -111,7 +114,9 @@ GRAPHICS
 GRAPHS
 Generator Mode
 Gerber Viewer
+Global (the same net in every sub-sheet)
 Global Annotator
+Goto Child Sheet
 Goto Master Sheet
 Goto Next Root or Sub-sheet
 Goto Previous Root or Sub-sheet
@@ -156,6 +161,7 @@ Model Compiler
 Modified
 Mono (black on white)
 NAME=VALUE to assign or rename, NAME to remove; # counts up.
+Name
 Netlist Compiler
 Nets
 New (Root) Sheet
@@ -196,6 +202,9 @@ Pick Devices
 Pick Parts
 Place Library
 Play
+Port
+Port Name
+Ports
 Preview
 Print Design
 Print Setup
@@ -275,6 +284,7 @@ Stop VSM Debugging
 String
 Sub-category
 Subcircuit Mode
+Subcircuit Port
 System
 System Settings
 TERMINALS

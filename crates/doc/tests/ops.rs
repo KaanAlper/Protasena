@@ -128,7 +128,7 @@ fn added_ids_are_never_handed_out_again() {
     p.apply(Op::Add { sheet: s, item: Item::Junction(j), index: None }).unwrap();
     let next: WireId = p.fresh_id().unwrap();
     assert_eq!(next, WireId(101));
-    let dup = Item::Label(Label { id: LabelId(100), at: pt(0.0, 0.0), text: "A".into(), orient: Orient::IDENTITY });
+    let dup = Item::Label(Label { id: LabelId(100), at: pt(0.0, 0.0), text: "A".into(), orient: Orient::IDENTITY, global: false });
     assert_eq!(p.apply(Op::Add { sheet: s, item: dup, index: None }), Err(DocError::DuplicateItem(ItemId::Label(LabelId(100)))));
     assert!(Op::batch(vec![Op::batch(vec![])]).is_empty());
 }

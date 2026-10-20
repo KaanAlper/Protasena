@@ -23,7 +23,7 @@ pub(super) fn specs() -> Vec<CommandSpec> {
     vec![
         CommandSpec::new("junction", "Junction Dot", junction).params("{at: [x, y]}").machine(Mode::JunctionDot),
         CommandSpec::new("wire-label", "Wire Label", wire_label)
-            .params("{at: [x, y] on a wire, text: string, orient?: angle|{angle, mirror}}")
+            .params("{at: [x, y] on a wire, text: string, orient?: angle|{angle, mirror}, global?: bool} — global: not prefixed in child sheets")
             .machine(Mode::WireLabel),
         CommandSpec::new("terminal", "Terminal", terminal)
             .params("{at: [x, y], kind?: \"default\"|\"input\"|\"output\"|\"bidir\"|\"power\"|\"ground\"|\"bus\", name?: string, orient?} — kind defaults to the selected one")
@@ -34,7 +34,7 @@ pub(super) fn specs() -> Vec<CommandSpec> {
         CommandSpec::new("bus", "Bus", bus).params("{points: [[x, y], …]} — two or more").machine(Mode::Buses),
         CommandSpec::new("text", "Text", text).params("{at: [x, y], text: string, size?: thou, orient?}").machine(Mode::Text2d),
         CommandSpec::new("edit-item", "Edit Object", edit_item)
-            .params("{id, text?, name?, kind?, size?, orient?} — a wire label (text), terminal (name, kind) or text (text, size)"),
+            .params("{id, text?, global?, name?, kind?, size?, orient?} — a wire label (text, global), terminal (name, kind) or text (text, size)"),
     ]
 }
 
@@ -61,8 +61,9 @@ fn wire_label(s: &mut Session, a: &Args) -> Result<Value> {
     let on = sheet.wires.iter().filter_map(|w| closest_on(&w.points, at)).filter(|(_, d)| *d <= ON_WIRE).min_by(|x, y| x.1.total_cmp(&y.1));
     let (at, _) = on.ok_or_else(|| EngineError::Other("a wire label goes on a wire: no wire at that point".into()))?;
     let orient = a.orient("orient")?.unwrap_or_default();
+    let global = a.bool("global")?.unwrap_or(false);
     let id = s.fresh()?;
-    add(s, "wire-label", Item::Label(Label { id, at, text, orient }))
+    add(s, "wire-label", Item::Label(Label { id, at, text, orient, global }))
 }
 
 fn kind_param(a: &Args, key: &str) -> Result<Option<TerminalKind>> {
@@ -140,6 +141,7 @@ fn edit_item(s: &mut Session, a: &Args) -> Result<Value> {
                 l.text = t.to_owned();
             }
             l.orient = orient.unwrap_or(l.orient);
+            l.global = a.bool("global")?.unwrap_or(l.global);
             Item::Label(l)
         }
         Item::Terminal(mut t) => {

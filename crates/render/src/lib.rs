@@ -8,7 +8,8 @@
 //!
 //! - [`symbol_prims`]: a device's gate placed by a transform (body graphics, pins with names
 //!   and numbers); used by the editing window and the Pick Devices preview.
-//! - [`component_prims`], [`wire_prims`], [`terminal_prims`], …: one design item each.
+//! - [`component_prims`], [`wire_prims`], [`terminal_prims`], [`subcircuit_prims`], …: one
+//!   design item each.
 //! - [`sheet_display_list`]: a whole sheet in drawing order, with its border.
 //! - [`package_prims`]: a PCB package (pads and silkscreen) for the package preview.
 //! - [`geometry`]: arcs through three points, flattening, readable text directions.
@@ -39,6 +40,7 @@ mod graphics;
 mod items;
 mod package;
 mod prim;
+mod subcircuit;
 mod symbol;
 
 pub use graphics::{GRAPHIC_WIDTH, graphic_prims, graphic_shape};
@@ -49,4 +51,5 @@ pub use items::{
 };
 pub use package::package_prims;
 pub use prim::{DisplayList, HAlign, Ink, Prim, Shape, VAlign};
+pub use subcircuit::{PORT_LENGTH, subcircuit_prims};
 pub use symbol::{BODY_WIDTH, PIN_TEXT, PIN_WIDTH, body_prims, graphic, pin_prims, symbol_prims};

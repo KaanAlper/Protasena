@@ -10,6 +10,7 @@ mod forms;
 pub mod pick_devices;
 pub mod pick_model;
 pub mod results;
+pub mod subcircuit;
 pub mod tools;
 
 use egui::{Align, Layout, RichText, Ui, vec2};
@@ -63,6 +64,10 @@ pub enum Dialog {
     SearchTag(tools::SearchTagForm),
     /// Property Assignment Tool.
     PropertyAssign(tools::PropertyAssignForm),
+    /// A new subcircuit port's name and kind.
+    Port(subcircuit::PortForm),
+    /// Edit Subcircuit.
+    Subcircuit(subcircuit::SubcircuitForm),
     /// Unsaved changes: Save, Don't Save or Cancel?
     SaveChanges {
         /// What waits for the answer.
@@ -115,6 +120,8 @@ impl Dialog {
             Request::Align => Dialog::Align { edge: 0 },
             Request::SearchTag => Dialog::SearchTag(tools::SearchTagForm::default()),
             Request::PropertyAssign => Dialog::PropertyAssign(tools::PropertyAssignForm::new(!s.selection().is_empty())),
+            Request::SubcircuitPort { subcircuit, at } => Dialog::Port(subcircuit::PortForm::new(s, subcircuit, at)),
+            Request::EditSubcircuit { id } => Dialog::Subcircuit(subcircuit::SubcircuitForm::new(s, id)?),
             Request::ConfirmDiscard { then } => Dialog::SaveChanges { then: Then::from_command(then) },
             Request::OpenProject => Dialog::path(PathPurpose::Open { discard: false }, ""),
             Request::SaveProjectAs => Dialog::path(PathPurpose::SaveAs, ""),
@@ -148,6 +155,8 @@ impl Dialog {
             Dialog::PropertyAssign(_) => tl!("Property Assignment Tool"),
             Dialog::Export(d) => d.kind.title,
             Dialog::Print(_) => tl!("Print Design"),
+            Dialog::Port(_) => tl!("Subcircuit Port"),
+            Dialog::Subcircuit(_) => tl!("Edit Subcircuit"),
             Dialog::SaveChanges { .. } => tl!("Unsaved Changes"),
         }
     }
@@ -168,6 +177,8 @@ impl Dialog {
             Dialog::SearchTag(d) => &mut d.error,
             Dialog::PropertyAssign(d) => &mut d.error,
             Dialog::Print(d) => &mut d.out.error,
+            Dialog::Port(d) => &mut d.error,
+            Dialog::Subcircuit(d) => &mut d.error,
             Dialog::GotoSheet(_) | Dialog::Annotator { .. } | Dialog::Align { .. } | Dialog::SaveChanges { .. } => return,
         };
         *slot = Some(e);
@@ -200,6 +211,8 @@ impl Dialog {
             Dialog::SearchTag(d) => d.ui(ui),
             Dialog::PropertyAssign(d) => d.ui(ui),
             Dialog::Print(d) => d.ui(ui),
+            Dialog::Port(d) => d.ui(ui),
+            Dialog::Subcircuit(d) => d.ui(ui),
             Dialog::SaveChanges { then } => ConfirmForm::ui(ui, *then),
         }
     }

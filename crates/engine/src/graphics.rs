@@ -5,7 +5,7 @@
 //! centre then a point on the circle), or a press, drag and release. **Arc** takes three clicks:
 //! start, end, then a point on the arc (a drag from start to end gives the first two).
 //! **Closed Path** adds a corner per click and closes on a double click or the right button
-//! (three corners at least). Escape cancels.
+//! (three corners at least). Escape cancels. A **subcircuit**'s box is drawn like a 2D box.
 
 use protasena_doc::GraphicShape;
 use protasena_geom::{Pt, Segment, arc_through};
@@ -20,7 +20,7 @@ pub const MAX_DRAWN_CORNERS: usize = 1000;
 /// double click or the right button).
 pub fn points_needed(mode: Mode) -> Option<usize> {
     match mode {
-        Mode::Line2d | Mode::Box2d | Mode::Circle2d => Some(2),
+        Mode::Line2d | Mode::Box2d | Mode::Circle2d | Mode::Subcircuit => Some(2),
         Mode::Arc2d => Some(3),
         _ => None,
     }
@@ -37,7 +37,7 @@ pub fn draft(mode: Mode, points: &[Pt], cursor: Pt) -> Option<GraphicShape> {
     let first = *points.first()?;
     Some(match (mode, points) {
         (Mode::Line2d, _) => GraphicShape::Line { a: first, b: cursor },
-        (Mode::Box2d, _) => GraphicShape::Box { a: first, b: cursor },
+        (Mode::Box2d | Mode::Subcircuit, _) => GraphicShape::Box { a: first, b: cursor },
         (Mode::Circle2d, _) => GraphicShape::Circle { center: first, radius: first.distance(cursor) },
         (Mode::Arc2d, [_, end, ..]) => GraphicShape::Arc { start: first, mid: cursor, end: *end },
         (Mode::Arc2d, _) => GraphicShape::Line { a: first, b: cursor },
@@ -58,6 +58,7 @@ pub fn command(mode: Mode, points: &[Pt]) -> Option<(&'static str, Value)> {
     Some(match (mode, points) {
         (Mode::Line2d, [a, b]) => ("line", json!({ "from": xy(a), "to": xy(b) })),
         (Mode::Box2d, [a, b]) => ("box", json!({ "from": xy(a), "to": xy(b) })),
+        (Mode::Subcircuit, [a, b]) => ("subcircuit", json!({ "from": xy(a), "to": xy(b) })),
         (Mode::Circle2d, [c, rim]) => ("circle", json!({ "center": xy(c), "radius": c.distance(*rim) })),
         (Mode::Arc2d, [start, end, mid]) => ("arc", json!({ "start": xy(start), "mid": xy(mid), "end": xy(end) })),
         (Mode::ClosedPath2d, pts) if pts.len() >= 3 => ("closed-path", json!({ "points": pts.iter().map(xy).collect::<Vec<_>>() })),

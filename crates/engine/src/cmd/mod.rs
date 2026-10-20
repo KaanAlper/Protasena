@@ -13,12 +13,15 @@ mod graphics;
 mod items;
 mod place;
 mod sheets;
+mod subcircuit;
 mod tag;
 mod view;
 mod wire;
 
 pub(crate) use block::drag_ops;
 pub(crate) use place::new_component;
+pub use subcircuit::port_kind_id;
+pub(crate) use subcircuit::{PORT_REACH, port_target};
 pub(crate) use wire::MAX_VIA;
 
 use protasena_doc::{Id, Item, ItemId};
@@ -45,6 +48,7 @@ pub(crate) fn all_specs() -> Vec<CommandSpec> {
     v.extend(tag::specs());
     v.extend(assign::specs());
     v.extend(sheets::specs());
+    v.extend(subcircuit::specs());
     v
 }
 
@@ -65,5 +69,8 @@ pub(crate) fn with_id(item: &Item, raw: u64) -> Item {
         Item::BusEntry(e) => Item::BusEntry(protasena_doc::BusEntry { id: Id::from_raw(raw), ..*e }),
         Item::Text(t) => Item::Text(protasena_doc::Text { id: Id::from_raw(raw), ..t.clone() }),
         Item::Graphic(g) => Item::Graphic(protasena_doc::Graphic { id: Id::from_raw(raw), shape: g.shape.clone() }),
+        // A copy has no child sheet of its own yet (Goto Child Sheet makes one): a child sheet
+        // belongs to one subcircuit.
+        Item::Subcircuit(x) => Item::Subcircuit(protasena_doc::Subcircuit { id: Id::from_raw(raw), child: None, ..x.clone() }),
     }
 }

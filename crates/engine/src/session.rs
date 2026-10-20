@@ -8,7 +8,7 @@
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
-use protasena_doc::{DeviceRef, Id, Item, ItemId, Op, Project, Sheet, SheetId, TerminalKind};
+use protasena_doc::{DeviceRef, Id, Item, ItemId, Op, PortKind, Project, Sheet, SheetId, TerminalKind};
 use protasena_geom::{Orient, Pt, snap};
 use protasena_library::Library;
 
@@ -64,6 +64,7 @@ pub struct Session {
     pub(crate) device: Option<DeviceRef>,
     pub(crate) picked: Vec<DeviceRef>,
     pub(crate) terminal_kind: TerminalKind,
+    pub(crate) port_kind: PortKind,
     pub(crate) clipboard: Clipboard,
     pub(crate) view: View,
     pub(crate) cursor: Pt,
@@ -110,6 +111,7 @@ impl Session {
             device: None,
             picked: Vec::new(),
             terminal_kind: TerminalKind::Default,
+            port_kind: PortKind::Default,
             clipboard: Clipboard::default(),
             view: View::default(),
             cursor: Pt::ORIGIN,
@@ -189,6 +191,10 @@ impl Session {
     /// The terminal kind chosen in the TERMINALS list.
     pub fn terminal_kind(&self) -> TerminalKind {
         self.terminal_kind
+    }
+    /// The port kind chosen in the PORTS list (Subcircuit mode).
+    pub fn port_kind(&self) -> PortKind {
+        self.port_kind
     }
     /// The internal clipboard.
     pub fn clipboard(&self) -> &Clipboard {

@@ -115,7 +115,8 @@ pub struct Junction {
     pub at: Pt,
 }
 
-/// A net label: names the net of the wire it sits on. Labels with the same text are one net.
+/// A net label: names the net of the wire it sits on. Labels with the same text are one net
+/// within a sheet instance; a global label joins its name across the whole hierarchy.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Label {
@@ -128,6 +129,9 @@ pub struct Label {
     /// Text orientation.
     #[cfg_attr(feature = "serde", serde(default, with = "crate::serde_impl::orient"))]
     pub orient: Orient,
+    /// Global: the name is not prefixed by a subcircuit's instance path in a child sheet.
+    #[cfg_attr(feature = "serde", serde(default, skip_serializing_if = "is_false"))]
+    pub global: bool,
 }
 
 /// The kinds of terminal (Proteus's Terminals mode).
@@ -213,4 +217,9 @@ pub struct Text {
 #[cfg(feature = "serde")]
 fn yes() -> bool {
     true
+}
+
+#[cfg(feature = "serde")]
+fn is_false(b: &bool) -> bool {
+    !*b
 }

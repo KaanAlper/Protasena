@@ -37,6 +37,7 @@ pub fn transformed(item: &Item, t: Transform) -> Result<Item, DocError> {
         Item::Text(x) => Item::Text(Text { at: t.apply_pt(x.at), orient: turned(x.orient), ..x.clone() }),
         Item::BusEntry(e) => Item::BusEntry(BusEntry { id: e.id, bus_end: t.apply_pt(e.bus_end), wire_end: t.apply_pt(e.wire_end) }),
         Item::Graphic(g) => Item::Graphic(Graphic { id: g.id, shape: g.shape.map(|p| t.apply_pt(p)) }),
+        Item::Subcircuit(x) => Item::Subcircuit(x.map(|p| t.apply_pt(p))),
     };
     out.check()?;
     Ok(out)
@@ -57,6 +58,7 @@ pub fn turned_in_place(item: &Item, o: Orient) -> Result<Item, DocError> {
         // A circle turns about its centre, the other shapes about their first point (it stays
         // on the grid).
         Item::Graphic(g) => g.shape.points().first().copied().unwrap_or(Pt::ORIGIN),
+        Item::Subcircuit(x) => x.a,
     };
     transformed(item, Transform::about(pivot, o))
 }
@@ -75,6 +77,7 @@ fn anchor_moves(library: &Library, old: &Item, new: &Item) -> Vec<(Pt, Pt)> {
         (Item::Junction(a), Item::Junction(b)) => vec![(a.at, b.at)],
         (Item::Terminal(a), Item::Terminal(b)) => vec![(a.at, b.at)],
         (Item::BusEntry(a), Item::BusEntry(b)) => vec![(a.wire_end, b.wire_end)],
+        (Item::Subcircuit(a), Item::Subcircuit(b)) => a.ports.iter().zip(&b.ports).map(|(p, q)| (p.at, q.at)).collect(),
         _ => Vec::new(),
     }
 }

@@ -1,8 +1,9 @@
 //! Protasena design model (layer L1).
 //!
 //! A [`Project`] holds [`Sheet`]s (name, [`SheetSize`]) with their [`Component`]s, [`Wire`]s,
-//! [`Junction`]s, net [`Label`]s, [`Bus`]es, [`BusEntry`]s, [`Terminal`]s and [`Text`]s, plus
-//! [`DesignProperties`]. Every sheet and item has a stable typed id ([`ComponentId`], …) from
+//! [`Junction`]s, net [`Label`]s, [`Bus`]es, [`BusEntry`]s, [`Terminal`]s, [`Text`]s, 2D
+//! [`Graphic`]s and [`Subcircuit`]s, plus [`DesignProperties`]. A subcircuit's child sheet makes
+//! the sheets a hierarchy ([`Project::sheet_tree`]). Every sheet and item has a stable typed id ([`ComponentId`], …) from
 //! one project-wide counter.
 //!
 //! Edits are reversible operations: [`Project::apply`] performs an [`Op`] and returns the op that
@@ -39,6 +40,7 @@
 mod annotate;
 mod error;
 mod graphic;
+mod hierarchy;
 mod ids;
 mod item;
 mod items;
@@ -48,14 +50,17 @@ mod properties;
 #[cfg(feature = "serde")]
 mod serde_impl;
 mod sheet;
+mod subcircuit;
 
 pub use annotate::split_reference;
 pub use error::DocError;
 pub use graphic::{Graphic, GraphicShape, MAX_PATH_POINTS};
-pub use ids::{BusEntryId, BusId, ComponentId, GraphicId, Id, ItemId, JunctionId, LabelId, SheetId, TerminalId, TextId, WireId};
+pub use hierarchy::{MAX_DEPTH, SheetNode, instance_name, join_path};
+pub use ids::{BusEntryId, BusId, ComponentId, GraphicId, Id, ItemId, JunctionId, LabelId, SheetId, SubcircuitId, TerminalId, TextId, WireId};
 pub use item::Item;
 pub use items::{Bus, BusEntry, Component, DeviceRef, FieldLabel, Junction, Label, Terminal, TerminalKind, Text, Wire};
 pub use op::{MAX_BATCH_DEPTH, Op};
 pub use project::{DesignProperties, FIRST_SHEET_NAME, Project};
 pub use properties::Properties;
 pub use sheet::{Sheet, SheetSize};
+pub use subcircuit::{MAX_PORTS, Port, PortKind, PortSide, Subcircuit};

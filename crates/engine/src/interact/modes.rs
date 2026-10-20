@@ -73,6 +73,7 @@ impl Session {
                 Ok(Feedback::handled())
             }
             Mode::TextScript | Mode::Text2d => Ok(Feedback::request(Request::Text { at: self.cursor })),
+            Mode::Subcircuit => Ok(self.subcircuit_press(ev, found)),
             m if graphics::draws_shape(m) => {
                 self.machine = Machine::Graphic { mode: m, points: vec![self.cursor] };
                 self.press_at = ev.at;
@@ -127,6 +128,29 @@ impl Session {
             "place-component",
             json!({ "at": [self.cursor.x, self.cursor.y], "orient": { "angle": o.angle_degrees(), "mirror": o.is_mirrored() } }),
         )
+    }
+
+    /// A press in Subcircuit mode: on a subcircuit's left or right edge it asks for a new
+    /// port's name, on a subcircuit it selects it, elsewhere it starts a box (two clicks or a
+    /// drag, like a 2D box).
+    fn subcircuit_press(&mut self, ev: PointerEvent, found: Option<Hit>) -> Feedback {
+        let tol = self.view.pick_tolerance();
+        if let Some((subcircuit, edge)) = crate::cmd::port_target(self, ev.at, tol) {
+            // The snapped height when it stays on the edge, else the point under the pointer.
+            let snapped = Pt::new(edge.x, self.cursor.y);
+            let on_edge = self
+                .sheet()
+                .and_then(|sh| sh.subcircuits.iter().find(|x| x.id == subcircuit))
+                .and_then(|x| x.edge_point(snapped, crate::cmd::PORT_REACH));
+            return Feedback::request(Request::SubcircuitPort { subcircuit, at: on_edge.unwrap_or(edge) });
+        }
+        if let Some(Hit::Subcircuit { id }) = found {
+            self.set_selection(vec![ItemId::Subcircuit(id)]);
+            return Feedback::handled();
+        }
+        self.machine = Machine::Graphic { mode: Mode::Subcircuit, points: vec![self.cursor] };
+        self.press_at = ev.at;
+        Feedback::handled()
     }
 
     /// A click while a 2D graphic is being drawn: fixes a point, and makes the shape once it
@@ -230,6 +254,7 @@ impl Session {
             Some(Hit::Label { id }) => Feedback::request(Request::EditLabel { id }),
             Some(Hit::Terminal { id, .. }) => Feedback::request(Request::EditTerminal { id }),
             Some(Hit::Text { id }) => Feedback::request(Request::EditText { id }),
+            Some(Hit::Subcircuit { id } | Hit::Port { subcircuit: id, .. }) => Feedback::request(Request::EditSubcircuit { id }),
             _ => Feedback::default(),
         })
     }

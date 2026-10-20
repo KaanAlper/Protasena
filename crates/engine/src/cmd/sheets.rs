@@ -1,5 +1,5 @@
 //! Design menu: Edit Sheet Properties, New (Root) Sheet, Remove/Delete Sheet, Goto Sheet and
-//! the previous/next sheet keys.
+//! the previous/next sheet keys (in hierarchy order: a root sheet, then its sub-sheets).
 
 use protasena_doc::{Op, Sheet, SheetId, SheetSize};
 use serde::Deserialize;
@@ -91,7 +91,8 @@ fn default_name(s: &Session) -> String {
         .unwrap_or_else(|| "Root sheet".to_owned())
 }
 
-fn go_to(s: &mut Session, id: SheetId) {
+/// Shows sheet `id` (the selection and the tool in progress are dropped).
+pub(super) fn go_to(s: &mut Session, id: SheetId) {
     if s.sheet != id {
         s.sheet = id;
         s.selection.clear();
@@ -123,9 +124,11 @@ fn remove_sheet(s: &mut Session, a: &Args) -> Result<Value> {
     Ok(json!({ "removed": id.0, "sheet": s.sheet.0 }))
 }
 
+/// The previous or next sheet in hierarchy order (each root sheet followed by its sub-sheets).
 fn step_sheet(s: &mut Session, step: isize) -> Result<Value> {
-    let at = s.project.sheets.iter().position(|sh| sh.id == s.sheet).ok_or_else(|| EngineError::Other("no current sheet".into()))?;
-    let target = at.checked_add_signed(step).and_then(|i| s.project.sheets.get(i)).map(|sh| sh.id);
+    let order = s.project.sheet_tree();
+    let at = order.iter().position(|n| n.sheet == s.sheet).ok_or_else(|| EngineError::Other("no current sheet".into()))?;
+    let target = at.checked_add_signed(step).and_then(|i| order.get(i)).map(|n| n.sheet);
     if let Some(id) = target {
         go_to(s, id);
     }

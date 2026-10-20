@@ -121,7 +121,7 @@ pub const DESIGN: &[Tool] = &[
     Sep,
     b("New (Root) Sheet", Icon::NewSheet, Cmd("new-sheet")),
     b("Remove/Delete Sheet", Icon::RemoveSheet, Cmd("remove-sheet")),
-    b("Exit to Parent Sheet", Icon::ExitParent, Off),
+    b("Exit to Parent Sheet", Icon::ExitParent, Cmd("exit-to-parent")),
     Sep,
     b("Electrical Rules Check", Icon::Erc, Cmd("erc")),
 ];
