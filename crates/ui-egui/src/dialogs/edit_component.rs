@@ -45,6 +45,8 @@ pub struct EditComponent {
     pub gates: usize,
     /// Further properties.
     pub props: Vec<PropRow>,
+    /// The device's pins with alternate functions.
+    pub alternates: Vec<super::pins::AlternateRow>,
     /// The last refusal.
     pub error: Option<String>,
 }
@@ -86,6 +88,7 @@ impl EditComponent {
             unit: c.unit,
             gates: device.map_or(1, |d| d.symbol.gate_count().max(1)),
             props,
+            alternates: device.map(super::pins::alternate_rows).unwrap_or_default(),
             error: None,
         })
     }
@@ -147,6 +150,8 @@ impl EditComponent {
                 });
             });
         }
+        ui.add_space(4.0);
+        super::pins::show(ui, &self.alternates, "edit-component", 160.0);
         error_line(ui, self.error.as_ref());
         let (ok, cancel) = ok_cancel(ui, !self.reference.trim().is_empty() || self.reference.is_empty());
         if cancel {

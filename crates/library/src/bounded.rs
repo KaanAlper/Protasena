@@ -15,7 +15,7 @@ use crate::device::{Device, PackageRef, PropDef};
 use crate::limits::*;
 use crate::pack::IndexEntry;
 use crate::package::{LayerGraphic, Package, Pad};
-use crate::symbol::{Graphic, Pin, Unit};
+use crate::symbol::{Graphic, Pin, PinAlternate, Unit};
 
 struct Capped<T> {
     limit: usize,
@@ -60,6 +60,7 @@ capped_lists! {
     packages: Package = MAX_PACKAGES;
     units: Unit = MAX_UNITS;
     pins: Pin = MAX_PINS;
+    alternates: PinAlternate = MAX_ALTERNATES;
     graphics: Graphic = MAX_GRAPHICS;
     layer_graphics: LayerGraphic = MAX_GRAPHICS;
     points: Pt = MAX_POINTS;

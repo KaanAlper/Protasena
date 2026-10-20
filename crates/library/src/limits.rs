@@ -16,6 +16,8 @@ pub const MAX_PACKAGES: usize = 100_000;
 pub const MAX_UNITS: usize = 256;
 /// Pins of one unit.
 pub const MAX_PINS: usize = 10_000;
+/// Alternate functions of one pin.
+pub const MAX_ALTERNATES: usize = 256;
 /// Graphics of one unit or package.
 pub const MAX_GRAPHICS: usize = 100_000;
 /// Pads of one package.

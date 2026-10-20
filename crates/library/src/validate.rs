@@ -186,6 +186,9 @@ fn check_unit(out: &mut Issues, lib: &str, item: &str, unit: &Unit) {
         if !pin.at.is_finite() || !pin.length.is_finite() {
             out.push(lib, item, IssueKind::NonFinite("pin"));
         }
+        for alt in &pin.alternates {
+            out.name(lib, item, &alt.name, "pin alternate");
+        }
     }
     if unit.graphics.iter().any(|g| !g.shape.is_finite() || !g.width.is_finite()) {
         out.push(lib, item, IssueKind::NonFinite("symbol graphic"));

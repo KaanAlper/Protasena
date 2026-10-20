@@ -77,8 +77,8 @@ pub struct Counts {
     pub filter_links: usize,
     /// Devices whose filter matches were cut at the per-device limit.
     pub filter_capped_devices: usize,
-    /// Pin alternates (alternate pin functions) not carried over.
-    pub alternates_dropped: u64,
+    /// Pin alternates (alternate pin functions) carried over.
+    pub pin_alternates: u64,
     /// KiCad tokens the reader kept as unknown.
     pub kicad_unknown_tokens: u64,
 }

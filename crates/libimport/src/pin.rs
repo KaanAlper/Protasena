@@ -1,4 +1,5 @@
-//! KiCad symbol pins → Protasena pins, with the pin's graphic style drawn as body graphics.
+//! KiCad symbol pins → Protasena pins (with their alternate functions), with the pin's graphic
+//! style drawn as body graphics.
 //!
 //! The library pin model has no graphic style, so the style marks are added to the unit's
 //! drawing (our own simple shapes): a bubble for inverted pins, a wedge inside the body for
@@ -7,7 +8,7 @@
 
 use protasena_geom::{Pt, Vec2};
 use protasena_kicad::symbol::{ElectricalType, Pin as KPin, PinStyle};
-use protasena_library::{Fill, Graphic, Pin, PinDir, PinKind, Shape};
+use protasena_library::{Fill, Graphic, Pin, PinAlternate, PinDir, PinKind, Shape};
 
 use crate::coords;
 use crate::report::Notes;
@@ -26,7 +27,9 @@ pub struct PinText {
 
 /// The pin and the graphics that draw its style.
 pub fn convert(p: &KPin, text: PinText, notes: &mut Notes) -> (Pin, Vec<Graphic>) {
-    notes.add("pin alternates dropped (primary function kept)", p.alternates.len() as u64);
+    notes.add("pin alternates kept", p.alternates.len() as u64);
+    notes.add("pin alternate graphic styles dropped", p.alternates.iter().filter(|a| a.style != PinStyle::Line).count() as u64);
+    let alternates = p.alternates.iter().map(|a| PinAlternate { name: a.name.clone(), kind: kind(&a.electrical, notes) }).collect();
     let name = if p.name.text == "~" { String::new() } else { p.name.text.clone() };
     let hidden_text = |t: &protasena_kicad::common::TextWithEffects| t.effects.as_ref().is_some_and(|e| e.hide);
     let pin = Pin {
@@ -39,6 +42,7 @@ pub fn convert(p: &KPin, text: PinText, notes: &mut Notes) -> (Pin, Vec<Graphic>
         hidden: p.hide,
         name_visible: !text.names_hidden && !hidden_text(&p.name),
         number_visible: !text.numbers_hidden && !hidden_text(&p.number),
+        alternates,
     };
     let marks = if pin.hidden { Vec::new() } else { marks(&pin, &p.style, notes) };
     (pin, marks)

@@ -3,14 +3,16 @@
 //!
 //! ```text
 //! pack/
-//!   index.json            {"format":"protasena-library","version":1,"libraries":[
+//!   index.json            {"format":"protasena-library","version":2,"libraries":[
 //!                           {"name":"GENERIC","file":"GENERIC.json","device_count":11,
 //!                            "package_file":"GENERIC.packages.json"}]}
-//!   GENERIC.json          {"format":"protasena-library-devices","version":1,"devices":[…]}
-//!   GENERIC.packages.json {"format":"protasena-library-packages","version":1,"packages":[…]}
+//!   GENERIC.json          {"format":"protasena-library-devices","version":2,"devices":[…]}
+//!   GENERIC.packages.json {"format":"protasena-library-packages","version":2,"packages":[…]}
 //! ```
 //! Unknown fields are ignored (newer writers may add some); the format tag and version are
-//! checked. Files referenced by the index must be relative paths inside the pack directory.
+//! checked: versions [`MIN_VERSION`] to [`VERSION`] are read (version 2 added pin alternate
+//! functions; a version 1 pack has none). Files referenced by the index must be relative paths
+//! inside the pack directory.
 
 use std::collections::HashSet;
 use std::fs;
@@ -37,15 +39,18 @@ pub const INDEX_FORMAT: &str = "protasena-library";
 pub const DEVICES_FORMAT: &str = "protasena-library-devices";
 /// Format tag of a package file.
 pub const PACKAGES_FORMAT: &str = "protasena-library-packages";
-/// The pack version this crate reads and writes.
-pub const VERSION: u32 = 1;
+/// The pack version this crate writes. Version 2 added pin alternate functions
+/// ([`crate::PinAlternate`]).
+pub const VERSION: u32 = 2;
+/// The oldest pack version this crate reads (a version 1 pack simply has no pin alternates).
+pub const MIN_VERSION: u32 = 1;
 
 /// Contents of `index.json`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct PackIndex {
     /// Always [`INDEX_FORMAT`].
     pub format: String,
-    /// Always [`VERSION`].
+    /// [`VERSION`] when written; [`MIN_VERSION`] to [`VERSION`] are read.
     pub version: u32,
     /// The libraries, in display order.
     #[serde(default, deserialize_with = "crate::bounded::index_entries")]
@@ -315,10 +320,10 @@ fn parse<T: DeserializeOwned>(path: &Path, bytes: &[u8], format: &str) -> Result
         return Err(format_error(path, format!("not a {format} file (format tag {})", head.format.unwrap_or_default())));
     }
     match head.version.as_ref().and_then(serde_json::Value::as_u64) {
-        Some(v) if v == u64::from(VERSION) => {}
+        Some(v) if (u64::from(MIN_VERSION)..=u64::from(VERSION)).contains(&v) => {}
         _ => {
             let found = head.version.map_or_else(|| "missing".to_owned(), |v| v.to_string());
-            return Err(format_error(path, format!("version {found} is not supported (this build reads version {VERSION})")));
+            return Err(format_error(path, format!("version {found} is not supported (this build reads versions {MIN_VERSION} to {VERSION})")));
         }
     }
     serde_json::from_slice(bytes).map_err(json_error)

@@ -109,7 +109,7 @@ fn index_level_problems() {
 fn format_tag_and_version_are_checked() {
     let dir = Scratch::new("version");
     let cases = [
-        r#"{"format":"protasena-library","version":2,"libraries":[{"weird":"new shape"}]}"#,
+        r#"{"format":"protasena-library","version":3,"libraries":[{"weird":"new shape"}]}"#,
         r#"{"format":"something-else","version":1,"libraries":[]}"#,
         r#"{"format":"protasena-library","libraries":[]}"#,
         r#"{"version":1,"libraries":[]}"#,

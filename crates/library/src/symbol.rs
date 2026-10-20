@@ -212,12 +212,45 @@ pub struct Pin {
     /// Whether the number is drawn.
     #[serde(default = "yes")]
     pub number_visible: bool,
+    /// Alternate functions the pin can be switched to (KiCad's `alternate`), besides its
+    /// primary `name` and `kind`.
+    #[serde(default, skip_serializing_if = "Vec::is_empty", deserialize_with = "crate::bounded::alternates")]
+    pub alternates: Vec<PinAlternate>,
+}
+
+/// An alternate function of a pin: another name with its electrical type (an MCU pin that is
+/// a port bit, a UART line or an analogue input).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct PinAlternate {
+    /// The function's name (`SDA`, `TX`, `AIN0`).
+    pub name: String,
+    /// Its electrical type.
+    #[serde(default)]
+    pub kind: PinKind,
+}
+
+impl PinAlternate {
+    /// An alternate function.
+    pub fn new(name: &str, kind: PinKind) -> Self {
+        Self { name: name.to_owned(), kind }
+    }
 }
 
 impl Pin {
     /// A visible pin with name and number shown.
     pub fn new(number: &str, name: &str, kind: PinKind, at: Pt, orient: PinDir, length: f64) -> Self {
-        Self { number: number.to_owned(), name: name.to_owned(), kind, at, orient, length, hidden: false, name_visible: true, number_visible: true }
+        Self {
+            number: number.to_owned(),
+            name: name.to_owned(),
+            kind,
+            at,
+            orient,
+            length,
+            hidden: false,
+            name_visible: true,
+            number_visible: true,
+            alternates: Vec::new(),
+        }
     }
 
     /// The same pin with name and number hidden (two-terminal parts).

@@ -9,6 +9,7 @@ mod files;
 mod forms;
 pub mod pick_devices;
 pub mod pick_model;
+pub mod pins;
 pub mod results;
 pub mod settings_form;
 pub mod subcircuit;

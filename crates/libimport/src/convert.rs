@@ -84,7 +84,7 @@ pub fn convert_files(symbols: &[(String, PathBuf)], footprints: Vec<FpFile>, map
     let packages: Vec<Package> = packages.into_iter().map(|(_, p)| p).collect();
     let library = validated(devices, packages, report);
     count(&library, report);
-    report.counts.alternates_dropped = report.notes.get("pin alternates dropped (primary function kept)");
+    report.counts.pin_alternates = report.notes.get("pin alternates kept");
     report.counts.kicad_unknown_tokens = report.kicad_unknown.values().map(|&v| v as u64).sum();
     Ok(library)
 }

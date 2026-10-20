@@ -230,6 +230,7 @@ Pick distance (pixels)
 Pin
 Pin Name
 Pin Number
+Pin alternates
 Place Library
 Play
 Port
@@ -380,16 +381,27 @@ Zoom To Area
 Zoom To View Entire Sheet
 add a .kicad_sym file, a .pretty folder or a folder holding them
 also
+bidirectional
 default
 devices removed
 e.g. RES, 74LS00
 findings
+input
 is not a number
 lines
 none
 not a key
+not connected
 objects removed
 of
+open collector
+open emitter
+output
 parts
+passive
+power input
+power output
 th
+tri-state
+unspecified
 width and height must be numbers

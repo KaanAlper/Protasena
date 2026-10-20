@@ -220,6 +220,7 @@ fn previews(ui: &mut Ui, d: Option<&Device>, lib: &Library) {
         if !d.description.is_empty() {
             ui.label(RichText::new(&d.description).color(t.text_dim).size(12.0));
         }
+        super::pins::show(ui, &super::pins::alternate_rows(d), "pick", 120.0);
     }
     ui.add_space(6.0);
     ui.label(RichText::new(tl!("PCB Preview")).strong());

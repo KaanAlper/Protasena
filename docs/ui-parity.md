@@ -1,6 +1,6 @@
 # UI parity
 
-> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (System Settings ▸ KiCad libraries) · **Target:** Labcenter Proteus 8 Professional (Windows)
+> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (pin alternates in Pick Devices and Edit Component) · **Target:** Labcenter Proteus 8 Professional (Windows)
 
 Protasena's Schematic Capture interface element by element against Proteus's: menus, toolbars,
 the mode toolbar, the overview window, the object selector, the editing window, the status bar
@@ -8,7 +8,7 @@ and dialogs. Rows come from the observed UI inventory (`plan/proteus/notes/ui-in
 local), written in our own words. Status: ✅ matches, ◐ partial (differences listed), ✗ missing,
 ★ intentional improvement approved by the owner. Work items: [gaps.md](gaps.md).
 
-**Headline (measured, counted from the rows below): 3 of 269 rows match** (✅ 3, ◐ 175, ✗ 91).
+**Headline (measured, counted from the rows below): 3 of 271 rows match** (✅ 3, ◐ 177, ✗ 91).
 Proteus could only be observed from its menus, window tree and one screenshot (it runs elevated
 on the reference PC, so no click, tooltip or dialog reached it): labels, order, shortcut texts
 and placement are taken from that observation; every behaviour, enabled rule and dialog is
@@ -289,10 +289,12 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | Pick Devices ▸ results | nothing until keywords or a category | ◐ | Device, Library, Description columns; Proteus's column set (it has further, optional columns) to compare |
 | Pick Devices ▸ symbol preview | first gate | ◐ | Drawn from the render crate |
 | Pick Devices ▸ PCB preview | the default package | ◐ | Pads and silkscreen only |
+| Pick Devices ▸ Pin alternates | collapsed | ◐ | Our own list under the symbol preview: each pin with alternate functions (KiCad's alternates) and their electrical types. Whether and where Proteus shows them to compare |
 | Pick Devices ▸ OK / double click | | ◐ | OK picks and closes, a double click picks and keeps the dialog open (both run `pick-device`); to compare |
 | Edit Component ▸ Part Reference, Part Value (each with Hidden) | the part's | ◐ | Runs `edit-component`; field set and order to compare |
 | Edit Component ▸ Element | first gate | ◐ | Only for multi-gate devices |
 | Edit Component ▸ PCB Package | the part's | ◐ | The device's packages or none |
+| Edit Component ▸ Pin alternates | collapsed | ◐ | Our own read-only list of the device's pins with alternate functions; choosing an alternate per placed pin is not built. To compare |
 | Edit Component ▸ Other Properties | the device's property definitions, then System ▸ Set Property Definitions' (with their defaults) | ◐ | A grid of values; an empty value removes the property |
 | Find/Edit Component (nothing selected) | | ◐ | Asks for the reference, then opens Edit Component |
 | Edit Wire Label ▸ String | empty | ◐ | Runs `wire-label` (new) or `edit-item`; Proteus's tabs and options not observed |
@@ -337,3 +339,4 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | 2026-10-20 | minor | Template ▸ Set Design Colours, Graphic Styles, Text Styles, 2D Graphics Defaults, Junction Dot Style and System ▸ System Settings, Set Display Options, Set Keyboard Mapping, Set Property Definitions, Set Sheet Sizes, Set Text Editor, Restore Default Settings built the conventional way with their dialogs (to compare); 3 of 268 rows match |
 | 2026-10-20 | minor | Global Toolbar ▸ Bill of Materials with our own report window and CSV/HTML export (to compare); 3 of 269 rows match |
 | 2026-10-20 | minor | System ▸ System Settings lists the user's own KiCad libraries, imported at run time (to compare); no row changes status |
+| 2026-10-20 | minor | Pick Devices and Edit Component list the device's pin alternate functions (to compare); 3 of 271 rows match |

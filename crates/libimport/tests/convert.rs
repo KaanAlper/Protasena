@@ -41,7 +41,11 @@ fn converts_fixtures_with_zero_failures() {
     let c = &report.counts;
     assert_eq!((c.symbol_libraries, c.symbols, c.derived_symbols, c.devices), (2, 5, 1, 5));
     assert_eq!((c.footprint_libraries, c.footprints, c.packages), (2, 4, 4));
-    assert_eq!(c.alternates_dropped, 1);
+    assert_eq!(c.pin_alternates, 1);
+    let gate = lib.devices().iter().find(|d| d.symbol.pins().any(|p| !p.alternates.is_empty())).expect("the alternate is kept");
+    let a = gate.symbol.pins().find(|p| p.number == "1" && !p.alternates.is_empty()).unwrap();
+    assert_eq!(a.alternates, [protasena_library::PinAlternate::new("SDA", PinKind::Bidirectional)]);
+    assert_eq!(a.name, "A", "the primary function stays the pin's own");
     assert_eq!(report.unmapped_libraries, ["Extra"]);
     assert_eq!(report.unused_map_devices, ["Passives:Missing"]);
     assert_eq!(report.footprint_links_not_found.len(), 1);
