@@ -8,7 +8,7 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use protasena_geom::Pt;
-use protasena_libconv::{Map, Options, Report, run};
+use protasena_libimport::{Map, Options, Report, run};
 use protasena_library::{Fill, Library, PadShape, PinDir, PinKind, PropKind, Shape};
 
 fn data(p: &str) -> PathBuf {

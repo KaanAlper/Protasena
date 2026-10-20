@@ -29,8 +29,9 @@ library. See `NOTICE`. To use it, clone that repository and point `PROTASENA_LIB
     export PROTASENA_LIBRARY_DIR=$PWD/Protasena-library/pack
 
 Without it Protasena runs with its small built-in set of generic parts. The pack is produced by
-`apps/protasena-libconv` (`cargo run --release -p protasena-libconv -- --help`) using the
-category and naming table in `apps/protasena-libconv/data/map.toml`.
+`apps/protasena-libconv` (`cargo run --release -p protasena-libconv -- --help`; the conversion
+code is the `crates/libimport` crate) using the category and naming table in
+`apps/protasena-libconv/data/map.toml`.
 
 ## License
 

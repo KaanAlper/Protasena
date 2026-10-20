@@ -18,6 +18,7 @@ protasena-doc = { path = "crates/doc" }
 protasena-library = { path = "crates/library" }
 protasena-render = { path = "crates/render" }
 protasena-netlist = { path = "crates/netlist" }
+protasena-libimport = { path = "crates/libimport" }
 protasena-io = { path = "crates/io" }
 protasena-engine = { path = "crates/engine" }
 protasena-ui-egui = { path = "crates/ui-egui" }

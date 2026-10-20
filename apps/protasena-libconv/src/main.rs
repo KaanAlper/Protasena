@@ -3,7 +3,9 @@
 
 use std::process::ExitCode;
 
-use protasena_libconv::cli::{self, Command, EXIT_FAILURES, EXIT_OK, EXIT_USAGE};
+mod cli;
+
+use cli::{Command, EXIT_FAILURES, EXIT_OK, EXIT_USAGE};
 
 const NAME: &str = env!("CARGO_PKG_NAME");
 const VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -26,7 +28,7 @@ fn main() -> ExitCode {
             return ExitCode::from(EXIT_USAGE);
         }
     };
-    let report = match protasena_libconv::run(&options) {
+    let report = match protasena_libimport::run(&options) {
         Ok(r) => r,
         Err(e) => {
             eprintln!("{NAME}: {e}");

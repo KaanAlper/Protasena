@@ -2583,6 +2583,13 @@ version = "0.1.0"
 name = "protasena-libconv"
 version = "0.1.0"
 dependencies = [
+ "protasena-libimport",
+]
+
+[[package]]
+name = "protasena-libimport"
+version = "0.1.0"
+dependencies = [
  "protasena-geom",
  "protasena-kicad",
  "protasena-library",

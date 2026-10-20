@@ -5,7 +5,7 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use protasena_libconv::{Map, Options, run};
+use protasena_libimport::{Map, Options, run};
 use protasena_library::Library;
 
 fn scratch(name: &str) -> PathBuf {

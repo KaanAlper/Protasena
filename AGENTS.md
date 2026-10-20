@@ -65,7 +65,7 @@ it with synthetic designs, take screenshots of its window and UI Automation dump
   |---|---|---|
   | L0 | `geom`, `kicad`, `pdsprj` | 2D geometry; KiCad file reader; `.pdsprj` container (no workspace deps) |
   | L1 | `doc`, `library` | Design model; device model and library loader |
-  | L2 | `render`, `netlist` | Drawing; connectivity and netlists |
+  | L2 | `render`, `netlist`, `libimport` | Drawing; connectivity and netlists; KiCad library conversion (the pack converter and the user's own libraries) |
   | L3 | `io` | Project files (own format, `.pdsprj`), netlist export |
   | L4 | `engine` | Commands, session, undo; Proteus's tools and modes |
   | L5 | `ui-egui` | Proteus's window layout with our theme; control channel |

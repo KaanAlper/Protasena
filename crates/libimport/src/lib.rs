@@ -1,9 +1,9 @@
-//! `protasena-libconv`: converts KiCad's symbol and footprint libraries into a Protasena
-//! library pack (devices, packages, `index.json`) plus a JSON report.
+//! Protasena library import (layer L2): KiCad's symbol and footprint libraries converted into
+//! Protasena [`Device`](protasena_library::Device)s and [`Package`](protasena_library::Package)s.
 //!
-//! ```text
-//! protasena-libconv --symbols DIR --footprints DIR --map map.toml --out DIR [--report FILE]
-//! ```
+//! Two users share this code: the `protasena-libconv` app, which converts KiCad's official
+//! libraries into the published pack ([`run`]), and the application, which imports the user's
+//! own KiCad libraries at run time.
 //!
 //! KiCad libraries are only ever read as data here; the converted pack is published separately
 //! (`KaanAlper/Protasena-library`, CC-BY-SA 4.0) and never vendored into this repository.
@@ -15,8 +15,11 @@
 //! validation; writing ([`pack`]); and a final load of the written pack. Output is
 //! deterministic: inputs are read in sorted order, results are sorted, nothing depends on time
 //! or hash order. Units and axes: [`coords`].
+//!
+//! # Never crash
+//! KiCad files are hostile input: reads are size-limited, and a file or symbol that cannot be
+//! converted is a [`report::Failure`], never a panic.
 
-pub mod cli;
 pub mod convert;
 pub mod coords;
 pub mod device;

@@ -2,9 +2,7 @@
 
 use std::path::PathBuf;
 
-use crate::convert::Options;
-use crate::map::Map;
-use crate::par;
+use protasena_libimport::{Map, Options, par};
 
 /// Exit code: converted with zero failures.
 pub const EXIT_OK: u8 = 0;

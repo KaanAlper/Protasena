@@ -12,9 +12,4 @@ publish = false
 workspace = true
 
 [dependencies]
-protasena-geom.workspace = true
-protasena-kicad.workspace = true
-protasena-library.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-toml.workspace = true
+protasena-libimport.workspace = true

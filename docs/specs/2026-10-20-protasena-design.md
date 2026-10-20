@@ -50,7 +50,8 @@ design exception), never Proteus's library.
   CC-BY-SA 4.0 with KiCad's attribution and licence files. It is an optional build/runtime input
   (`PROTASENA_LIBRARY_DIR`), never a Cargo dependency; code and tests work without it (a small
   built-in set of our own generic parts covers tests).
-- Users' own KiCad libraries are imported at run time through the same `kicad` crate. Eagle
+- Users' own KiCad libraries are imported at run time through the same conversion code as
+  `protasena-libconv` (the `libimport` crate) and the same `kicad` crate. Eagle
   `.lbr` import comes later.
 - **No-loss check:** a corpus test converts every symbol and footprint of a pinned KiCad library
   release and fails on any parse error or dropped element.
@@ -71,7 +72,7 @@ Same layering discipline as AsenaCAD (checked by `cargo xtask layers`):
 |---|---|---|
 | L0 | `geom`, `kicad`, `pdsprj` | 2D geometry; KiCad file reader; Proteus project container reader/writer (standalone, no workspace deps) |
 | L1 | `doc`, `library` | Design model (projects, sheets, components, pins, wires, junctions, labels, buses, terminals, properties); device model and library loader |
-| L2 | `render`, `netlist` | Drawing; connectivity and netlists |
+| L2 | `render`, `netlist`, `libimport` | Drawing; connectivity and netlists; KiCad library conversion (shared by `protasena-libconv` and the run-time import of the user's own KiCad libraries) |
 | L3 | `io` | Project files (own format, `.pdsprj`), netlist export |
 | L4 | `engine` | Everything is a command; undo; Proteus's tools and modes |
 | L5 | `ui-egui` | Proteus's window layout with our theme; control channel |
