@@ -11,7 +11,7 @@ use crate::{limits, pretty};
 /// Format tag of a project file.
 pub const FORMAT: &str = "protasena-project";
 /// Version of the project file format this build writes, and the newest it reads.
-pub const VERSION: u32 = 1;
+pub const VERSION: u32 = 2;
 /// File name extension of project files (without the dot).
 pub const EXTENSION: &str = "psproj";
 
@@ -75,14 +75,22 @@ pub fn decode(bytes: &[u8]) -> Result<(Project, LoadReport), LoadError> {
     limits::check_depth(bytes)?;
     let version = check_header(bytes)?;
     let body: Body = serde_json::from_slice(bytes).map_err(|e| LoadError::Json(e.to_string()))?;
-    let project = body.project.ok_or_else(|| LoadError::NotAProject("there is no project".to_owned()))?;
+    let mut project = body.project.ok_or_else(|| LoadError::NotAProject("there is no project".to_owned()))?;
     limits::check_counts(&project)?;
+    // A template that does not check would draw nonsense: keep the design, drop the template.
+    let template_issue = project.template.check().err();
+    if template_issue.is_some() {
+        project.template = protasena_doc::Template::default();
+    }
     let (errors, mut warnings): (Vec<_>, Vec<_>) = project.issues().into_iter().partition(is_fatal);
     if !errors.is_empty() {
         return Err(LoadError::Invalid(errors));
     }
     if project.sheets.is_empty() {
         warnings.push(DocError::Invalid("the project has no sheets".to_owned()));
+    }
+    if let Some(e) = template_issue {
+        warnings.push(DocError::Invalid(format!("the template settings were reset to the defaults: {e}")));
     }
     Ok((project, LoadReport { version, warnings }))
 }

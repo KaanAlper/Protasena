@@ -13,10 +13,11 @@ use std::collections::HashSet;
 use std::sync::Arc;
 
 use egui::{Color32, CornerRadius, Frame, Pos2, Rect, Sense, Stroke, Ui, pos2, vec2};
+use protasena_doc::Template;
 use protasena_doc::{ItemId, Sheet};
 use protasena_engine::{Hit, Preview};
 use protasena_geom::Pt;
-use protasena_render::{DisplayList, Prim, component_prims, item_prims, sheet_display_list, sheet_rect};
+use protasena_render::{DisplayList, GRAPHIC_WIDTH, Ink, Prim, component_prims, graphic_shape, item_prims, sheet_rect, styled_sheet_display_list};
 use serde_json::json;
 
 pub use paint::{Paint, Style, Xform};
@@ -35,7 +36,7 @@ pub struct CanvasState {
     pub zoom_area: Option<Option<Pt>>,
     /// Whether the sheet was fitted into the window once.
     pub fitted: bool,
-    cache: Option<(Sheet, usize, Arc<DisplayList>)>,
+    cache: Option<(Sheet, usize, Template, Arc<DisplayList>)>,
     pub(crate) last_pointer: Option<Pos2>,
     pub(crate) pressed: bool,
     pub(crate) wheel: f32,
@@ -43,16 +44,18 @@ pub struct CanvasState {
 }
 
 impl CanvasState {
-    /// The display list of `sheet`, rebuilt only when the sheet or the library changed.
-    fn list(&mut self, sheet: &Sheet, lib: &protasena_library::Library) -> Arc<DisplayList> {
-        if let Some((s, n, list)) = &self.cache
+    /// The display list of `sheet`, rebuilt only when the sheet, the library or the template
+    /// changed.
+    fn list(&mut self, sheet: &Sheet, lib: &protasena_library::Library, template: &Template) -> Arc<DisplayList> {
+        if let Some((s, n, t, list)) = &self.cache
             && s == sheet
             && *n == lib.len()
+            && t == template
         {
             return Arc::clone(list);
         }
-        let list = Arc::new(sheet_display_list(sheet, lib));
-        self.cache = Some((sheet.clone(), lib.len(), Arc::clone(&list)));
+        let list = Arc::new(styled_sheet_display_list(sheet, lib, template));
+        self.cache = Some((sheet.clone(), lib.len(), *template, Arc::clone(&list)));
         list
     }
 }
@@ -90,7 +93,8 @@ fn sync_viewport(app: &mut App, rect: Rect) {
 }
 
 fn draw(app: &mut App, ui: &Ui, x: Xform) {
-    let t = Tokens::get();
+    let template = app.session.project().template;
+    let t = Tokens::get().with_design(&template.colours);
     let painter = ui.painter_at(x.rect);
     let Some(sheet) = app.session.sheet().cloned() else { return };
     let paper = sheet_rect(&sheet);
@@ -100,11 +104,16 @@ fn draw(app: &mut App, ui: &Ui, x: Xform) {
     painter.rect_filled(paper_rect, 0.0, t.sheet);
     let view = app.session.view();
     if view.grid {
-        grid::draw(&painter, &x, paper, view.snap.step(), app.ui.grid_style, &t);
+        let style = if app.session.settings().display.grid_lines { crate::GridStyle::Lines } else { app.ui.grid_style };
+        grid::draw(&painter, &x, paper, view.snap.step(), style, &t);
     }
-    let list = app.canvas.list(&sheet, app.session.library());
+    let list = app.canvas.list(&sheet, app.session.library(), &template);
     let selected: HashSet<ItemId> = app.session.selection().iter().copied().collect();
-    let p = Paint { painter: &painter, x, style: Style { tokens: t, ink: None, selected: &selected, texts: true, min_width: 1.0 } };
+    let p = Paint {
+        painter: &painter,
+        x,
+        style: Style { tokens: t, ink: None, selected: &selected, texts: true, min_width: 1.0, template: Some(&template) },
+    };
     p.all(&list.prims);
     previews(app, &painter, x);
     cursor(app, &painter, x);
@@ -113,16 +122,22 @@ fn draw(app: &mut App, ui: &Ui, x: Xform) {
 }
 
 fn previews(app: &App, painter: &egui::Painter, x: Xform) {
-    let t = Tokens::get();
+    let t = Tokens::get().with_design(&app.session.project().template.colours);
     let pv: Preview = app.session.preview();
     let none = HashSet::new();
-    let ghost =
-        Paint { painter, x, style: Style { tokens: t, ink: Some(t.preview.gamma_multiply(0.75)), selected: &none, texts: true, min_width: 1.2 } };
+    let ghost = Paint {
+        painter,
+        x,
+        style: Style { tokens: t, ink: Some(t.preview.gamma_multiply(0.75)), selected: &none, texts: true, min_width: 1.2, template: None },
+    };
     if let Some(c) = &pv.ghost {
         ghost.all(&component_prims(c, app.session.library()));
     }
     for item in &pv.moved {
         ghost.all(&item_prims(item, app.session.library()));
+    }
+    if let Some(shape) = &pv.graphic {
+        ghost.all(&[Prim::new(graphic_shape(shape), Ink::Graphic).width(GRAPHIC_WIDTH)]);
     }
     for (pts, width) in [(&pv.wire, 2.0), (&pv.bus, 4.0)] {
         if pts.len() >= 2 {
@@ -181,7 +196,7 @@ pub fn preview(ui: &Ui, rect: Rect, prims: &[Prim], texts: bool) -> Option<Xform
     let x = Xform::fit(rect, bounds.inflate(20.0), 0.0);
     let none = HashSet::new();
     let painter = ui.painter_at(rect);
-    let p = Paint { painter: &painter, x, style: Style { tokens: Tokens::get(), ink: None, selected: &none, texts, min_width: 1.0 } };
+    let p = Paint { painter: &painter, x, style: Style { tokens: Tokens::get(), ink: None, selected: &none, texts, min_width: 1.0, template: None } };
     p.all(prims);
     Some(x)
 }

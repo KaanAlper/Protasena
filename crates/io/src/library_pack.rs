@@ -1,6 +1,5 @@
 //! Where the device library comes from: the built-in parts plus an optional pack.
 
-use std::collections::HashSet;
 use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
@@ -37,7 +36,7 @@ pub fn load_library_from(dir: Option<&Path>) -> Result<Library, LibraryError> {
     let builtin = Library::builtin();
     match dir {
         None => Ok(builtin),
-        Some(dir) => merge_libraries(&builtin, &Library::load_dir(dir)?),
+        Some(dir) => Ok(builtin.overlay(Library::load_dir(dir)?)),
     }
 }
 
@@ -46,19 +45,13 @@ pub fn load_library_from(dir: Option<&Path>) -> Result<Library, LibraryError> {
 /// built-in package when the pack has one of the same name, together with the built-in devices
 /// that use it (their pin maps were made for the built-in package). The built-in library comes
 /// first in the library list; a pack library that is also called `GENERIC` simply adds to it.
+/// Same as [`Library::overlay`] on copies.
 ///
 /// # Errors
 /// [`LibraryError::Invalid`] if the merged set is inconsistent (it is not when both inputs are
 /// valid libraries).
 pub fn merge_libraries(builtin: &Library, pack: &Library) -> Result<Library, LibraryError> {
-    let pack_devices: HashSet<String> = pack.devices().iter().map(|d| d.name.to_uppercase()).collect();
-    let pack_packages: HashSet<&str> = pack.packages().iter().map(|p| p.name.as_str()).collect();
-    let kept = builtin.devices().iter().filter(|d| {
-        let uses_replaced = d.packages.iter().any(|r| pack_packages.contains(r.name.as_str()))
-            || d.default_package.as_deref().is_some_and(|p| pack_packages.contains(p));
-        !pack_devices.contains(&d.name.to_uppercase()) && !uses_replaced
-    });
-    let devices = kept.chain(pack.devices()).cloned().collect();
-    let packages = builtin.packages().iter().filter(|p| !pack_packages.contains(p.name.as_str())).chain(pack.packages()).cloned().collect();
-    Library::from_parts(devices, packages)
+    let merged = builtin.clone().overlay(pack.clone());
+    let issues = merged.issues();
+    if issues.is_empty() { Ok(merged) } else { Err(LibraryError::Invalid(issues)) }
 }

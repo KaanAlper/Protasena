@@ -14,48 +14,73 @@
 2D Graphics Symbols Mode
 2D Graphics Text Mode
 3D Visualizer
+AND (narrow)
 ASCII Data Import Tool
 About Protasena
+Action
 Active Popup Mode
+Add
 Add Traces...
 Align Objects
+All Parts in the Design
+All Parts on the Sheet
+All Sheets
 Angle
 Animated Single Step
 Annotated
 Apply Styles From Template
+Apply To
+Assign
 Author
 Base Design
+Begins
 Bill of Materials
 Block Copy
 Block Delete
 Block Move
 Block Rotate
+Bottom Edges
 Bring To Front
+Browse...
+Bus
 Buses Mode
 Cancel
 Category
 Center At Cursor
+Circle
 Clear Graph Data...
 Clear Selection
+Click on the left or right edge in Subcircuit mode to add a port.
 Close Project
+Colour
 Compile To Library
+Component
 Component Mode
 Configure Diagnostics
 Configure Power Rails...
+Contains
 Copy To Clipboard
+Count
+Count and Increment must be whole numbers
+Create Child Sheet
 Created
+Current Sheet
 Custom
 Cut To Clipboard
 DEVICES
 Debug
 Decompose
+Default
 Description
 Design
 Design Explorer
 Design Title
 Device
 Device Pins Mode
+Diamond
 Doc. No
+Don't Save
+Drag
 Drag a rectangle around the area to show
 Edit
 Edit Component
@@ -64,44 +89,65 @@ Edit Design Properties
 Edit Graph...
 Edit Project Description
 Edit Sheet Properties
+Edit Subcircuit
 Edit Terminal
 Edit Text
 Edit Wire Label
 Electrical Rules Check
 Element
 Enable Remote Debug Monitor
+Ends
+Enter a number
+Equals
 Error
+Escape always cancels
 Exit Application
 Exit to Parent Sheet
 Explore Project Folder
 Export Adobe PDF File
 Export Bitmap
+Export CSV...
 Export DXF File
 Export Encapsulated Postscript
 Export Graph Data...
 Export Graphics
+Export HTML...
 Export Metafile
 Export Project Clip
 Export SVG File
 Export Vector File
+Exported to
 File
+Fill
+Find
 Find/Edit Component
+Fixed-width font
+Font size (points)
+Format
 GENERATORS
 GRAPHICS
 GRAPHS
 Generator Mode
 Gerber Viewer
+Give each key to one command only.
+Global (the same net in every sub-sheet)
 Global Annotator
+Goto Child Sheet
 Goto Master Sheet
 Goto Next Root or Sub-sheet
 Goto Previous Root or Sub-sheet
 Goto Sheet
 Graph
 Graph Mode
+Greater Than
+Grid
+Grid as lines
 Height (th)
 Help
 Hidden
+Highlight
 Home Page
+Horizontal Centres
 Horz. Tile Popup Windows
 INSTRUMENTS
 Import ECAD Files
@@ -109,12 +155,19 @@ Import Image
 Import Legacy Project
 Import Parts
 Import Project Clip
+Increment
 Incremental
 Junction Dot Mode
 Keywords
+Left Edges
+Less Than
 Library
 Library Manager
+Library folder
 Licence: MIT OR Apache-2.0
+Line Colour
+Line Width (th)
+Line up the selected objects by their
 Loading parts library…
 MARKERS
 Make Device
@@ -122,59 +175,94 @@ Make Symbol
 Manage Changes
 Manufacturer
 Mark Output Area
+Match Case
 Message
 Messages
 Mode
 Model Compiler
 Modified
+Mono (black on white)
+NAME=VALUE to assign or rename, NAME to remove; # counts up.
+Name
 Netlist Compiler
 Nets
 New (Root) Sheet
 New Project
+New Search
 No Messages
 No PCB package
 No errors found.
 No part on this sheet is called
+Not Begins
+Not Contains
+Not Equals
 Not affiliated with Labcenter Electronics. Proteus is a trademark of Labcenter Electronics.
 OK
+OR (widen)
 Open Project
 Open Sample Project
+Open in the system viewer
 Open-source schematic capture whose layout and workflow follow Proteus 8 Schematic Capture.
+Operator
 Other Properties
 Overview
+Own
 PCB Layout
 PCB Package
 PCB Preview
 PINS
 PORTS
 PROBES
+Package
 Packaging Tool
+Paper
 Part Reference
 Part Value
 Parts
+Parts changed
 Paste From Clipboard
 Pause
 Pause VSM Debugging
 Pick Devices
 Pick Parts
+Pick distance (pixels)
+Pin
+Pin Name
+Pin Number
 Place Library
 Play
+Port
+Port Name
+Ports
 Preview
 Print Design
 Print Setup
+Printed to
 Printer Information
+Prints to a PDF file.
 Probe Mode
 Project Name
 Project Notes
+Project folder
+Property
 Property Assignment Tool
+Put every system setting (folders, display, keys, property definitions, sheet sizes, text editor) back to Protasena's defaults?
+Quantity
 Redo Changes
 Redraw Display
+Reference
+References
+Remove
 Remove/Delete Sheet
+Rename
 Reset Debug Popup Windows
 Reset Persistent Model Data
+Resolution (dpi)
 Restore Default Settings
+Restore Defaults
 Results
 Revision
+Right Edges
 Rotate Anti-clockwise
 Rotate Clockwise
 Rules check findings
@@ -184,14 +272,18 @@ Run Simulation (timed breakpoint)
 Run To Source Line
 SPICE netlist
 SYMBOLS
+Save
 Save Design as Template
 Save Project
 Save Project As
 Saved
+Scale
 Schematic Capture
 Schematic Capture Help
 Schematic Capture Tutorial
+Scope
 Search & Tag
+Search Mode
 Select All Objects
 Selection Mode
 Send To Back
@@ -208,15 +300,18 @@ Set Sheet Sizes
 Set Simulation Options
 Set Text Editor
 Set Text Styles
+Shape
 Sheet Name
 Sheet Size
 Simulate Graph
 Simulation Help
+Size (th)
 Snap 0.1in
 Snap 0.5in
 Snap 10th
 Snap 50th
 Source Code
+Square
 Start VSM Debugging
 Step
 Step Into Source Line
@@ -226,16 +321,23 @@ Stop
 Stop VSM Debugging
 String
 Sub-category
+Subcircuit
 Subcircuit Mode
+Subcircuit Port
 System
 System Settings
 TERMINALS
+Tagged
+Tagged Parts
 Template
+Terminal
 Terminals Mode
 Text
 Text Script Mode
 Text Viewer
-The design has unsaved changes. Discard them?
+The PDF could not be opened
+The design has no parts.
+The design has unsaved changes. Save them?
 The parts library could not be loaded
 Tidy Design
 Toggle False Origin
@@ -243,22 +345,30 @@ Toggle Grid
 Toggle X-Cursor
 Tool
 Toolbar Configuration
+Top Edges
 Total
 Type
 Type keywords or choose a category
+Type the file name: this window has no file chooser
 Undo Changes
 Unsaved Changes
 VSM Model/SDK Help
+Value
 Verify Files
 Verify Graphs
 Verify Packagings
 Version
+Vertical Centres
 Vertical Tile Popup Windows
 View
 View Simulation Log
 Virtual Instruments Mode
 Warning
+Wheel zoom factor
+Width (th)
+Wire
 Wire Autorouter
+Wire Label
 Wire Label Mode
 X-Mirror
 Y-Mirror
@@ -266,7 +376,17 @@ Zoom In
 Zoom Out
 Zoom To Area
 Zoom To View Entire Sheet
+also
+default
+devices removed
 e.g. RES, 74LS00
 findings
+is not a number
+lines
+none
+not a key
+objects removed
 of
+parts
 th
+width and height must be numbers

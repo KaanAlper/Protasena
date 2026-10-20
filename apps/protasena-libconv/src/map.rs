@@ -14,8 +14,14 @@
 //! category = "TTL 74LS series"
 //!
 //! [devices]                  # single symbols: Proteus-style name, category, primitive
-//! "Device:R" = { name = "RES", category = "Resistors", sub_category = "Generic", primitive = "ANALOG" }
+//! "Device:R" = { name = "RES", category = "Resistors", sub_category = "Generic", primitive = "ANALOG",
+//!                default_package = "R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal" }
+//! "Device:Q_NPN" = { name = "NPN", default_package = "TO-92_Inline", pin_map = { E = "1", B = "2", C = "3" } }
 //! ```
+//!
+//! `default_package` (a footprint name, or `Library:Name`) is linked first and becomes the
+//! device's default package; `pin_map` (pin → pad) replaces the by-number pin map for it. The
+//! full default-package rule is in [`crate::link`].
 
 use std::collections::BTreeMap;
 
@@ -87,6 +93,12 @@ pub struct DeviceEntry {
     /// Value of the `PRIMITIVE` property (e.g. `ANALOG`).
     #[serde(default)]
     pub primitive: Option<String>,
+    /// Default package: a footprint name or `Library:Name`.
+    #[serde(default)]
+    pub default_package: Option<String>,
+    /// Pin → pad for the default package (by pin number when absent).
+    #[serde(default)]
+    pub pin_map: Option<BTreeMap<String, String>>,
 }
 
 /// Where a device's category came from.
@@ -181,7 +193,8 @@ mod tests {
         category = "Resistors"
         sub_category = "Generic"
         [devices]
-        "Device:R" = { name = "RES", primitive = "ANALOG", sub_category = "Fixed" }
+        "Device:R" = { name = "RES", primitive = "ANALOG", sub_category = "Fixed", default_package = "R_Axial" }
+        "Device:Q" = { default_package = "TO-92", pin_map = { E = "1", B = "2" } }
     "#;
 
     #[test]
@@ -195,6 +208,9 @@ mod tests {
         let p = m.place("Sensor_Gas", "X");
         assert_eq!((p.category.as_str(), p.sub_category.as_str(), p.library_mapped), ("Sensor", "Gas", false));
         assert_eq!(m.device("Device", "R").and_then(|d| d.name.as_deref()), Some("RES"));
+        assert_eq!(m.device("Device", "R").and_then(|d| d.default_package.as_deref()), Some("R_Axial"));
+        let q = m.device("Device", "Q").unwrap();
+        assert_eq!(q.pin_map.as_ref().map(|p| p.get("B").map(String::as_str)), Some(Some("2")));
     }
 
     #[test]

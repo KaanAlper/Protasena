@@ -127,3 +127,23 @@ fn the_window_title_names_the_project() {
     let h = harness(1200.0, 800.0, 1.0);
     assert_eq!(h.state().window_title(), "UNTITLED - Protasena - Schematic Capture");
 }
+
+#[test]
+fn the_2d_graphics_modes_draw_with_two_clicks() {
+    let mut h = harness(1600.0, 1000.0, 1.0);
+    h.get_by_label("2D Graphics Box Mode").click();
+    h.run_steps(3);
+    assert_eq!(h.state().session.mode(), Mode::Box2d);
+    let canvas = region(&h, "Editing window");
+    for at in [canvas.center(), canvas.center() + egui::vec2(120.0, -80.0)] {
+        h.hover_at(at);
+        h.run_steps(2);
+        h.event(egui::Event::PointerButton { pos: at, button: egui::PointerButton::Primary, pressed: true, modifiers: Modifiers::NONE });
+        h.run_steps(1);
+        h.event(egui::Event::PointerButton { pos: at, button: egui::PointerButton::Primary, pressed: false, modifiers: Modifiers::NONE });
+        h.run_steps(3);
+    }
+    let sheet = h.state().session.sheet().unwrap();
+    assert_eq!(sheet.graphics.len(), 1);
+    assert_eq!(sheet.graphics[0].shape.kind(), "box");
+}

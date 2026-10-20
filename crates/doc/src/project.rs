@@ -7,6 +7,7 @@ use crate::ids::{ComponentId, Id, ItemId, SheetId};
 use crate::item::Item;
 use crate::items::Component;
 use crate::sheet::{Sheet, SheetSize};
+use crate::template::Template;
 
 /// Name a new project's first sheet gets (Proteus's default still has to be observed).
 pub const FIRST_SHEET_NAME: &str = "Root sheet 1";
@@ -39,6 +40,9 @@ pub struct Project {
     pub design: DesignProperties,
     /// The sheets in order.
     pub sheets: Vec<Sheet>,
+    /// Template settings (colours and styles); Protasena's defaults when absent.
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Template::is_default"))]
+    pub template: Template,
     /// The next raw id [`Project::fresh_id`] tries. Ids are never reused within a project.
     pub next_id: u64,
 }
@@ -47,7 +51,7 @@ impl Project {
     /// A project with one empty A4 sheet.
     pub fn new(name: &str) -> Self {
         let sheet = Sheet::new(SheetId(1), FIRST_SHEET_NAME, SheetSize::A4);
-        Self { name: name.to_owned(), design: DesignProperties::default(), sheets: vec![sheet], next_id: 2 }
+        Self { name: name.to_owned(), design: DesignProperties::default(), sheets: vec![sheet], template: Template::default(), next_id: 2 }
     }
 
     /// A new id of any kind, never used before in this project.
@@ -126,6 +130,9 @@ impl Project {
             }
             let checks = sheet.item_ids().filter_map(|id| sheet.item(id)).filter_map(|item| item.check().err());
             issues.extend(checks);
+        }
+        if let Err(e) = self.template.check() {
+            issues.push(e);
         }
         if !self.sheets.is_empty() && self.next_id <= max_raw {
             issues.push(DocError::Invalid(format!("next id {} is not above the largest id {max_raw}", self.next_id)));

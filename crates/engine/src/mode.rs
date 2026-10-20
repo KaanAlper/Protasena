@@ -146,7 +146,20 @@ impl Mode {
     pub fn is_built(self) -> bool {
         matches!(
             self,
-            Mode::Selection | Mode::Component | Mode::JunctionDot | Mode::WireLabel | Mode::TextScript | Mode::Buses | Mode::Terminals | Mode::Text2d
+            Mode::Selection
+                | Mode::Component
+                | Mode::JunctionDot
+                | Mode::WireLabel
+                | Mode::TextScript
+                | Mode::Buses
+                | Mode::Subcircuit
+                | Mode::Terminals
+                | Mode::Line2d
+                | Mode::Box2d
+                | Mode::Circle2d
+                | Mode::Arc2d
+                | Mode::ClosedPath2d
+                | Mode::Text2d
         )
     }
 

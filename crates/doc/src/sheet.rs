@@ -1,9 +1,11 @@
 //! Sheets and sheet sizes, and the per-kind storage behind the item operations.
 
 use crate::error::DocError;
+use crate::graphic::Graphic;
 use crate::ids::{ItemId, SheetId};
 use crate::item::Item;
 use crate::items::{Bus, BusEntry, Component, Junction, Label, Terminal, Text, Wire};
+use crate::subcircuit::Subcircuit;
 
 /// Sheet size. Named sizes are landscape; dimensions are in thou.
 ///
@@ -102,6 +104,11 @@ pub struct Sheet {
     pub terminals: Vec<Terminal>,
     /// Free texts.
     pub texts: Vec<Text>,
+    /// 2D graphics.
+    pub graphics: Vec<Graphic>,
+    /// Subcircuits.
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if = "Vec::is_empty"))]
+    pub subcircuits: Vec<Subcircuit>,
 }
 
 /// Applies `$body` to the vector of the kind of `$id` (an [`ItemId`]), with `$v` bound to the
@@ -149,6 +156,16 @@ macro_rules! by_kind {
                 let $wrap = Item::Text;
                 $body
             }
+            ItemId::Graphic(_) => {
+                let $v = &mut $sheet.graphics;
+                let $wrap = Item::Graphic;
+                $body
+            }
+            ItemId::Subcircuit(_) => {
+                let $v = &mut $sheet.subcircuits;
+                let $wrap = Item::Subcircuit;
+                $body
+            }
         }
     };
 }
@@ -174,6 +191,8 @@ impl Sheet {
             ItemId::Bus(_) => pos(self.buses.iter().map(|b| b.id.0), raw),
             ItemId::BusEntry(_) => pos(self.bus_entries.iter().map(|e| e.id.0), raw),
             ItemId::Text(_) => pos(self.texts.iter().map(|t| t.id.0), raw),
+            ItemId::Graphic(_) => pos(self.graphics.iter().map(|g| g.id.0), raw),
+            ItemId::Subcircuit(_) => pos(self.subcircuits.iter().map(|x| x.id.0), raw),
         }
     }
 
@@ -189,6 +208,8 @@ impl Sheet {
             ItemId::Bus(_) => self.buses.get(i).cloned().map(Item::Bus),
             ItemId::BusEntry(_) => self.bus_entries.get(i).copied().map(Item::BusEntry),
             ItemId::Text(_) => self.texts.get(i).cloned().map(Item::Text),
+            ItemId::Graphic(_) => self.graphics.get(i).cloned().map(Item::Graphic),
+            ItemId::Subcircuit(_) => self.subcircuits.get(i).cloned().map(Item::Subcircuit),
         }
     }
 
@@ -202,7 +223,9 @@ impl Sheet {
         let b = self.buses.iter().map(|x| ItemId::Bus(x.id));
         let e = self.bus_entries.iter().map(|x| ItemId::BusEntry(x.id));
         let x = self.texts.iter().map(|x| ItemId::Text(x.id));
-        c.chain(w).chain(j).chain(l).chain(t).chain(b).chain(e).chain(x)
+        let g = self.graphics.iter().map(|x| ItemId::Graphic(x.id));
+        let s = self.subcircuits.iter().map(|x| ItemId::Subcircuit(x.id));
+        c.chain(w).chain(j).chain(l).chain(t).chain(b).chain(e).chain(x).chain(g).chain(s)
     }
 
     /// Inserts an item at `index` in its kind's list (clamped; `None` appends).
@@ -220,6 +243,8 @@ impl Sheet {
             Item::Bus(x) => put(&mut self.buses, x, index),
             Item::BusEntry(x) => put(&mut self.bus_entries, x, index),
             Item::Text(x) => put(&mut self.texts, x, index),
+            Item::Graphic(x) => put(&mut self.graphics, x, index),
+            Item::Subcircuit(x) => put(&mut self.subcircuits, x, index),
         }
     }
 

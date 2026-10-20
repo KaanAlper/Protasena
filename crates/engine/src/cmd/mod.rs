@@ -1,19 +1,30 @@
 //! The commands, by area. Ids are stable and lower-case; labels, menu paths and shortcuts are
 //! Proteus's.
 
+mod arrange;
+mod assign;
 mod block;
+mod bom;
 mod clip;
 mod design;
 mod edit;
+mod export;
 mod file;
+mod graphics;
 mod items;
 mod place;
 mod sheets;
+mod subcircuit;
+mod system;
+mod tag;
+mod template;
 mod view;
 mod wire;
 
 pub(crate) use block::drag_ops;
 pub(crate) use place::new_component;
+pub use subcircuit::port_kind_id;
+pub(crate) use subcircuit::{PORT_REACH, port_target};
 pub(crate) use wire::MAX_VIA;
 
 use protasena_doc::{Id, Item, ItemId};
@@ -26,15 +37,24 @@ use crate::registry::CommandSpec;
 pub(crate) fn all_specs() -> Vec<CommandSpec> {
     let mut v = Vec::new();
     v.extend(file::specs());
+    v.extend(export::specs());
+    v.extend(bom::specs());
     v.extend(edit::specs());
     v.extend(clip::specs());
     v.extend(block::specs());
+    v.extend(arrange::specs());
     v.extend(view::specs());
     v.extend(place::specs());
     v.extend(items::specs());
+    v.extend(graphics::specs());
     v.extend(wire::specs());
     v.extend(design::specs());
+    v.extend(tag::specs());
+    v.extend(assign::specs());
     v.extend(sheets::specs());
+    v.extend(subcircuit::specs());
+    v.extend(template::specs());
+    v.extend(system::specs());
     v
 }
 
@@ -54,5 +74,9 @@ pub(crate) fn with_id(item: &Item, raw: u64) -> Item {
         Item::Bus(b) => Item::Bus(protasena_doc::Bus { id: Id::from_raw(raw), ..b.clone() }),
         Item::BusEntry(e) => Item::BusEntry(protasena_doc::BusEntry { id: Id::from_raw(raw), ..*e }),
         Item::Text(t) => Item::Text(protasena_doc::Text { id: Id::from_raw(raw), ..t.clone() }),
+        Item::Graphic(g) => Item::Graphic(protasena_doc::Graphic { id: Id::from_raw(raw), shape: g.shape.clone() }),
+        // A copy has no child sheet of its own yet (Goto Child Sheet makes one): a child sheet
+        // belongs to one subcircuit.
+        Item::Subcircuit(x) => Item::Subcircuit(protasena_doc::Subcircuit { id: Id::from_raw(raw), child: None, ..x.clone() }),
     }
 }

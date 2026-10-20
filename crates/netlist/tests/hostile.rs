@@ -39,7 +39,7 @@ fn hostile_coordinates_never_panic() {
         s.components.push(c);
         s.wires.push(Wire { id: WireId(raw + 1), points: vec![pt(v, v), pt(0.0, v), pt(-v, 0.0)] });
         s.junctions.push(Junction { id: JunctionId(raw + 2), at: pt(0.0, v) });
-        s.labels.push(Label { id: LabelId(raw + 3), at: pt(v, 0.0), text: "L".into(), orient: Orient::IDENTITY });
+        s.labels.push(Label { id: LabelId(raw + 3), at: pt(v, 0.0), text: "L".into(), orient: Orient::IDENTITY, global: false });
         s.terminals.push(Terminal {
             id: TerminalId(raw + 4),
             at: pt(v, v),
@@ -66,7 +66,7 @@ fn hostile_items_and_duplicate_ids_never_panic() {
     s.components.push(Component { reference: "\u{0}\n( )=".into(), value: "a b\nc".into(), ..dup });
     s.wires.push(Wire { id: WireId(7), points: Vec::new() });
     s.wires.push(Wire { id: WireId(7), points: vec![pt(200.0, 0.0)] });
-    s.labels.push(Label { id: LabelId(7), at: pt(200.0, 0.0), text: "  ".into(), orient: Orient::IDENTITY });
+    s.labels.push(Label { id: LabelId(7), at: pt(200.0, 0.0), text: "  ".into(), orient: Orient::IDENTITY, global: false });
     let copy = s.clone();
     d.p.sheets.push(copy);
     let n = d.netlist();

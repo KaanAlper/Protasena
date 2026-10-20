@@ -1,20 +1,22 @@
 //! The in-memory library: lookup by name, Pick Devices search and the category tree.
 
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, HashMap, HashSet};
 
 use crate::device::Device;
 use crate::error::{Issue, LibraryError};
 use crate::package::Package;
-use crate::validate::validate;
+use crate::store::Packages;
+use crate::validate::{Validator, validate};
 
 /// A validated set of devices and packages from one or more pack libraries.
+///
+/// Packages of a loaded pack are read from their files on first use ([`Library::package`]).
 #[derive(Debug, Clone, Default)]
 pub struct Library {
     devices: Vec<Device>,
-    packages: Vec<Package>,
+    packages: Packages,
     /// Upper-case device name → index into `devices`.
     by_name: HashMap<String, usize>,
-    package_by_name: HashMap<String, usize>,
     /// Lower-case name, description and keywords per device, joined by newlines.
     haystacks: Vec<String>,
     libraries: Vec<LibraryInfo>,
@@ -93,22 +95,49 @@ impl Library {
     }
 
     /// Builds the lookup tables without validating (the caller has checked the data).
-    pub(crate) fn index(mut devices: Vec<Device>, mut packages: Vec<Package>) -> Library {
-        let libraries = library_infos(&devices, &packages);
-        // Group by library (stable within a library), as the pack stores them.
-        let slot: HashMap<&str, usize> = libraries.iter().enumerate().map(|(i, l)| (l.name.as_str(), i)).collect();
-        let order = |lib: &str| slot.get(lib).copied().unwrap_or(usize::MAX);
-        devices.sort_by_key(|d| order(&d.library));
+    pub(crate) fn index(devices: Vec<Device>, mut packages: Vec<Package>) -> Library {
+        let libraries = library_infos(&devices, packages.iter().map(|p| p.library.as_str()));
+        let order = rank(&libraries);
         packages.sort_by_key(|p| order(&p.library));
+        Self::assemble(devices, Packages::from_vec(packages))
+    }
+
+    /// Builds the lookup tables over checked devices and a package store.
+    pub(crate) fn assemble(mut devices: Vec<Device>, mut packages: Packages) -> Library {
+        let libraries = library_infos(&devices, packages.names().map(|(_, lib)| lib));
+        // Group by library (stable within a library), as the pack stores them.
+        let order = rank(&libraries);
+        devices.sort_by_key(|d| order(&d.library));
+        packages.sort_by_library(&order);
         let by_name = devices.iter().enumerate().map(|(i, d)| (d.name.to_uppercase(), i)).collect();
-        let package_by_name = packages.iter().enumerate().map(|(i, p)| (p.name.clone(), i)).collect();
         let haystacks = devices.iter().map(haystack).collect();
-        Library { devices, packages, by_name, package_by_name, haystacks, libraries }
+        Library { devices, packages, by_name, haystacks, libraries }
+    }
+
+    /// This library with `top` laid over it: `top` wins name clashes. A device of `self` is
+    /// left out when `top` has a device of the same name (without case), and a package when
+    /// `top` has one of the same name, together with the devices of `self` that use it (their
+    /// pin maps were made for the replaced package). Libraries of `self` come first.
+    ///
+    /// Both libraries being consistent, so is the result.
+    pub fn overlay(self, top: Library) -> Library {
+        let top_devices: HashSet<String> = top.devices.iter().map(|d| d.name.to_uppercase()).collect();
+        let top_packages: HashSet<String> = top.packages.names().map(|(n, _)| n.to_owned()).collect();
+        let kept = self.devices.into_iter().filter(|d| {
+            let uses_replaced =
+                d.packages.iter().any(|r| top_packages.contains(&r.name)) || d.default_package.as_ref().is_some_and(|p| top_packages.contains(p));
+            !top_devices.contains(&d.name.to_uppercase()) && !uses_replaced
+        });
+        let devices = kept.chain(top.devices).collect();
+        Self::assemble(devices, self.packages.chain(top.packages))
     }
 
     /// Re-runs validation (empty when the library is consistent).
     pub fn issues(&self) -> Vec<Issue> {
-        validate(&self.devices, &self.packages)
+        let mut v = Validator::default();
+        v.packages(self.packages.all());
+        v.devices(&self.devices);
+        v.finish()
     }
 
     /// The device with this name, ignoring case.
@@ -116,9 +145,25 @@ impl Library {
         self.by_name.get(&name.to_uppercase()).and_then(|&i| self.devices.get(i))
     }
 
-    /// The package with this name.
+    /// The package with this name. A loaded pack reads the package's file on first use; `None`
+    /// also when that file can no longer be read ([`Library::package_failures`]).
     pub fn package(&self, name: &str) -> Option<&Package> {
-        self.package_by_name.get(name).and_then(|&i| self.packages.get(i))
+        self.packages.get(name)
+    }
+
+    /// Package names with their library, in pack order (nothing is read).
+    pub fn package_names(&self) -> impl Iterator<Item = (&str, &str)> {
+        self.packages.names()
+    }
+
+    /// Number of packages.
+    pub fn package_count(&self) -> usize {
+        self.packages.len()
+    }
+
+    /// Package libraries whose file could not be read again, with the reason.
+    pub fn package_failures(&self) -> Vec<(String, String)> {
+        self.packages.failures()
     }
 
     /// All devices, in pack order.
@@ -126,9 +171,9 @@ impl Library {
         &self.devices
     }
 
-    /// All packages, in pack order.
-    pub fn packages(&self) -> &[Package] {
-        &self.packages
+    /// All packages, in pack order (reading every package file not read yet).
+    pub fn packages(&self) -> impl Iterator<Item = &Package> {
+        self.packages.all()
     }
 
     /// The pack libraries.
@@ -188,11 +233,17 @@ impl Library {
     }
 }
 
+/// Position of a library name in `libraries` (unknown names last).
+fn rank(libraries: &[LibraryInfo]) -> impl Fn(&str) -> usize + use<> {
+    let slot: HashMap<String, usize> = libraries.iter().enumerate().map(|(i, l)| (l.name.clone(), i)).collect();
+    move |lib| slot.get(lib).copied().unwrap_or(usize::MAX)
+}
+
 /// The libraries in order of first appearance (devices, then packages) with their counts.
-fn library_infos(devices: &[Device], packages: &[Package]) -> Vec<LibraryInfo> {
+fn library_infos<'a>(devices: &'a [Device], package_libs: impl Iterator<Item = &'a str>) -> Vec<LibraryInfo> {
     let mut libraries: Vec<LibraryInfo> = Vec::new();
     let mut slot: HashMap<&str, usize> = HashMap::new();
-    let names = devices.iter().map(|d| (d.library.as_str(), true)).chain(packages.iter().map(|p| (p.library.as_str(), false)));
+    let names = devices.iter().map(|d| (d.library.as_str(), true)).chain(package_libs.map(|l| (l, false)));
     for (name, is_device) in names {
         let i = *slot.entry(name).or_insert_with(|| {
             libraries.push(LibraryInfo { name: name.to_owned(), device_count: 0, package_count: 0 });

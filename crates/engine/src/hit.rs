@@ -2,7 +2,7 @@
 
 use std::collections::HashSet;
 
-use protasena_doc::{BusEntryId, BusId, ComponentId, ItemId, JunctionId, LabelId, Sheet, TerminalId, TextId, WireId};
+use protasena_doc::{BusEntryId, BusId, ComponentId, GraphicId, ItemId, JunctionId, LabelId, Sheet, SubcircuitId, TerminalId, TextId, WireId};
 use protasena_geom::{Orient, Pt, Rect, Segment, Vec2};
 use protasena_library::Library;
 use serde::Serialize;
@@ -81,6 +81,25 @@ pub enum Hit {
         /// The bus entry.
         id: BusEntryId,
     },
+    /// A 2D graphic's outline.
+    Graphic {
+        /// The graphic.
+        id: GraphicId,
+    },
+    /// A subcircuit port's connection point.
+    Port {
+        /// The subcircuit.
+        subcircuit: SubcircuitId,
+        /// The port's index in its list.
+        index: usize,
+        /// Its connection point.
+        at: Pt,
+    },
+    /// A subcircuit's box.
+    Subcircuit {
+        /// The subcircuit.
+        id: SubcircuitId,
+    },
     /// A component body.
     Component {
         /// The component.
@@ -100,15 +119,20 @@ impl Hit {
             Hit::Text { id } => ItemId::Text(*id),
             Hit::Bus { id, .. } => ItemId::Bus(*id),
             Hit::BusEntry { id } => ItemId::BusEntry(*id),
+            Hit::Graphic { id } => ItemId::Graphic(*id),
+            Hit::Port { subcircuit: id, .. } | Hit::Subcircuit { id } => ItemId::Subcircuit(*id),
         }
     }
 
     /// The point a wire attaches to, for hits a wire can start or end on.
     pub fn attach_point(&self) -> Option<Pt> {
         match self {
-            Hit::PinEnd { at, .. } | Hit::WireEnd { at, .. } | Hit::Junction { at, .. } | Hit::Terminal { at, .. } | Hit::Wire { at, .. } => {
-                Some(*at)
-            }
+            Hit::PinEnd { at, .. }
+            | Hit::WireEnd { at, .. }
+            | Hit::Junction { at, .. }
+            | Hit::Terminal { at, .. }
+            | Hit::Wire { at, .. }
+            | Hit::Port { at, .. } => Some(*at),
             _ => None,
         }
     }
@@ -116,18 +140,18 @@ impl Hit {
     /// Where a wire may start: pin ends, wire ends, junctions and terminals (Proteus starts
     /// wires from connection points; a plain click on a wire selects or labels it).
     pub fn starts_wire(&self) -> bool {
-        matches!(self, Hit::PinEnd { .. } | Hit::WireEnd { .. } | Hit::Junction { .. } | Hit::Terminal { .. })
+        matches!(self, Hit::PinEnd { .. } | Hit::WireEnd { .. } | Hit::Junction { .. } | Hit::Terminal { .. } | Hit::Port { .. })
     }
 
     fn rank(&self) -> u8 {
         match self {
-            Hit::PinEnd { .. } => 0,
+            Hit::PinEnd { .. } | Hit::Port { .. } => 0,
             Hit::WireEnd { .. } | Hit::Junction { .. } => 1,
             Hit::Terminal { .. } | Hit::Label { .. } => 2,
             Hit::Text { .. } => 3,
             Hit::Wire { .. } => 4,
-            Hit::Bus { .. } | Hit::BusEntry { .. } => 5,
-            Hit::Component { .. } => 6,
+            Hit::Bus { .. } | Hit::BusEntry { .. } | Hit::Graphic { .. } => 5,
+            Hit::Component { .. } | Hit::Subcircuit { .. } => 6,
         }
     }
 }
@@ -194,6 +218,21 @@ pub fn hits(sheet: &Sheet, library: &Library, p: Pt, tol: f64) -> Vec<Hit> {
             found.push((Hit::BusEntry { id: e.id }, d));
         }
     }
+    for g in &sheet.graphics {
+        let d = crate::graphics::distance(&g.shape, p);
+        if d <= tol {
+            found.push((Hit::Graphic { id: g.id }, d));
+        }
+    }
+    for s in &sheet.subcircuits {
+        for (index, port) in s.ports.iter().enumerate() {
+            push_near(&mut found, port.at, p, tol, Hit::Port { subcircuit: s.id, index, at: port.at });
+        }
+        let r = s.rect();
+        if r.inflate(tol).contains(p) {
+            found.push((Hit::Subcircuit { id: s.id }, r.center().distance(p)));
+        }
+    }
     found.sort_by(|(a, da), (b, db)| a.rank().cmp(&b.rank()).then(da.total_cmp(db)));
     found.into_iter().map(|(h, _)| h).collect()
 }
@@ -214,6 +253,8 @@ pub fn item_bounds(sheet: &Sheet, library: &Library, id: ItemId) -> Option<Rect>
         ItemId::Label(i) => sheet.labels.iter().find(|l| l.id == i).map(|l| Rect::from_point(l.at)),
         ItemId::Text(i) => sheet.texts.iter().find(|t| t.id == i).map(|t| Rect::from_point(t.at)),
         ItemId::BusEntry(i) => sheet.bus_entries.iter().find(|e| e.id == i).map(|e| Rect::new(e.bus_end, e.wire_end)),
+        ItemId::Graphic(i) => sheet.graphics.iter().find(|g| g.id == i).and_then(|g| g.shape.bounds()),
+        ItemId::Subcircuit(i) => sheet.subcircuits.iter().find(|s| s.id == i).map(protasena_doc::Subcircuit::rect),
     }
 }
 
@@ -241,6 +282,8 @@ fn every_bounds(sheet: &Sheet, library: &Library) -> Vec<(ItemId, Rect)> {
     out.extend(sheet.labels.iter().map(|l| (ItemId::Label(l.id), Rect::from_point(l.at))));
     out.extend(sheet.texts.iter().map(|t| (ItemId::Text(t.id), Rect::from_point(t.at))));
     out.extend(sheet.bus_entries.iter().map(|e| (ItemId::BusEntry(e.id), Rect::new(e.bus_end, e.wire_end))));
+    out.extend(sheet.graphics.iter().filter_map(|g| Some((ItemId::Graphic(g.id), g.shape.bounds()?))));
+    out.extend(sheet.subcircuits.iter().map(|s| (ItemId::Subcircuit(s.id), s.rect())));
     out
 }
 

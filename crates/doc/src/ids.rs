@@ -56,6 +56,10 @@ id_type!(/// Id of a [`BusEntry`](crate::BusEntry).
     BusEntryId, "bus entry");
 id_type!(/// Id of a [`Text`](crate::Text).
     TextId, "text");
+id_type!(/// Id of a [`Graphic`](crate::Graphic).
+    GraphicId, "graphic");
+id_type!(/// Id of a [`Subcircuit`](crate::Subcircuit).
+    SubcircuitId, "subcircuit");
 
 /// The id of any item that lives on a sheet.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -77,6 +81,10 @@ pub enum ItemId {
     BusEntry(BusEntryId),
     /// A free text.
     Text(TextId),
+    /// A 2D graphic.
+    Graphic(GraphicId),
+    /// A subcircuit.
+    Subcircuit(SubcircuitId),
 }
 
 impl ItemId {
@@ -91,6 +99,8 @@ impl ItemId {
             Self::Bus(i) => i.0,
             Self::BusEntry(i) => i.0,
             Self::Text(i) => i.0,
+            Self::Graphic(i) => i.0,
+            Self::Subcircuit(i) => i.0,
         }
     }
 }
@@ -106,6 +116,8 @@ impl fmt::Display for ItemId {
             Self::Bus(i) => i.fmt(f),
             Self::BusEntry(i) => i.fmt(f),
             Self::Text(i) => i.fmt(f),
+            Self::Graphic(i) => i.fmt(f),
+            Self::Subcircuit(i) => i.fmt(f),
         }
     }
 }

@@ -103,7 +103,8 @@ fn footprints(opts: &Options, report: &mut Report) -> Result<Vec<(FpEntry, Packa
         }
         r.package.library = format!("{}{FOOTPRINT_LIB_SUFFIX}", r.file.lib);
         let pads: HashSet<String> = r.package.pads.iter().map(|p| p.name.clone()).collect();
-        out.push((FpEntry { lib: r.file.lib, name: r.file.name, package: r.package.name.clone(), pads }, r.package));
+        let tht = r.package.pads.iter().any(|p| !p.name.is_empty() && p.drill.is_some());
+        out.push((FpEntry { lib: r.file.lib, name: r.file.name, package: r.package.name.clone(), pads, tht }, r.package));
     }
     Ok(out)
 }
@@ -130,7 +131,11 @@ fn finish_devices(drafts: Vec<Draft>, report: &mut Report) -> Vec<Device> {
                 footprint: d.links.field.clone(),
             });
         }
-        report.counts.footprint_field_links += usize::from(d.links.default.is_some());
+        if let Some(problem) = &d.links.map_problem {
+            report.failures.push(Failure { what: format!("map.toml/{}:{}", d.lib, d.symbol), error: problem.clone() });
+        }
+        report.counts.footprint_field_links += usize::from(d.links.field_linked);
+        report.counts.map_default_links += usize::from(d.links.map_linked);
         report.counts.filter_links += d.links.filter_links;
         report.counts.filter_capped_devices += usize::from(d.links.capped);
         d.device.name = name;
@@ -176,8 +181,8 @@ fn count(lib: &Library, report: &mut Report) {
     c.pins = lib.devices().iter().map(|d| d.symbol.pins().count()).sum();
     c.devices_with_packages = lib.devices().iter().filter(|d| !d.packages.is_empty()).count();
     c.package_links = lib.devices().iter().map(|d| d.packages.len()).sum();
-    c.packages = lib.packages().len();
-    c.pads = lib.packages().iter().map(|p| p.pads.len()).sum();
+    c.packages = lib.package_count();
+    c.pads = lib.packages().map(|p| p.pads.len()).sum();
 }
 
 /// The libraries in pack order, each with its items.

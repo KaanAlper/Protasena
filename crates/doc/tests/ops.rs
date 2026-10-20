@@ -128,7 +128,28 @@ fn added_ids_are_never_handed_out_again() {
     p.apply(Op::Add { sheet: s, item: Item::Junction(j), index: None }).unwrap();
     let next: WireId = p.fresh_id().unwrap();
     assert_eq!(next, WireId(101));
-    let dup = Item::Label(Label { id: LabelId(100), at: pt(0.0, 0.0), text: "A".into(), orient: Orient::IDENTITY });
+    let dup = Item::Label(Label { id: LabelId(100), at: pt(0.0, 0.0), text: "A".into(), orient: Orient::IDENTITY, global: false });
     assert_eq!(p.apply(Op::Add { sheet: s, item: dup, index: None }), Err(DocError::DuplicateItem(ItemId::Label(LabelId(100)))));
     assert!(Op::batch(vec![Op::batch(vec![])]).is_empty());
+}
+
+#[test]
+fn template_settings_are_one_reversible_op_and_checked() {
+    use protasena_doc::{Colour, JunctionShape, Template};
+    let mut p = Project::new("t");
+    let mut t = Template::default();
+    t.colours.paper = Colour::parse("#fffff0");
+    t.junction.shape = JunctionShape::Diamond;
+    t.junction.size = Some(50.0);
+    let undo = p.apply(Op::SetTemplate { template: Box::new(t) }).unwrap();
+    assert_eq!(p.template, t);
+    p.apply(undo).unwrap();
+    assert!(p.template.is_default());
+    let mut bad = t;
+    bad.text_styles.value.height = Some(-1.0);
+    let before = p.clone();
+    assert!(p.apply(Op::SetTemplate { template: Box::new(bad) }).is_err());
+    assert_eq!(p, before);
+    p.template = bad;
+    assert_eq!(p.issues().len(), 1, "a hand-made bad template is an issue");
 }

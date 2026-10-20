@@ -4,11 +4,16 @@
 //! `docs/gaps.md`).
 
 pub mod edit_component;
+pub mod export;
 mod files;
 mod forms;
 pub mod pick_devices;
 pub mod pick_model;
 pub mod results;
+pub mod settings_form;
+pub mod subcircuit;
+pub mod system;
+pub mod tools;
 
 use egui::{Align, Layout, RichText, Ui, vec2};
 use protasena_engine::{Request, Session};
@@ -18,6 +23,7 @@ pub use files::{DesignForm, PathForm, PathPurpose, SheetForm, netlist_format};
 pub use forms::{ConfirmForm, FindForm, GotoForm, LabelForm, TERMINAL_KINDS, Target, TerminalForm, TextForm};
 
 use crate::theme::Tokens;
+use crate::unsaved::Then;
 use crate::{App, control, tl};
 
 /// The open dialog.
@@ -47,10 +53,35 @@ pub enum Dialog {
         /// Total (renumber all) instead of incremental.
         total: bool,
     },
-    /// Unsaved changes: discard them?
-    ConfirmDiscard {
-        /// The command waiting (`new` or `open`).
-        then: &'static str,
+    /// Export Graphics (one of its items).
+    Export(Box<export::ExportForm>),
+    /// Print Design.
+    Print(Box<export::PrintForm>),
+    /// Align Objects (the index of the edge chosen).
+    Align {
+        /// Which edge or centre.
+        edge: usize,
+    },
+    /// Search & Tag.
+    SearchTag(tools::SearchTagForm),
+    /// Property Assignment Tool.
+    PropertyAssign(tools::PropertyAssignForm),
+    /// A new subcircuit port's name and kind.
+    Port(subcircuit::PortForm),
+    /// Edit Subcircuit.
+    Subcircuit(subcircuit::SubcircuitForm),
+    /// A Template or System menu settings dialog.
+    Settings(Box<settings_form::SettingsForm>),
+    /// Set Keyboard Mapping.
+    Keymap(Box<system::KeymapForm>),
+    /// Set Property Definitions or Set Sheet Sizes.
+    List(system::ListForm),
+    /// Restore Default Settings: asks first.
+    RestoreDefaults,
+    /// Unsaved changes: Save, Don't Save or Cancel?
+    SaveChanges {
+        /// What waits for the answer.
+        then: Then,
     },
 }
 
@@ -71,8 +102,13 @@ pub enum Reply {
     },
     /// Show another dialog instead.
     Then(Dialog),
-    /// The unsaved changes may go: carry on with `new` or `open`.
-    Discard(&'static str),
+    /// The unsaved-changes answer: save first (`save`) or not, then carry on with `then`.
+    SaveChanges {
+        /// What waits.
+        then: Then,
+        /// Save before carrying on.
+        save: bool,
+    },
 }
 
 impl Dialog {
@@ -85,16 +121,30 @@ impl Dialog {
             Request::WireLabel { at } => Dialog::Label(LabelForm::new_at(at)),
             Request::EditLabel { id } => Dialog::Label(LabelForm::edit(s, id)?),
             Request::EditTerminal { id } => Dialog::Terminal(TerminalForm::new(s, id)?),
-            Request::Text { at } => Dialog::Text(TextForm::new_at(at)),
-            Request::EditText { id } => Dialog::Text(TextForm::edit(s, id)?),
+            Request::Text { at } => Dialog::Text(TextForm::new_at(at).editor(s)),
+            Request::EditText { id } => Dialog::Text(TextForm::edit(s, id)?.editor(s)),
             Request::DesignProperties => Dialog::Design(DesignForm::new(s)),
             Request::SheetProperties { sheet } => Dialog::Sheet(SheetForm::new(s, sheet)?),
             Request::GotoSheet => Dialog::GotoSheet(GotoForm::new(s)),
             Request::GlobalAnnotator => Dialog::Annotator { total: false },
-            Request::ConfirmDiscard { then } => Dialog::ConfirmDiscard { then },
+            Request::Align => Dialog::Align { edge: 0 },
+            Request::SearchTag => Dialog::SearchTag(tools::SearchTagForm::default()),
+            Request::PropertyAssign => Dialog::PropertyAssign(tools::PropertyAssignForm::new(!s.selection().is_empty())),
+            Request::SubcircuitPort { subcircuit, at } => Dialog::Port(subcircuit::PortForm::new(s, subcircuit, at)),
+            Request::EditSubcircuit { id } => Dialog::Subcircuit(subcircuit::SubcircuitForm::new(s, id)?),
+            Request::Template { section } | Request::System { section } => Dialog::Settings(Box::new(settings_form::SettingsForm::new(s, section)?)),
+            Request::KeyboardMapping => Dialog::Keymap(Box::new(system::KeymapForm::new(s))),
+            Request::PropertyDefinitions => Dialog::List(system::ListForm::properties(s)),
+            Request::SheetSizes => Dialog::List(system::ListForm::sheet_sizes(s)),
+            Request::RestoreDefaults => Dialog::RestoreDefaults,
+            // A result window, not a dialog: the app runs the command and shows it.
+            Request::BillOfMaterials => return None,
+            Request::ConfirmDiscard { then } => Dialog::SaveChanges { then: Then::from_command(then) },
             Request::OpenProject => Dialog::path(PathPurpose::Open { discard: false }, ""),
             Request::SaveProjectAs => Dialog::path(PathPurpose::SaveAs, ""),
             Request::ExportNetlist => Dialog::path(PathPurpose::Netlist, ""),
+            Request::ExportGraphics { format } => Dialog::Export(Box::new(export::ExportForm::new(s, export::export_kind(format)?))),
+            Request::PrintDesign => Dialog::Print(Box::new(export::PrintForm::new(s, false))),
         })
     }
 
@@ -117,7 +167,19 @@ impl Dialog {
             Dialog::Sheet(_) => tl!("Edit Sheet Properties"),
             Dialog::GotoSheet(_) => tl!("Goto Sheet"),
             Dialog::Annotator { .. } => tl!("Global Annotator"),
-            Dialog::ConfirmDiscard { .. } => tl!("Unsaved Changes"),
+            Dialog::Align { .. } => tl!("Align Objects"),
+            Dialog::SearchTag(_) => tl!("Search & Tag"),
+            Dialog::PropertyAssign(_) => tl!("Property Assignment Tool"),
+            Dialog::Export(d) => d.kind.title,
+            Dialog::Print(_) => tl!("Print Design"),
+            Dialog::Port(_) => tl!("Subcircuit Port"),
+            Dialog::Subcircuit(_) => tl!("Edit Subcircuit"),
+            Dialog::Settings(d) => d.title,
+            Dialog::Keymap(_) => tl!("Set Keyboard Mapping"),
+            Dialog::List(d) if d.cmd == "set-sheet-sizes" => tl!("Set Sheet Sizes"),
+            Dialog::List(_) => tl!("Set Property Definitions"),
+            Dialog::RestoreDefaults => tl!("Restore Default Settings"),
+            Dialog::SaveChanges { .. } => tl!("Unsaved Changes"),
         }
     }
 
@@ -133,9 +195,28 @@ impl Dialog {
             Dialog::Path(d) => &mut d.error,
             Dialog::Design(d) => &mut d.error,
             Dialog::Sheet(d) => &mut d.error,
-            Dialog::GotoSheet(_) | Dialog::Annotator { .. } | Dialog::ConfirmDiscard { .. } => return,
+            Dialog::Export(d) => &mut d.out.error,
+            Dialog::SearchTag(d) => &mut d.error,
+            Dialog::PropertyAssign(d) => &mut d.error,
+            Dialog::Print(d) => &mut d.out.error,
+            Dialog::Port(d) => &mut d.error,
+            Dialog::Subcircuit(d) => &mut d.error,
+            Dialog::Settings(d) => &mut d.error,
+            Dialog::Keymap(d) => &mut d.error,
+            Dialog::List(d) => &mut d.error,
+            Dialog::RestoreDefaults => return,
+            Dialog::GotoSheet(_) | Dialog::Annotator { .. } | Dialog::Align { .. } | Dialog::SaveChanges { .. } => return,
         };
         *slot = Some(e);
+    }
+
+    /// The file options of an export or print dialog.
+    fn output(&mut self) -> Option<&mut export::Output> {
+        match self {
+            Dialog::Export(d) => Some(&mut d.out),
+            Dialog::Print(d) => Some(&mut d.out),
+            _ => None,
+        }
     }
 
     fn body(&mut self, ui: &mut Ui, s: &Session) -> Reply {
@@ -151,7 +232,18 @@ impl Dialog {
             Dialog::Sheet(d) => d.ui(ui),
             Dialog::GotoSheet(d) => d.ui(ui, s),
             Dialog::Annotator { total } => forms::annotator(ui, total),
-            Dialog::ConfirmDiscard { then } => ConfirmForm::ui(ui, then),
+            Dialog::Export(d) => d.ui(ui),
+            Dialog::Align { edge } => tools::align(ui, edge),
+            Dialog::SearchTag(d) => d.ui(ui),
+            Dialog::PropertyAssign(d) => d.ui(ui),
+            Dialog::Print(d) => d.ui(ui),
+            Dialog::Port(d) => d.ui(ui),
+            Dialog::Subcircuit(d) => d.ui(ui),
+            Dialog::Settings(d) => d.ui(ui),
+            Dialog::Keymap(d) => d.ui(ui),
+            Dialog::List(d) => d.ui(ui),
+            Dialog::RestoreDefaults => system::restore(ui),
+            Dialog::SaveChanges { then } => ConfirmForm::ui(ui, *then),
         }
     }
 }
@@ -173,16 +265,15 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
     if modal.should_close() && matches!(reply, Reply::None) {
         reply = Reply::Cancel;
     }
+    if let Some(out) = d.output() {
+        app.browse(out);
+    }
     match reply {
         Reply::None => app.dialog = Some(d),
-        Reply::Cancel => {}
+        Reply::Cancel => app.after_save = None,
         Reply::Then(next) => app.dialog = Some(next),
-        Reply::Discard("open") => app.choose_open(true),
-        Reply::Discard(then) => {
-            if let Err(e) = app.complete(then, serde_json::json!({ "discard": true })) {
-                app.notify(e, true);
-            }
-        }
+        Reply::SaveChanges { then, save: true } => app.save_then(then),
+        Reply::SaveChanges { then, save: false } => app.carry_on(then),
         Reply::Run { cmd, params, keep } => match app.complete(cmd, params) {
             Ok(()) if keep => app.dialog = Some(d),
             Ok(()) => {}

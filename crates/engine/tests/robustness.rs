@@ -54,6 +54,9 @@ fn sessions() -> Vec<Session> {
     let mut busy = divider();
     exec(&mut busy, "select-all", json!({}));
     exec(&mut busy, "copy", json!({}));
+    exec(&mut busy, "subcircuit", json!({ "from": [2000, -500], "to": [3000, 500] }));
+    let sub = busy.sheet().unwrap().subcircuits[0].id.0;
+    exec(&mut busy, "subcircuit-port", json!({ "subcircuit": sub, "at": [2000, 0], "name": "IN", "kind": "input" }));
     exec(&mut busy, "new-sheet", json!({}));
     exec(&mut busy, "previous-sheet", json!({}));
     exec(&mut busy, "select-all", json!({}));
@@ -203,15 +206,23 @@ fn proteus_shortcuts_and_menus() {
         ("pick-device", "P"),
         ("previous-sheet", "Page-Up"),
         ("next-sheet", "Page-Down"),
+        ("search-tag", "T"),
+        ("property-assign", "A"),
+        ("align", "Ctrl+A"),
+        ("send-to-back", "Ctrl+B"),
+        ("bring-to-front", "Ctrl+F"),
+        ("exit-to-parent", "Ctrl+X"),
+        ("enter-child-sheet", "Ctrl+C"),
     ];
     for (id, key) in expected {
         assert_eq!(find_command(id).and_then(|c| c.shortcut), Some(key), "{id}");
     }
-    // Proteus binds these to other things (Exit to Parent Sheet, View Simulation Log, Align
-    // Objects, Bring To Front): no clipboard or select-all keys.
-    for key in ["Ctrl+X", "Ctrl+V", "Ctrl+A", "Ctrl+F", "Ctrl+C"] {
-        assert!(protasena_engine::command_for_key(key).is_none(), "{key}");
+    // Proteus binds these to other things (Exit to Parent Sheet, Goto Child Sheet, View
+    // Simulation Log; Ctrl+A and Ctrl+F are Align Objects and Bring To Front): no clipboard keys.
+    for key in ["Ctrl+X", "Ctrl+C"] {
+        assert!(!["cut", "copy", "paste"].contains(&protasena_engine::command_for_key(key).map_or("", |c| c.id)), "{key}");
     }
+    assert!(protasena_engine::command_for_key("Ctrl+V").is_none(), "Ctrl+V");
     assert_eq!(find_command("undo").unwrap().menu, ["Edit", "Undo Changes"]);
     assert_eq!(find_command("annotate").unwrap().menu, ["Tool", "Global Annotator"]);
     let mut s = Session::new();

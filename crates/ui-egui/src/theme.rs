@@ -101,6 +101,8 @@ pub struct Tokens {
     pub label: Color32,
     /// Terminals.
     pub terminal: Color32,
+    /// Subcircuit boxes and their ports.
+    pub subcircuit: Color32,
     /// Free text.
     pub text_item: Color32,
     /// Parts whose device is missing.
@@ -150,6 +152,7 @@ impl Tokens {
         bus: hex(0x7A4CC2),
         label: hex(0x0E7C86),
         terminal: hex(0xB7791F),
+        subcircuit: hex(0x5B4A9E),
         text_item: hex(0x39404B),
         missing: hex(0xC2410C),
         selection: hex(0xF2711C),
@@ -190,6 +193,7 @@ impl Tokens {
         bus: hex(0xB794F4),
         label: hex(0x4FC3CF),
         terminal: hex(0xE0A84A),
+        subcircuit: hex(0xA99BEA),
         text_item: hex(0xD0D5DB),
         missing: hex(0xF08A4B),
         selection: hex(0xFF8F3F),
@@ -213,11 +217,25 @@ impl Tokens {
         Self::of(ACTIVE.with(Cell::get))
     }
 
+    /// The palette with a design's own colours (Template ▸ Set Design Colours) where it sets
+    /// them: the paper, the grid, the highlight of selected objects and dragged ones.
+    pub fn with_design(self, c: &protasena_doc::DesignColours) -> Tokens {
+        let pick = |c: Option<protasena_doc::Colour>, d: Color32| c.map_or(d, colour);
+        Tokens {
+            sheet: pick(c.paper, self.sheet),
+            grid: pick(c.grid, self.grid),
+            grid_line: c.grid.map_or(self.grid_line, |g| colour(g).gamma_multiply(0.6)),
+            selection: pick(c.highlight, self.selection),
+            preview: pick(c.drag, self.preview),
+            ..self
+        }
+    }
+
     /// The colour of a drawing ink.
     pub fn ink(&self, ink: Ink) -> Color32 {
         match ink {
             Ink::Body | Ink::Pin | Ink::BodyText => self.body,
-            Ink::BodyFill => self.body_fill,
+            Ink::BodyFill | Ink::GraphicFill | Ink::SubcircuitFill => self.body_fill,
             Ink::PinName => self.pin_name,
             Ink::PinNumber => self.pin_number,
             Ink::Reference => self.reference,
@@ -228,11 +246,19 @@ impl Tokens {
             Ink::Label => self.label,
             Ink::Terminal | Ink::TerminalText => self.terminal,
             Ink::Text => self.text_item,
+            Ink::Graphic => self.body,
+            Ink::Subcircuit | Ink::Port => self.subcircuit,
             Ink::SheetBorder => self.sheet_border,
             Ink::Pad => self.pad,
             Ink::Silk => self.silk,
         }
     }
+}
+
+/// A design colour as an egui colour.
+pub fn colour(c: protasena_doc::Colour) -> Color32 {
+    let [r, g, b] = c.0;
+    Color32::from_rgb(r, g, b)
 }
 
 const fn hex(rgb: u32) -> Color32 {
@@ -346,7 +372,7 @@ mod tests {
     #[test]
     fn drawing_inks_stand_out_from_the_sheet_in_both_themes() {
         for t in [Tokens::LIGHT, Tokens::DARK] {
-            for ink in [Ink::Body, Ink::Wire, Ink::Label, Ink::Reference, Ink::Terminal, Ink::Bus] {
+            for ink in [Ink::Body, Ink::Wire, Ink::Label, Ink::Reference, Ink::Terminal, Ink::Bus, Ink::Subcircuit] {
                 let d = (luminance(t.ink(ink)) - luminance(t.sheet)).abs();
                 assert!(d > 0.3, "{ink:?} against the sheet: {d}");
             }

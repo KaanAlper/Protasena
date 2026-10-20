@@ -8,6 +8,7 @@ use serde_json::{Value, json};
 use crate::dialogs::results::Results;
 use crate::dialogs::{Dialog, PathPurpose};
 use crate::menus::model::UiAct;
+use crate::unsaved::Then;
 use crate::{App, tl};
 
 impl App {
@@ -45,8 +46,26 @@ impl App {
         match id {
             "erc" => self.results = Some(Results::Erc(v.clone())),
             "export-netlist" => self.results = Some(Results::Netlist(v.clone())),
-            "save" | "save-as" => self.notify(format!("{} {}", tl!("Saved"), v["path"].as_str().unwrap_or_default()), false),
+            "bill-of-materials" if v.get("path").is_some() => {
+                self.notify(format!("{} {}", tl!("Exported to"), v["path"].as_str().unwrap_or_default()), false);
+            }
+            "bill-of-materials" => self.results = Some(Results::Bom(v.clone())),
+            "save" | "save-as" => {
+                self.notify(format!("{} {}", tl!("Saved"), v["path"].as_str().unwrap_or_default()), false);
+                self.saved();
+            }
             "annotate" => self.notify(format!("{}: {}", tl!("Annotated"), v["changed"]), false),
+            "export-graphics" | "export-bitmap" | "export-dxf" | "export-eps" | "export-pdf" | "export-svg" => {
+                self.notify(format!("{} {}", tl!("Exported to"), v["path"].as_str().unwrap_or_default()), false);
+            }
+            "print-design" => self.printed(v),
+            "search-tag" => self.notify(format!("{}: {}", tl!("Tagged"), v["count"]), false),
+            "property-assign" => self.notify(format!("{}: {}", tl!("Parts changed"), v["changed"]), false),
+            "tidy" => {
+                let items = v["removed"].as_array().map_or(0, Vec::len);
+                let devices = v["devices_removed"].as_array().map_or(0, Vec::len);
+                self.notify(format!("{}: {items} {}, {devices} {}", tl!("Tidy Design"), tl!("objects removed"), tl!("devices removed")), false);
+            }
             _ => {}
         }
     }
@@ -63,17 +82,27 @@ impl App {
     /// Shows the dialog the engine asks for.
     pub fn request(&mut self, r: Request) {
         match r {
-            Request::OpenProject if self.session.is_dirty() => self.dialog = Some(Dialog::ConfirmDiscard { then: "open" }),
+            Request::OpenProject if self.session.is_dirty() => self.dialog = Some(Dialog::SaveChanges { then: Then::Open }),
             Request::OpenProject => self.choose_open(false),
             Request::SaveProjectAs => self.choose_save(PathPurpose::SaveAs),
             Request::ExportNetlist => self.choose_save(PathPurpose::Netlist),
+            Request::BillOfMaterials => {
+                if let Err(e) = self.complete("bill-of-materials", json!({})) {
+                    self.notify(e, true);
+                }
+            }
+            Request::PrintDesign => {
+                let form = crate::dialogs::export::PrintForm::new(&self.session, self.services.open_path.is_some());
+                self.dialog = Some(Dialog::Print(Box::new(form)));
+            }
             other => self.dialog = Dialog::from_request(&self.session, other),
         }
     }
 
     /// Asks for a project to open (the native chooser when there is one) and opens it.
     pub fn choose_open(&mut self, discard: bool) {
-        let picked = self.services.pick_open.as_ref().map(|f| f());
+        let start = self.start_dir();
+        let picked = self.services.pick_open.as_ref().map(|f| f(start.as_deref()));
         match picked {
             Some(Some(path)) => {
                 if let Err(e) = self.complete("open", json!({ "path": path.display().to_string(), "discard": discard })) {
@@ -85,33 +114,76 @@ impl App {
         }
     }
 
-    fn choose_save(&mut self, purpose: PathPurpose) {
+    /// Asks where to save (the native chooser when there is one) and saves or exports there.
+    pub(crate) fn choose_save(&mut self, purpose: PathPurpose) {
         let name = self.session.project().name.clone();
         let (suggested, exts): (String, &[&str]) = match purpose {
             PathPurpose::Netlist => (format!("{name}.json"), &["json", "cir"]),
+            PathPurpose::Bom("html") => (format!("{name}-bom.html"), &["html"]),
+            PathPurpose::Bom(_) => (format!("{name}-bom.csv"), &["csv"]),
             _ => (format!("{name}.psproj"), &["psproj"]),
         };
-        let picked = self.services.pick_save.as_ref().map(|f| f(&suggested, exts));
+        let start = self.start_dir();
+        let picked = self.services.pick_save.as_ref().map(|f| f(&suggested, exts, start.as_deref()));
         match picked {
             Some(Some(path)) => {
                 let path = path.display().to_string();
                 let r = match purpose {
                     PathPurpose::Netlist => self.complete("export-netlist", json!({ "path": path, "format": crate::dialogs::netlist_format(&path) })),
+                    PathPurpose::Bom(format) => self.complete("bill-of-materials", json!({ "path": path, "format": format })),
                     _ => self.complete("save-as", json!({ "path": path })),
                 };
                 if let Err(e) = r {
+                    self.after_save = None;
                     self.notify(e, true);
                 }
             }
-            Some(None) => {}
+            Some(None) => self.after_save = None,
             None => self.dialog = Some(Dialog::path(purpose, &suggested)),
         }
+    }
+
+    /// After Print Design: opens the PDF in the system viewer when the dialog asked for it.
+    fn printed(&mut self, v: &Value) {
+        let path = v["path"].as_str().unwrap_or_default().to_owned();
+        let opened = match (&self.services.open_path, v["view"].as_bool()) {
+            (Some(open), Some(true)) => Some(open(std::path::Path::new(&path))),
+            _ => None,
+        };
+        match opened {
+            Some(Err(e)) => self.notify(format!("{}: {e}", tl!("The PDF could not be opened")), true),
+            _ => self.notify(format!("{} {path}", tl!("Printed to")), false),
+        }
+    }
+
+    /// The export dialogs' Browse button: asks the file chooser (when the app has one) for the
+    /// file, keeping the extension offered.
+    pub(crate) fn browse(&mut self, out: &mut crate::dialogs::export::Output) {
+        if !std::mem::take(&mut out.browse) {
+            return;
+        }
+        let Some(pick) = self.services.pick_save.as_ref() else {
+            out.error = Some(tl!("Type the file name: this window has no file chooser").to_owned());
+            return;
+        };
+        let current = std::path::Path::new(out.path.trim());
+        let name = current.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+        let ext = current.extension().map(|e| e.to_string_lossy().into_owned()).unwrap_or_default();
+        let start = current.parent().filter(|d| !d.as_os_str().is_empty()).map(std::path::Path::to_path_buf).or_else(|| self.start_dir());
+        if let Some(p) = pick(&name, &[ext.as_str()], start.as_deref()) {
+            out.path = p.display().to_string();
+        }
+    }
+
+    /// The folder file choosers start in: System Settings' project folder, if set.
+    fn start_dir(&self) -> Option<std::path::PathBuf> {
+        self.session.settings().project_dir.as_ref().map(std::path::PathBuf::from)
     }
 
     /// A window action from a menu item.
     pub fn ui_act(&mut self, act: UiAct) {
         match act {
-            UiAct::Exit => self.quit_requested = true,
+            UiAct::Exit => self.request_exit(),
             UiAct::ZoomArea => {
                 self.canvas.zoom_area = Some(None);
                 self.notify(tl!("Drag a rectangle around the area to show"), false);

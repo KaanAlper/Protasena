@@ -64,7 +64,7 @@ mod tests {
     #[test]
     fn builtin_packages_draw_their_pads() {
         let lib = Library::builtin();
-        let pkg = lib.packages().first().unwrap();
+        let pkg = lib.packages().next().unwrap();
         let prims = package_prims(pkg);
         assert_eq!(prims.iter().filter(|p| p.ink == Ink::Pad).count(), pkg.pads.len());
         assert!(prims.iter().all(|p| p.bounds().is_some()));

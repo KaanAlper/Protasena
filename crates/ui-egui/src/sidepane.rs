@@ -1,6 +1,6 @@
 //! The left pane: the overview window (the whole sheet with the visible area marked; a click
 //! or drag pans there) above the object selector (the P and L buttons, the caption of the
-//! current mode's list, and the list itself: picked devices, terminal kinds…).
+//! current mode's list, and the list itself: picked devices, terminal kinds, port kinds…).
 
 use std::collections::HashSet;
 
@@ -40,6 +40,7 @@ enum Clicked {
     Pick,
     Device(String, String),
     Terminal(&'static str),
+    Port(&'static str),
     Pan(protasena_geom::Pt),
 }
 
@@ -69,6 +70,11 @@ pub fn show(app: &mut App, ui: &mut Ui) {
                 app.notify(e, true);
             }
         }
+        Some(Clicked::Port(kind)) => {
+            if let Err(e) = app.run("select-port", json!({ "kind": kind })) {
+                app.notify(e, true);
+            }
+        }
         Some(Clicked::Pan(at)) => {
             let _ = app.run("pan", json!({ "center": [at.x, at.y] }));
         }
@@ -86,9 +92,15 @@ fn overview(app: &mut App, ui: &mut Ui, clicked: &mut Option<Clicked>) {
     let x = Xform::fit(rect, paper, 8.0);
     let painter = ui.painter_at(rect);
     painter.rect_filled(egui::Rect::from_two_pos(x.to_screen(paper.min), x.to_screen(paper.max)), 0.0, t.sheet);
-    let list = protasena_render::sheet_display_list(sheet, app.session.library());
+    let template = app.session.project().template;
+    let list = protasena_render::styled_sheet_display_list(sheet, app.session.library(), &template);
     let none = HashSet::new();
-    let p = Paint { painter: &painter, x, style: Style { tokens: t, ink: None, selected: &none, texts: false, min_width: 0.8 } };
+    let t = t.with_design(&template.colours);
+    let p = Paint {
+        painter: &painter,
+        x,
+        style: Style { tokens: t, ink: None, selected: &none, texts: false, min_width: 0.8, template: Some(&template) },
+    };
     p.all(&list.prims);
     if let Some(cx) = app.canvas.xform {
         let v = cx.visible();
@@ -135,6 +147,14 @@ fn selector(app: &mut App, ui: &mut Ui, clicked: &mut Option<Clicked>) {
                     let selected = chosen.as_ref() == Some(d);
                     if row(ui, &d.name, selected).clicked() {
                         *clicked = Some(Clicked::Device(d.name.clone(), d.library.clone()));
+                    }
+                }
+            }
+            Some("PORTS") => {
+                let kind = app.session.port_kind();
+                for (k, name) in crate::dialogs::subcircuit::PORT_KINDS {
+                    if row(ui, name, k == kind).clicked() {
+                        *clicked = Some(Clicked::Port(protasena_engine::port_kind_id(k)));
                     }
                 }
             }

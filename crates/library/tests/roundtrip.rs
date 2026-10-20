@@ -43,7 +43,7 @@ fn optional_fields_round_trip() {
 #[test]
 fn awkward_floats_survive_exactly() {
     let mut d = two_pin("F", "LIB", "P2");
-    let pin = &mut d.symbol.units[0].pins[0];
+    let pin = &mut std::sync::Arc::make_mut(&mut d.symbol).units[0].pins[0];
     pin.at = protasena_geom::Pt::new(0.1 + 0.2, -1.0e-300);
     pin.length = 39.370_078_740_157_48;
     let back: Device = serde_json::from_str(&serde_json::to_string(&d).unwrap()).unwrap();
@@ -57,7 +57,7 @@ fn builtin_pack_saves_and_loads_unchanged() {
     lib.save_dir(dir.path()).unwrap();
     let back = Library::load_dir(dir.path()).unwrap();
     assert_eq!(back.devices(), lib.devices());
-    assert_eq!(back.packages(), lib.packages());
+    assert_eq!(back.packages().collect::<Vec<_>>(), lib.packages().collect::<Vec<_>>());
     assert_eq!(back.libraries(), lib.libraries());
 }
 
@@ -72,7 +72,7 @@ fn multi_library_pack_round_trips_and_keeps_order() {
     lib.save_dir(dir.path()).unwrap();
     let back = Library::load_dir(dir.path()).unwrap();
     assert_eq!(back.devices(), lib.devices());
-    assert_eq!(back.packages(), lib.packages());
+    assert_eq!(back.packages().collect::<Vec<_>>(), lib.packages().collect::<Vec<_>>());
     assert_eq!(back.libraries(), lib.libraries());
     assert_eq!(back.package("Q2").map(|p| p.library.as_str()), Some("ZETA"));
 }

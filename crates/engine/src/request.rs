@@ -2,7 +2,7 @@
 //! pick, key or click that needs one returns a [`Request`]; the UI shows the dialog and then
 //! runs the command's JSON form with the values entered.
 
-use protasena_doc::{ComponentId, LabelId, SheetId, TerminalId, TextId};
+use protasena_doc::{ComponentId, LabelId, SheetId, SubcircuitId, TerminalId, TextId};
 use protasena_geom::Pt;
 use serde::Serialize;
 
@@ -34,6 +34,18 @@ pub enum Request {
         /// The terminal.
         id: TerminalId,
     },
+    /// Name a new port on a subcircuit's edge (then `subcircuit-port`).
+    SubcircuitPort {
+        /// The subcircuit.
+        subcircuit: SubcircuitId,
+        /// The point on its edge.
+        at: Pt,
+    },
+    /// Edit Subcircuit: its name and ports (then `edit-subcircuit`, or `enter-child-sheet`).
+    EditSubcircuit {
+        /// The subcircuit.
+        id: SubcircuitId,
+    },
     /// Enter the text of a new text or script (then `text`).
     Text {
         /// Where it goes.
@@ -50,6 +62,13 @@ pub enum Request {
     SaveProjectAs,
     /// Netlist Compiler options and file (then `export-netlist`).
     ExportNetlist,
+    /// Export Graphics options and file (then the `export-*` command of the format).
+    ExportGraphics {
+        /// The format the menu item writes (`png` for Export Bitmap, which also offers `bmp`).
+        format: &'static str,
+    },
+    /// Print Design: what to print and the PDF file (then `print-design`).
+    PrintDesign,
     /// Edit Design Properties (then `design-properties`).
     DesignProperties,
     /// Edit Sheet Properties (then `sheet-properties`).
@@ -61,6 +80,34 @@ pub enum Request {
     GotoSheet,
     /// Global Annotator options (then `annotate`).
     GlobalAnnotator,
+    /// Align Objects: which edge or centre to line up (then `align`).
+    Align,
+    /// Search & Tag: the property, operator and value to tag by (then `search-tag`).
+    SearchTag,
+    /// Property Assignment Tool: the string, action and parts (then `property-assign`).
+    PropertyAssign,
+    /// A Template menu dialog for one group of the template settings: `colours`,
+    /// `graphic_styles`, `text_styles`, `graphics_2d` or `junction` (then its `set-*` command).
+    Template {
+        /// The group.
+        section: &'static str,
+    },
+    /// A System menu dialog for one group of the system settings: `folders`, `display` or
+    /// `text_editor` (then `system-settings`, `set-display-options` or `set-text-editor`).
+    System {
+        /// The group.
+        section: &'static str,
+    },
+    /// Set Keyboard Mapping (then `set-keyboard-mapping`).
+    KeyboardMapping,
+    /// Set Property Definitions (then `set-property-definitions`).
+    PropertyDefinitions,
+    /// Set Sheet Sizes (then `set-sheet-sizes`).
+    SheetSizes,
+    /// Restore Default Settings: ask first (then `restore-default-settings`).
+    RestoreDefaults,
+    /// The Bill of Materials window (it runs `bill-of-materials` to show and export it).
+    BillOfMaterials,
     /// Unsaved changes: ask whether to discard them (then the command with `discard: true`).
     ConfirmDiscard {
         /// The command waiting for the answer.

@@ -21,7 +21,10 @@ licence and attribution files; no file of it is in this repository.
 
 Generated-in-code assets are original and have no file to list: the built-in generic parts of
 `crates/library/src/builtin/` (symbols and packages drawn in code by Protasena contributors,
-MIT OR Apache-2.0).
+MIT OR Apache-2.0), and the stroke font that draws texts in exported bitmaps,
+`crates/render/src/export/font.rs` (glyphs drawn in code by Protasena contributors, MIT OR
+Apache-2.0). No font file is bundled: exported SVG, PDF and EPS files name the standard
+Helvetica font (with sans-serif as the SVG fallback) without embedding it.
 
 | Asset | Author | Source | Licence | Notes |
 |---|---|---|---|---|

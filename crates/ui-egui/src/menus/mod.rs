@@ -66,7 +66,12 @@ fn entry(ui: &mut Ui, s: &Session, e: &Entry, clicked: &mut Option<Clicked>) {
                 Act::None => false,
             };
             let on = check.is_some_and(|c| is_on(s, c));
-            if item(ui, i18n::t(label), *shortcut, enabled, check.map(|_| on)) {
+            // The keyboard mapping's key, which System ▸ Set Keyboard Mapping may have changed.
+            let key = match act {
+                Act::Cmd(id) => s.shortcut(id),
+                _ => shortcut.map(str::to_owned),
+            };
+            if item(ui, i18n::t(label), key.as_deref(), enabled, check.map(|_| on)) {
                 *clicked = Some(Clicked::Act(*act));
             }
         }
@@ -88,14 +93,27 @@ fn entry(ui: &mut Ui, s: &Session, e: &Entry, clicked: &mut Option<Clicked>) {
             control::record(ui, &r.response, label, "menu", None);
         }
         Entry::Sheets => {
-            for (i, sheet) in s.project().sheets.iter().enumerate() {
-                let label = format!("{}. {}", i + 1, sheet.name);
-                if item(ui, &label, None, true, Some(sheet.id == s.sheet_id())) {
-                    *clicked = Some(Clicked::Sheet(sheet.id.0));
+            for (i, (id, label)) in sheet_list(s).into_iter().enumerate() {
+                let label = format!("{}. {label}", i + 1);
+                if item(ui, &label, None, true, Some(id == s.sheet_id().0)) {
+                    *clicked = Some(Clicked::Sheet(id));
                 }
             }
         }
     }
+}
+
+/// The sheets in hierarchy order with their labels: a sub-sheet is indented under its parent.
+pub fn sheet_list(s: &Session) -> Vec<(u64, String)> {
+    let p = s.project();
+    p.sheet_tree()
+        .into_iter()
+        .filter_map(|n| {
+            let sheet = p.sheet(n.sheet)?;
+            let indent = "    ".repeat(n.depth.min(8));
+            Some((sheet.id.0, if n.depth == 0 { sheet.name.clone() } else { format!("{indent}{} ({})", sheet.name, n.path) }))
+        })
+        .collect()
 }
 
 fn is_on(s: &Session, c: Check) -> bool {

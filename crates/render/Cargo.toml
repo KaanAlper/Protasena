@@ -14,3 +14,5 @@ workspace = true
 protasena-doc.workspace = true
 protasena-geom.workspace = true
 protasena-library.workspace = true
+miniz_oxide.workspace = true
+tiny-skia.workspace = true

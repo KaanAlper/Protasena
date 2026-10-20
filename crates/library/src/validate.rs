@@ -11,39 +11,64 @@ use crate::symbol::{Symbol, Unit};
 
 /// All problems of a device and package set (empty when it is consistent).
 pub(crate) fn validate(devices: &[Device], packages: &[Package]) -> Vec<Issue> {
-    let mut out = Issues::default();
-    let mut package_libs: HashMap<&str, &str> = HashMap::new();
-    let mut per_lib: HashMap<&str, (usize, usize)> = HashMap::new();
-    for pkg in packages {
-        per_lib.entry(pkg.library.as_str()).or_default().1 += 1;
-        check_package(&mut out, pkg);
-        match package_libs.get(pkg.name.as_str()) {
-            Some(first) => out.push(&pkg.library, &pkg.name, IssueKind::DuplicatePackage { first_library: (*first).to_owned() }),
-            None => {
-                package_libs.insert(&pkg.name, &pkg.library);
+    let mut v = Validator::default();
+    v.packages(packages);
+    v.devices(devices);
+    v.finish()
+}
+
+/// Validation in steps, for a loader that sees one file at a time: every package first (only
+/// their names and pad names are kept), then every device.
+#[derive(Default)]
+pub(crate) struct Validator {
+    out: Issues,
+    package_libs: HashMap<String, String>,
+    pads: HashMap<String, HashSet<String>>,
+    device_libs: HashMap<String, String>,
+    per_lib: HashMap<String, (usize, usize)>,
+}
+
+impl Validator {
+    /// Checks packages (all of them come before the first device).
+    pub(crate) fn packages<'a>(&mut self, packages: impl IntoIterator<Item = &'a Package>) {
+        for pkg in packages {
+            self.per_lib.entry(pkg.library.clone()).or_default().1 += 1;
+            check_package(&mut self.out, pkg);
+            match self.package_libs.get(&pkg.name) {
+                Some(first) => self.out.push(&pkg.library, &pkg.name, IssueKind::DuplicatePackage { first_library: first.clone() }),
+                None => {
+                    self.package_libs.insert(pkg.name.clone(), pkg.library.clone());
+                    self.pads.insert(pkg.name.clone(), pkg.pads.iter().map(|d| d.name.clone()).collect());
+                }
             }
         }
     }
-    let pads: PadSets = packages.iter().map(|p| (p.name.as_str(), p.pads.iter().map(|d| d.name.as_str()).collect())).collect();
-    let mut device_libs: HashMap<String, &str> = HashMap::new();
-    for dev in devices {
-        per_lib.entry(dev.library.as_str()).or_default().0 += 1;
-        check_device(&mut out, dev, &pads);
-        let key = dev.name.to_uppercase();
-        match device_libs.get(&key) {
-            Some(first) => out.push(&dev.library, &dev.name, IssueKind::DuplicateDevice { first_library: (*first).to_owned() }),
-            None => {
-                device_libs.insert(key, &dev.library);
+
+    /// Checks devices against the packages seen so far.
+    pub(crate) fn devices(&mut self, devices: &[Device]) {
+        for dev in devices {
+            self.per_lib.entry(dev.library.clone()).or_default().0 += 1;
+            check_device(&mut self.out, dev, &self.pads);
+            let key = dev.name.to_uppercase();
+            match self.device_libs.get(&key) {
+                Some(first) => self.out.push(&dev.library, &dev.name, IssueKind::DuplicateDevice { first_library: first.clone() }),
+                None => {
+                    self.device_libs.insert(key, dev.library.clone());
+                }
             }
         }
     }
-    let mut libs: Vec<_> = per_lib.into_iter().collect();
-    libs.sort_unstable();
-    for (lib, (devs, pkgs)) in libs {
-        out.limit(lib, None, "devices", devs, limits::MAX_DEVICES);
-        out.limit(lib, None, "packages", pkgs, limits::MAX_PACKAGES);
+
+    /// Every problem found, with the per-library limits checked last.
+    pub(crate) fn finish(mut self) -> Vec<Issue> {
+        let mut libs: Vec<_> = self.per_lib.into_iter().collect();
+        libs.sort_unstable();
+        for (lib, (devs, pkgs)) in libs {
+            self.out.limit(&lib, None, "devices", devs, limits::MAX_DEVICES);
+            self.out.limit(&lib, None, "packages", pkgs, limits::MAX_PACKAGES);
+        }
+        self.out.0
     }
-    out.0
 }
 
 /// The problem with a name, if any.
@@ -58,7 +83,7 @@ pub(crate) fn name_problem(name: &str, what: &'static str) -> Option<IssueKind> 
 }
 
 /// Pad names per package name.
-type PadSets<'a> = HashMap<&'a str, HashSet<&'a str>>;
+type PadSets = HashMap<String, HashSet<String>>;
 
 #[derive(Default)]
 struct Issues(Vec<Issue>);
@@ -114,7 +139,7 @@ fn check_device(out: &mut Issues, dev: &Device, pads: &PadSets) {
         if !seen.insert(pref.name.as_str()) {
             out.push(lib, item, IssueKind::PackageListedTwice(pref.name.clone()));
         }
-        check_pin_map(out, (lib, item), &pins, pref, pads.get(pref.name.as_str()));
+        check_pin_map(out, (lib, item), &pins, pref, pads.get(&pref.name));
     }
     if let Some(def) = &dev.default_package
         && dev.package(def).is_none()
@@ -153,12 +178,12 @@ fn check_unit(out: &mut Issues, lib: &str, item: &str, unit: &Unit) {
     }
 }
 
-fn check_pin_map(out: &mut Issues, (lib, item): (&str, &str), pins: &HashSet<&str>, pref: &PackageRef, pads: Option<&HashSet<&str>>) {
+fn check_pin_map(out: &mut Issues, (lib, item): (&str, &str), pins: &HashSet<&str>, pref: &PackageRef, pads: Option<&HashSet<String>>) {
     if pads.is_none() {
         out.push(lib, item, IssueKind::DanglingPackage(pref.name.clone()));
     }
     let mut seen = HashSet::new();
-    for (pin, pad) in &pref.pin_map {
+    for (pin, pad) in pref.pin_map.iter() {
         if !seen.insert(pin.as_str()) {
             out.push(lib, item, IssueKind::PinMappedTwice { package: pref.name.clone(), pin: pin.clone() });
         }
@@ -166,7 +191,7 @@ fn check_pin_map(out: &mut Issues, (lib, item): (&str, &str), pins: &HashSet<&st
             out.push(lib, item, IssueKind::PinMapMissingPin { package: pref.name.clone(), pin: pin.clone() });
         }
         if let Some(pads) = pads
-            && !pads.contains(pad.as_str())
+            && !pads.contains(pad)
         {
             out.push(lib, item, IssueKind::PinMapMissingPad { package: pref.name.clone(), pad: pad.clone() });
         }

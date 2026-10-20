@@ -106,12 +106,12 @@ const fn ui(label: &'static str, shortcut: Option<&'static str>, act: UiAct) -> 
 use Entry::Sep;
 
 const EXPORT_GRAPHICS: &[Entry] = &[
-    off("Export Bitmap", None),
+    cmd("Export Bitmap", None, "export-bitmap"),
     off("Export Metafile", None),
-    off("Export DXF File", None),
-    off("Export Encapsulated Postscript", None),
-    off("Export Adobe PDF File", None),
-    off("Export SVG File", None),
+    cmd("Export DXF File", None, "export-dxf"),
+    cmd("Export Encapsulated Postscript", None, "export-eps"),
+    cmd("Export Adobe PDF File", None, "export-pdf"),
+    cmd("Export SVG File", None, "export-svg"),
     off("Export Vector File", None),
 ];
 
@@ -131,7 +131,7 @@ const FILE: &[Entry] = &[
     Entry::Sub { label: "Export Graphics", entries: EXPORT_GRAPHICS },
     off("Export Project Clip", None),
     Sep,
-    off("Print Design", None),
+    cmd("Print Design", None, "print-design"),
     off("Print Setup", None),
     off("Printer Information", None),
     off("Mark Output Area", None),
@@ -154,11 +154,11 @@ const EDIT: &[Entry] = &[
     cmd("Copy To Clipboard", None, "copy"),
     cmd("Paste From Clipboard", None, "paste"),
     Sep,
-    off("Align Objects", Some("Ctrl+A")),
-    off("Send To Back", Some("Ctrl+B")),
-    off("Bring To Front", Some("Ctrl+F")),
+    cmd("Align Objects", Some("Ctrl+A"), "align"),
+    cmd("Send To Back", Some("Ctrl+B"), "send-to-back"),
+    cmd("Bring To Front", Some("Ctrl+F"), "bring-to-front"),
     Sep,
-    off("Tidy Design", None),
+    cmd("Tidy Design", None, "tidy"),
 ];
 
 const VIEW: &[Entry] = &[
@@ -183,8 +183,8 @@ const VIEW: &[Entry] = &[
 
 const TOOL: &[Entry] = &[
     checked("Wire Autorouter", "W", "toggle-autorouter", Check::Autorouter),
-    off("Search & Tag", Some("T")),
-    off("Property Assignment Tool", Some("A")),
+    cmd("Search & Tag", Some("T"), "search-tag"),
+    cmd("Property Assignment Tool", Some("A"), "property-assign"),
     Sep,
     cmd("Global Annotator", None, "annotate"),
     off("ASCII Data Import Tool", None),
@@ -204,7 +204,7 @@ const DESIGN: &[Entry] = &[
     cmd("Remove/Delete Sheet", None, "remove-sheet"),
     cmd("Goto Previous Root or Sub-sheet", Some("Page-Up"), "previous-sheet"),
     cmd("Goto Next Root or Sub-sheet", Some("Page-Down"), "next-sheet"),
-    off("Exit to Parent Sheet", Some("Ctrl+X")),
+    cmd("Exit to Parent Sheet", Some("Ctrl+X"), "exit-to-parent"),
     cmd("Goto Sheet", None, "goto-sheet"),
     Sep,
     Entry::Sheets,
@@ -266,32 +266,32 @@ const LIBRARY: &[Entry] = &[
 const TEMPLATE: &[Entry] = &[
     off("Goto Master Sheet", None),
     Sep,
-    off("Set Design Colours", None),
+    cmd("Set Design Colours", None, "set-design-colours"),
     off("Set Graph & Trace Colours", None),
-    off("Set Graphic Styles", None),
-    off("Set Text Styles", None),
-    off("Set 2D Graphics Defaults", None),
-    off("Set Junction Dot Style", None),
+    cmd("Set Graphic Styles", None, "set-graphic-styles"),
+    cmd("Set Text Styles", None, "set-text-styles"),
+    cmd("Set 2D Graphics Defaults", None, "set-2d-graphics-defaults"),
+    cmd("Set Junction Dot Style", None, "set-junction-style"),
     Sep,
     off("Apply Styles From Template", None),
     off("Save Design as Template", None),
 ];
 
 const SYSTEM: &[Entry] = &[
-    off("System Settings", None),
+    cmd("System Settings", None, "system-settings"),
     Sep,
     off("Text Viewer", None),
     Sep,
-    off("Set Display Options", None),
-    off("Set Keyboard Mapping", None),
-    off("Set Property Definitions", None),
-    off("Set Sheet Sizes", None),
-    off("Set Text Editor", None),
+    cmd("Set Display Options", None, "set-display-options"),
+    cmd("Set Keyboard Mapping", None, "set-keyboard-mapping"),
+    cmd("Set Property Definitions", None, "set-property-definitions"),
+    cmd("Set Sheet Sizes", None, "set-sheet-sizes"),
+    cmd("Set Text Editor", None, "set-text-editor"),
     Sep,
     off("Set Animation Options", None),
     off("Set Simulation Options", None),
     Sep,
-    off("Restore Default Settings", None),
+    cmd("Restore Default Settings", None, "restore-default-settings"),
 ];
 
 const HELP: &[Entry] = &[

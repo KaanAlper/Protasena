@@ -68,7 +68,7 @@ mod tests {
     #[test]
     fn gates_pick_units_by_distinct_name() {
         let unit = |name: &str, style: u8| Unit { name: name.into(), body_style: style, ..Unit::default() };
-        let dev = Device { symbol: Symbol { units: vec![unit("A", 2), unit("A", 1), unit("B", 2)], power: false }, ..Device::default() };
+        let dev = Device { symbol: Symbol { units: vec![unit("A", 2), unit("A", 1), unit("B", 2)], power: false }.into(), ..Device::default() };
         assert_eq!(gate_units(&dev, 0).iter().map(|u| u.body_style).collect::<Vec<_>>(), [1]);
         assert_eq!(gate_units(&dev, 1).iter().map(|u| (u.name.as_str(), u.body_style)).collect::<Vec<_>>(), [("B", 2)]);
         assert!(gate_units(&dev, 2).is_empty());

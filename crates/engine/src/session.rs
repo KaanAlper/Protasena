@@ -8,7 +8,7 @@
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 
-use protasena_doc::{DeviceRef, Id, Item, ItemId, Op, Project, Sheet, SheetId, TerminalKind};
+use protasena_doc::{DeviceRef, Id, Item, ItemId, Op, PortKind, Project, Sheet, SheetId, TerminalKind};
 use protasena_geom::{Orient, Pt, snap};
 use protasena_library::Library;
 
@@ -64,10 +64,13 @@ pub struct Session {
     pub(crate) device: Option<DeviceRef>,
     pub(crate) picked: Vec<DeviceRef>,
     pub(crate) terminal_kind: TerminalKind,
+    pub(crate) port_kind: PortKind,
     pub(crate) clipboard: Clipboard,
     pub(crate) view: View,
     pub(crate) cursor: Pt,
     pub(crate) raw_cursor: Pt,
+    /// Where the last press of a 2D graphic was (to tell a drag from a click).
+    pub(crate) press_at: Pt,
     pub(crate) hover: Option<Hit>,
     pub(crate) machine: Machine,
     pub(crate) undo: Vec<Step>,
@@ -77,6 +80,9 @@ pub struct Session {
     pub(crate) commits: u64,
     pub(crate) guard: Option<Guard>,
     pub(crate) log: Vec<String>,
+    /// The system settings (System menu), with the file they are saved to.
+    pub(crate) settings: protasena_io::SystemSettings,
+    pub(crate) settings_path: Option<PathBuf>,
 }
 
 impl Default for Session {
@@ -108,10 +114,12 @@ impl Session {
             device: None,
             picked: Vec::new(),
             terminal_kind: TerminalKind::Default,
+            port_kind: PortKind::Default,
             clipboard: Clipboard::default(),
             view: View::default(),
             cursor: Pt::ORIGIN,
             raw_cursor: Pt::ORIGIN,
+            press_at: Pt::ORIGIN,
             hover: None,
             machine: Machine::Idle,
             undo: Vec::new(),
@@ -120,6 +128,8 @@ impl Session {
             commits: 0,
             guard: None,
             log: Vec::new(),
+            settings: protasena_io::SystemSettings::default(),
+            settings_path: None,
         }
     }
 
@@ -186,6 +196,10 @@ impl Session {
     /// The terminal kind chosen in the TERMINALS list.
     pub fn terminal_kind(&self) -> TerminalKind {
         self.terminal_kind
+    }
+    /// The port kind chosen in the PORTS list (Subcircuit mode).
+    pub fn port_kind(&self) -> PortKind {
+        self.port_kind
     }
     /// The internal clipboard.
     pub fn clipboard(&self) -> &Clipboard {

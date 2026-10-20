@@ -68,7 +68,6 @@ fn pack() -> Library {
     cap.description = "pack capacitor".into();
     let packages: Vec<_> = builtin
         .packages()
-        .iter()
         .filter(|p| res.packages.iter().chain(&cap.packages).any(|r| r.name == p.name))
         .cloned()
         .map(|mut p| {

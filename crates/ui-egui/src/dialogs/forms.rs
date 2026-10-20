@@ -8,6 +8,8 @@ use protasena_geom::Pt;
 use serde_json::json;
 
 use super::{Dialog, Reply, error_line, field, ok_cancel};
+use crate::theme::Tokens;
+use crate::unsaved::Then;
 use crate::{control, tl};
 
 /// Find/Edit Component: the reference of the part to edit.
@@ -61,6 +63,8 @@ pub struct LabelForm {
     pub target: Target<LabelId>,
     /// The label text (net name).
     pub text: String,
+    /// Global: the name is not prefixed in child sheets.
+    pub global: bool,
     /// The last refusal.
     pub error: Option<String>,
 }
@@ -68,18 +72,20 @@ pub struct LabelForm {
 impl LabelForm {
     /// A new label on the wire at `at`.
     pub fn new_at(at: Pt) -> Self {
-        Self { target: Target::New(at), text: String::new(), error: None }
+        Self { target: Target::New(at), text: String::new(), global: false, error: None }
     }
 
     /// An existing label.
     pub fn edit(s: &Session, id: LabelId) -> Option<Self> {
         let l = s.sheet()?.labels.iter().find(|l| l.id == id)?;
-        Some(Self { target: Target::Edit(id), text: l.text.clone(), error: None })
+        Some(Self { target: Target::Edit(id), text: l.text.clone(), global: l.global, error: None })
     }
 
     pub(super) fn ui(&mut self, ui: &mut Ui) -> Reply {
         let enter =
             egui::Grid::new("wire-label").num_columns(2).spacing([12.0, 8.0]).show(ui, |ui| field(ui, tl!("String"), &mut self.text, 260.0)).inner;
+        let g = ui.checkbox(&mut self.global, tl!("Global (the same net in every sub-sheet)"));
+        control::record(ui, &g, tl!("Global (the same net in every sub-sheet)"), "checkbox", Some(self.global));
         error_line(ui, self.error.as_ref());
         let (ok, cancel) = ok_cancel(ui, !self.text.trim().is_empty());
         if cancel {
@@ -88,8 +94,12 @@ impl LabelForm {
         if (ok || enter) && !self.text.trim().is_empty() {
             let text = self.text.trim();
             return match self.target {
-                Target::New(at) => Reply::Run { cmd: "wire-label", params: json!({ "at": [at.x, at.y], "text": text }), keep: false },
-                Target::Edit(id) => Reply::Run { cmd: "edit-item", params: json!({ "id": id.raw(), "text": text }), keep: false },
+                Target::New(at) => {
+                    Reply::Run { cmd: "wire-label", params: json!({ "at": [at.x, at.y], "text": text, "global": self.global }), keep: false }
+                }
+                Target::Edit(id) => {
+                    Reply::Run { cmd: "edit-item", params: json!({ "id": id.raw(), "text": text, "global": self.global }), keep: false }
+                }
             };
         }
         Reply::None
@@ -160,6 +170,8 @@ pub struct TextForm {
     pub text: String,
     /// Character height in thou, as typed (empty: the default).
     pub size: String,
+    /// System ▸ Set Text Editor: the editor's font size in points and whether it is fixed-width.
+    pub font: (f32, bool),
     /// The last refusal.
     pub error: Option<String>,
 }
@@ -167,19 +179,27 @@ pub struct TextForm {
 impl TextForm {
     /// A new text at `at`.
     pub fn new_at(at: Pt) -> Self {
-        Self { target: Target::New(at), text: String::new(), size: String::new(), error: None }
+        Self { target: Target::New(at), text: String::new(), size: String::new(), font: (crate::theme::BODY_SIZE, false), error: None }
     }
 
     /// An existing text.
     pub fn edit(s: &Session, id: TextId) -> Option<Self> {
         let t = s.sheet()?.texts.iter().find(|t| t.id == id)?;
         let size = if t.size > 0.0 { format!("{}", t.size) } else { String::new() };
-        Some(Self { target: Target::Edit(id), text: t.text.clone(), size, error: None })
+        Some(Self { target: Target::Edit(id), text: t.text.clone(), size, font: (crate::theme::BODY_SIZE, false), error: None })
+    }
+
+    /// The same form with the text editor of the system settings.
+    pub fn editor(self, s: &Session) -> Self {
+        let e = s.settings().text_editor;
+        Self { font: (e.font_size as f32, e.monospace), ..self }
     }
 
     pub(super) fn ui(&mut self, ui: &mut Ui) -> Reply {
         ui.label(tl!("Text"));
-        let r = ui.add(egui::TextEdit::multiline(&mut self.text).desired_rows(4).desired_width(340.0));
+        let family = if self.font.1 { egui::FontFamily::Monospace } else { egui::FontFamily::Proportional };
+        let font = egui::FontId::new(self.font.0.clamp(6.0, 48.0), family);
+        let r = ui.add(egui::TextEdit::multiline(&mut self.text).font(font).desired_rows(4).desired_width(340.0));
         control::record(ui, &r, tl!("Text"), "field", None);
         egui::Grid::new("text-size").num_columns(2).spacing([12.0, 8.0]).show(ui, |ui| field(ui, tl!("Height (th)"), &mut self.size, 80.0));
         error_line(ui, self.error.as_ref());
@@ -218,9 +238,9 @@ impl GotoForm {
 
     pub(super) fn ui(&mut self, ui: &mut Ui, s: &Session) -> Reply {
         egui::ScrollArea::vertical().max_height(260.0).show(ui, |ui| {
-            for (i, sheet) in s.project().sheets.iter().enumerate() {
-                let r = ui.selectable_value(&mut self.choice, sheet.id.0, format!("{}. {}", i + 1, sheet.name));
-                control::record(ui, &r, &sheet.name, "list-item", Some(self.choice == sheet.id.0));
+            for (i, (id, label)) in crate::menus::sheet_list(s).into_iter().enumerate() {
+                let r = ui.selectable_value(&mut self.choice, id, format!("{}. {label}", i + 1));
+                control::record(ui, &r, label.trim_start(), "list-item", Some(self.choice == id));
             }
         });
         let (ok, cancel) = ok_cancel(ui, true);
@@ -251,19 +271,31 @@ pub(super) fn annotator(ui: &mut Ui, total: &mut bool) -> Reply {
     Reply::None
 }
 
-/// The unsaved-changes question.
+/// The unsaved-changes question: Save, Don't Save, Cancel (see [`crate::unsaved`]).
 pub struct ConfirmForm;
 
 impl ConfirmForm {
-    pub(super) fn ui(ui: &mut Ui, then: &mut &'static str) -> Reply {
-        ui.label(tl!("The design has unsaved changes. Discard them?"));
-        let (ok, cancel) = ok_cancel(ui, true);
-        if cancel {
-            return Reply::Cancel;
-        }
-        if ok {
-            return Reply::Discard(then);
-        }
-        Reply::None
+    pub(super) fn ui(ui: &mut Ui, then: Then) -> Reply {
+        ui.label(tl!("The design has unsaved changes. Save them?"));
+        ui.add_space(10.0);
+        let mut reply = Reply::None;
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            let t = Tokens::get();
+            let size = egui::vec2(96.0, 26.0);
+            let cancel = ui.add_sized(size, egui::Button::new(tl!("Cancel")));
+            control::record(ui, &cancel, tl!("Cancel"), "button", None);
+            let discard = ui.add_sized(size, egui::Button::new(tl!("Don't Save")));
+            control::record(ui, &discard, tl!("Don't Save"), "button", None);
+            let save = ui.add(egui::Button::new(egui::RichText::new(tl!("Save")).color(t.on_accent)).fill(t.accent).min_size(size));
+            control::record(ui, &save, tl!("Save"), "button", None);
+            if cancel.clicked() {
+                reply = Reply::Cancel;
+            } else if discard.clicked() {
+                reply = Reply::SaveChanges { then, save: false };
+            } else if save.clicked() {
+                reply = Reply::SaveChanges { then, save: true };
+            }
+        });
+        reply
     }
 }

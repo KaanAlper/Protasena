@@ -10,6 +10,10 @@
 //!   `127.0.0.1:PORT` (`{"id":1,"method":"engine.execute","params":{…}}`; methods in
 //!   `protasena_ui_egui::control::METHODS`).
 //! - `--theme` (else `PROTASENA_THEME`): the interface theme, light by default.
+//!
+//! The system settings (System menu) are read from `settings.json` in the configuration
+//! directory (`PROTASENA_CONFIG_DIR`, else the platform's); the parts pack falls back to their
+//! library folder.
 #![cfg_attr(all(target_os = "windows", not(debug_assertions)), windows_subsystem = "windows")]
 
 mod control_server;
@@ -71,13 +75,53 @@ fn theme(s: &str) -> Option<ThemePref> {
     }
 }
 
+/// A file chooser starting in `dir` when there is one.
+fn chooser(dir: Option<&std::path::Path>) -> rfd::FileDialog {
+    let d = rfd::FileDialog::new();
+    match dir.filter(|d| d.is_dir()) {
+        Some(dir) => d.set_directory(dir),
+        None => d,
+    }
+}
+
 fn services() -> Services {
     Services {
-        pick_open: Some(Box::new(|| {
-            rfd::FileDialog::new().add_filter("Projects (psproj, pdsprj)", &["psproj", "pdsprj"]).add_filter("All files", &["*"]).pick_file()
+        pick_open: Some(Box::new(|dir: Option<&std::path::Path>| {
+            chooser(dir).add_filter("Projects (psproj, pdsprj)", &["psproj", "pdsprj"]).add_filter("All files", &["*"]).pick_file()
         })),
-        pick_save: Some(Box::new(|name: &str, exts: &[&str]| rfd::FileDialog::new().set_file_name(name).add_filter("Files", exts).save_file())),
+        pick_save: Some(Box::new(|name: &str, exts: &[&str], dir: Option<&std::path::Path>| {
+            chooser(dir).set_file_name(name).add_filter("Files", exts).save_file()
+        })),
+        open_path: Some(Box::new(open_in_viewer)),
     }
+}
+
+/// A session with the user's system settings (the settings file in the configuration
+/// directory); problems reading it are warnings, never a failure.
+fn session() -> (Session, Vec<String>) {
+    let mut session = Session::new();
+    let Some(path) = protasena_io::settings_path() else { return (session, Vec::new()) };
+    let (settings, mut warnings) = protasena_io::load_settings(&path);
+    warnings.extend(session.set_settings(settings, Some(path)));
+    (session, warnings)
+}
+
+/// Opens a file with the system's default application (`xdg-open`, `open`, `explorer`). The
+/// child is waited for on a thread of its own, so it never lingers as a zombie; a program that
+/// cannot be started is reported, never a crash.
+fn open_in_viewer(path: &std::path::Path) -> Result<(), String> {
+    let program = if cfg!(target_os = "windows") {
+        "explorer"
+    } else if cfg!(target_os = "macos") {
+        "open"
+    } else {
+        "xdg-open"
+    };
+    let mut child = std::process::Command::new(program).arg(path).spawn().map_err(|e| format!("{program}: {e}"))?;
+    let _ = std::thread::Builder::new().name("viewer".into()).spawn(move || {
+        let _ = child.wait();
+    });
+    Ok(())
 }
 
 fn main() -> ExitCode {
@@ -105,11 +149,19 @@ fn main() -> ExitCode {
         "Protasena",
         options,
         Box::new(move |cc| {
-            let mut app = App::new(Session::new(), services());
+            let (session, warnings) = session();
+            let settings_library = session.settings().library_dir.as_ref().map(PathBuf::from);
+            let mut app = App::new(session, services());
             if let Some(t) = args.theme {
                 app.ui.theme = t;
             }
-            if let Some(dir) = args.library.clone().or_else(protasena_io::library_dir) {
+            for w in &warnings {
+                eprintln!("{NAME}: {w}");
+            }
+            if let Some(w) = warnings.first() {
+                app.notify(w.clone(), true);
+            }
+            if let Some(dir) = args.library.clone().or_else(protasena_io::library_dir).or(settings_library) {
                 let (tx, rx) = std::sync::mpsc::channel();
                 let ctx = cc.egui_ctx.clone();
                 let d = dir.clone();

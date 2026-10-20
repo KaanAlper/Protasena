@@ -52,9 +52,47 @@ fn the_list_order_of_the_model_is_kept() {
 }
 
 #[test]
+fn graphics_are_saved_by_kind_and_files_without_them_still_load() {
+    let p = sample_project();
+    let text = encode(&p).unwrap();
+    for kind in ["line", "box", "circle", "arc", "path"] {
+        assert!(text.contains(&format!("\"kind\": \"{kind}\"")), "{kind}");
+    }
+    let mut older = p.clone();
+    for s in &mut older.sheets {
+        s.graphics.clear();
+    }
+    let without: serde_json::Value = serde_json::from_str(&encode(&older).unwrap()).unwrap();
+    let mut stripped = without.clone();
+    for s in stripped["project"]["sheets"].as_array_mut().unwrap() {
+        s.as_object_mut().unwrap().remove("graphics");
+    }
+    let (back, report) = decode(stripped.to_string().as_bytes()).unwrap();
+    assert_eq!(back, older);
+    assert!(report.warnings.is_empty(), "{:?}", report.warnings);
+}
+
+#[test]
+fn subcircuits_and_global_labels_round_trip_and_are_left_out_when_absent() {
+    let p = sample_project();
+    let text = encode(&p).unwrap();
+    assert!(text.contains("\"subcircuits\"") && text.contains("\"child\"") && text.contains("\"kind\": \"input\""), "{text}");
+    assert_eq!(text.matches("\"global\": true").count(), 1);
+    assert!(!text.contains("\"global\": false"), "the default is not written");
+    assert_eq!(p.sheet_tree().len(), 2);
+    let (back, _) = decode(text.as_bytes()).unwrap();
+    assert_eq!(back.sheets[0].subcircuits, p.sheets[0].subcircuits);
+    assert_eq!(back.parent_of(p.sheets[1].id), Some((p.sheets[0].id, p.sheets[0].subcircuits[0].id)));
+    let empty = encode(&Project::new("x")).unwrap();
+    assert!(!empty.contains("subcircuits"), "sheets without subcircuits write none");
+}
+
+#[test]
 fn unknown_fields_are_ignored() {
     let text = encode(&sample_project()).unwrap();
-    let extended = text.replacen("\"version\": 1,", "\"version\": 1,\n  \"written_by\": {\"app\": \"future\"},", 1).replacen(
+    let tag = format!("\"version\": {VERSION},");
+    assert!(text.contains(&tag));
+    let extended = text.replacen(&tag, &format!("{tag}\n  \"written_by\": {{\"app\": \"future\"}},"), 1).replacen(
         "\"name\": \"divider\",",
         "\"name\": \"divider\",\n    \"colour\": [1, 2, 3],",
         1,
@@ -66,9 +104,10 @@ fn unknown_fields_are_ignored() {
 
 #[test]
 fn newer_versions_are_refused_with_a_clear_error() {
-    let text = encode(&sample_project()).unwrap().replacen("\"version\": 1", "\"version\": 2", 1);
+    let newer = VERSION + 1;
+    let text = encode(&sample_project()).unwrap().replacen(&format!("\"version\": {VERSION}"), &format!("\"version\": {newer}"), 1);
     let err = decode(text.as_bytes()).unwrap_err();
-    assert_eq!(err, LoadError::UnsupportedVersion { found: 2, supported: VERSION });
+    assert_eq!(err, LoadError::UnsupportedVersion { found: u64::from(newer), supported: VERSION });
     assert!(err.to_string().contains("newer"), "{err}");
     let zero = decode(br#"{"format": "protasena-project", "version": 0, "project": {}}"#).unwrap_err();
     assert!(matches!(zero, LoadError::UnsupportedVersion { found: 0, .. }));
@@ -162,4 +201,41 @@ fn load_reports_missing_files_with_the_path() {
         other => panic!("{other:?}"),
     }
     assert!(load(&dir).is_err(), "a directory is not a project");
+}
+
+#[test]
+fn version_1_files_load_with_the_default_template_and_save_as_version_2() {
+    let mut p = sample_project();
+    for sheet in &mut p.sheets {
+        sheet.subcircuits.clear();
+        sheet.labels.iter_mut().for_each(|l| l.global = false);
+    }
+    let v1 = encode(&p).unwrap().replacen("\"version\": 2,", "\"version\": 1,", 1);
+    assert!(!v1.contains("template") && !v1.contains("subcircuits"));
+    let (back, report) = decode(v1.as_bytes()).unwrap();
+    assert_eq!((report.version, back.template.is_default()), (1, true));
+    assert_eq!(back, p);
+    assert!(encode(&back).unwrap().contains("\"version\": 2,"));
+}
+
+#[test]
+fn template_settings_round_trip_and_bad_ones_are_reset() {
+    use protasena_doc::{Colour, JunctionShape};
+    let mut p = sample_project();
+    p.template.colours.paper = Colour::parse("#f0f0e0");
+    p.template.graphic_styles.wire.width = Some(12.5);
+    p.template.text_styles.label.height = Some(90.0);
+    p.template.junction.shape = JunctionShape::Square;
+    let text = encode(&p).unwrap();
+    assert!(text.contains("\"paper\": \"#f0f0e0\"") && text.contains("\"shape\": \"square\""), "{text}");
+    let (back, report) = decode(text.as_bytes()).unwrap();
+    assert_eq!(back.template, p.template);
+    assert!(report.warnings.is_empty());
+    let bad = text.replacen("\"width\": 12.5", "\"width\": -4", 1);
+    let (back, report) = decode(bad.as_bytes()).unwrap();
+    assert!(back.template.is_default());
+    assert_eq!(report.warnings.len(), 1, "{:?}", report.warnings);
+    assert_eq!(back.sheets, p.sheets, "the design itself is kept");
+    let not_a_colour = text.replacen("\"#f0f0e0\"", "\"pink\"", 1);
+    assert!(matches!(decode(not_a_colour.as_bytes()), Err(LoadError::Json(_))));
 }

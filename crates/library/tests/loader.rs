@@ -35,7 +35,7 @@ fn a_consistent_pack_loads_and_fills_in_library_names() {
 #[test]
 fn every_problem_is_listed_not_just_the_first() {
     let mut bad_map = two_pin("MAP", "LIB", "P2");
-    bad_map.packages[0].pin_map = vec![("1".into(), "9".into()), ("7".into(), "2".into()), ("1".into(), "1".into())];
+    bad_map.packages[0].pin_map = vec![("1".into(), "9".into()), ("7".into(), "2".into()), ("1".into(), "1".into())].into();
     let kinds =
         issues_of(&[two_pin("DUP", "LIB", "P2"), two_pin("dup", "LIB", "P2"), two_pin("DANGLE", "LIB", "NOPE"), bad_map], &[two_pad("P2", "LIB")]);
     assert!(kinds.contains(&IssueKind::DuplicateDevice { first_library: "LIB".into() }), "{kinds:?}");
@@ -56,9 +56,9 @@ fn device_level_problems() {
         PropDef::new("mode", "Mode again", PropKind::String, None),
         PropDef::new("", "No name", PropKind::String, None),
     ];
-    d.symbol.units[0].pins[1].number = "1".into();
+    std::sync::Arc::make_mut(&mut d.symbol).units[0].pins[1].number = "1".into();
     let mut no_units = two_pin("EMPTY", "LIB", "P2");
-    no_units.symbol.units.clear();
+    std::sync::Arc::make_mut(&mut no_units.symbol).units.clear();
     no_units.packages.clear();
     no_units.default_package = None;
     let kinds = issues_of(&[d, no_units], &[two_pad("P2", "LIB"), two_pad("P2", "LIB")]);

@@ -20,6 +20,9 @@ pub struct Preview {
     /// The bus being drawn, up to the cursor.
     #[serde(skip_serializing_if = "Vec::is_empty")]
     pub bus: Vec<Pt>,
+    /// The 2D graphic being drawn, as it would be made now.
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub graphic: Option<protasena_doc::GraphicShape>,
     /// The component Component mode would place at the cursor.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ghost: Option<Component>,
@@ -62,6 +65,7 @@ impl Session {
                     p.rect = Some([*raw, self.raw_cursor]);
                 }
             }
+            Machine::Graphic { mode, points } => p.graphic = crate::graphics::draft(*mode, points, self.cursor),
             Machine::Press { .. } => {}
             Machine::Idle => {
                 if self.mode == Mode::Component

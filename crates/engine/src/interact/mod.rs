@@ -15,6 +15,10 @@
 //! - **Junction Dot**, **Terminals**: a click places one. **Wire Label**: a click on a wire asks
 //!   for the label text. **Buses**: clicks add corners, a double click or the right button
 //!   finishes. **Text Script**, **2D Graphics Text**: a click asks for the text.
+//! - **2D Graphics Line, Box, Circle, Arc, Closed Path**: see [`crate::graphics`].
+//! - **Subcircuit**: a box is drawn like a 2D box (the next free `SUBn`); a click on a
+//!   subcircuit's left or right edge asks for a new port's name (of the kind chosen in the
+//!   PORTS list); a click on a subcircuit selects it, a double click opens Edit Subcircuit.
 
 mod machine;
 mod modes;
@@ -31,7 +35,7 @@ use serde_json::Value;
 
 use crate::error::{EngineError, Result};
 use crate::hit::{Hit, hit};
-use crate::registry::{Outcome, command_for_key};
+use crate::registry::Outcome;
 use crate::request::Request;
 use crate::session::Session;
 
@@ -187,7 +191,7 @@ impl Session {
             self.cancel();
             return Ok(if was_busy { Feedback::handled() } else { Feedback::default() });
         }
-        let Some(spec) = command_for_key(k) else { return Ok(Feedback::default()) };
+        let Some(spec) = crate::keymap::command_for(&self.settings.keys, k) else { return Ok(Feedback::default()) };
         if spec.id == "delete" && self.selection.is_empty() {
             return Ok(Feedback::default());
         }

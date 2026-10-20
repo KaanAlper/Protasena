@@ -74,6 +74,8 @@ pub struct Style<'a> {
     pub texts: bool,
     /// Smallest stroke, in points.
     pub min_width: f32,
+    /// The design's template: its styles' colours replace the theme's.
+    pub template: Option<&'a protasena_doc::Template>,
 }
 
 /// Paints primitives.
@@ -94,7 +96,17 @@ impl Paint<'_> {
         if owner.is_some_and(|o| self.style.selected.contains(&o)) {
             return self.style.tokens.selection;
         }
-        self.style.tokens.ink(ink)
+        match self.style.template.and_then(|t| protasena_render::ink_colour(t, ink)) {
+            Some(c) => crate::theme::colour(c),
+            None => self.style.tokens.ink(ink),
+        }
+    }
+
+    /// The fill of a closed shape: a selected item's body fill is a soft tint of the selection
+    /// colour (a fill in the outline's own ink, such as a junction dot, stays solid).
+    fn fill_color(&self, p: &Prim, fill: Ink) -> Color32 {
+        let selected = self.style.ink.is_none() && p.owner.is_some_and(|o| self.style.selected.contains(&o));
+        if selected && fill != p.ink { self.style.tokens.selection.gamma_multiply(0.18) } else { self.color(fill, p.owner) }
     }
 
     fn stroke(&self, p: &Prim) -> Stroke {
@@ -123,7 +135,7 @@ impl Paint<'_> {
             PrimShape::Polyline { points, closed } => self.path(p, points, *closed),
             PrimShape::Circle { center, radius } => {
                 let (c, r) = (self.x.to_screen(*center), self.x.len(*radius).max(0.5));
-                let fill = p.fill.map_or(Color32::TRANSPARENT, |f| self.color(f, p.owner));
+                let fill = p.fill.map_or(Color32::TRANSPARENT, |f| self.fill_color(p, f));
                 self.painter.add(Shape::circle_filled(c, r, fill));
                 if p.fill != Some(p.ink) {
                     self.painter.add(Shape::circle_stroke(c, r, self.stroke(p)));
@@ -148,7 +160,7 @@ impl Paint<'_> {
             return;
         }
         if closed && let Some(fill) = p.fill {
-            let color = self.color(fill, p.owner);
+            let color = self.fill_color(p, fill);
             if is_convex(points) {
                 self.painter.add(Shape::convex_polygon(screen.clone(), color, Stroke::NONE));
             } else {

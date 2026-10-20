@@ -8,6 +8,8 @@
 //! - the **symbol** and the **packages** it can be laid out with (pin number → pad maps);
 //! - an optional **simulation model** link, and where the data came from (**source**).
 
+use std::sync::Arc;
+
 use serde::{Deserialize, Serialize};
 
 use crate::symbol::Symbol;
@@ -42,9 +44,10 @@ pub struct Device {
     /// Extra search words.
     #[serde(default, skip_serializing_if = "Vec::is_empty", deserialize_with = "crate::bounded::strings")]
     pub keywords: Vec<String>,
-    /// The schematic symbol.
+    /// The schematic symbol, shared between devices with the same drawing (KiCad's derived
+    /// symbols; the loader shares equal symbols, see [`crate::Library::load_dir`]).
     #[serde(default)]
-    pub symbol: Symbol,
+    pub symbol: Arc<Symbol>,
     /// Packages the device can use, each with its pin map.
     #[serde(default, skip_serializing_if = "Vec::is_empty", deserialize_with = "crate::bounded::package_refs")]
     pub packages: Vec<PackageRef>,
@@ -84,12 +87,17 @@ impl Device {
 pub struct PackageRef {
     /// Package name (a [`Package`](crate::Package) in the pack).
     pub name: String,
-    /// `(pin number, pad name)` pairs.
-    #[serde(default, deserialize_with = "crate::bounded::pin_map")]
-    pub pin_map: Vec<(String, String)>,
+    /// `(pin number, pad name)` pairs, shared between equal maps (the loader shares them).
+    #[serde(default, deserialize_with = "crate::bounded::shared_pin_map")]
+    pub pin_map: Arc<[(String, String)]>,
 }
 
 impl PackageRef {
+    /// A reference with this pin map.
+    pub fn new(name: &str, pin_map: Vec<(String, String)>) -> Self {
+        Self { name: name.to_owned(), pin_map: pin_map.into() }
+    }
+
     /// The pad a pin lands on.
     pub fn pad_for(&self, pin_number: &str) -> Option<&str> {
         self.pin_map.iter().find(|(pin, _)| pin == pin_number).map(|(_, pad)| pad.as_str())

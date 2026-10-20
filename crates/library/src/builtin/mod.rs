@@ -8,6 +8,8 @@ mod packages;
 mod passive;
 mod semi;
 
+use std::sync::Arc;
+
 use protasena_geom::Pt;
 
 use crate::device::{Device, PackageRef, PropDef, PropKind, SimModelRef};
@@ -86,13 +88,13 @@ fn pin(number: &str, name: &str, kind: PinKind, at: (f64, f64), orient: PinDir, 
 }
 
 /// A one-unit symbol.
-fn symbol(graphics: Vec<Graphic>, pins: Vec<Pin>) -> Symbol {
-    Symbol { units: vec![Unit { name: String::new(), body_style: 1, graphics, pins }], power: false }
+fn symbol(graphics: Vec<Graphic>, pins: Vec<Pin>) -> Arc<Symbol> {
+    Arc::new(Symbol { units: vec![Unit { name: String::new(), body_style: 1, graphics, pins }], power: false })
 }
 
 /// A package reference with its pin map.
 fn package(name: &str, pin_map: &[(&str, &str)]) -> PackageRef {
-    PackageRef { name: name.to_owned(), pin_map: pin_map.iter().map(|&(a, b)| (a.to_owned(), b.to_owned())).collect() }
+    PackageRef::new(name, pin_map.iter().map(|&(a, b)| (a.to_owned(), b.to_owned())).collect())
 }
 
 /// The value property (`VALUE`), a number with a unit.

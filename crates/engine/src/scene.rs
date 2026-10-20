@@ -52,6 +52,14 @@ impl Scene {
                 _ => t.at,
             });
         }
+        for x in &sheet.subcircuits {
+            let x = match new_state(ItemId::Subcircuit(x.id)) {
+                Some(Item::Subcircuit(n)) => n,
+                _ => x.clone(),
+            };
+            // Ports sit on the box's edge, so the box is no obstacle (a wire may end on it).
+            scene.points.extend(x.ports.iter().map(|p| p.at));
+        }
         for w in sheet.wires.iter().filter(|w| !reshaped.contains(&ItemId::Wire(w.id))) {
             let points = match new_state(ItemId::Wire(w.id)) {
                 Some(Item::Wire(n)) => n.points,

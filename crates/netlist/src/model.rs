@@ -102,6 +102,8 @@ pub enum ErcKind {
     DuplicateReference,
     /// A coordinate is not finite or too large to compare; that point connects to nothing.
     InvalidGeometry,
+    /// A subcircuit, port or child sheet does not connect as drawn.
+    Hierarchy,
 }
 
 /// One rules-check finding.

@@ -22,10 +22,12 @@ use serde::{Deserialize, Serialize};
 
 use crate::device::Device;
 use crate::error::{Issue, IssueKind, LibraryError};
+use crate::intern::Interner;
 use crate::library::Library;
 use crate::limits::{MAX_FILE_BYTES, MAX_PACK_BYTES};
 use crate::package::Package;
-use crate::validate::{name_problem, validate};
+use crate::store::Packages;
+use crate::validate::{Validator, name_problem};
 
 /// Name of the index file.
 pub const INDEX_FILE: &str = "index.json";
@@ -65,18 +67,30 @@ pub struct IndexEntry {
     pub package_file: Option<String>,
 }
 
-#[derive(Serialize, Deserialize)]
-struct DeviceFile {
-    format: String,
+#[derive(Serialize)]
+struct DeviceFileOut<'a> {
+    format: &'a str,
     version: u32,
+    devices: Vec<&'a Device>,
+}
+
+#[derive(Serialize)]
+struct PackageFileOut<'a> {
+    format: &'a str,
+    version: u32,
+    packages: Vec<&'a Package>,
+}
+
+/// A device file's list (its header is checked first, see [`Head`]).
+#[derive(Deserialize)]
+struct DeviceFile {
     #[serde(default, deserialize_with = "crate::bounded::devices")]
     devices: Vec<Device>,
 }
 
-#[derive(Serialize, Deserialize)]
+/// A package file's list.
+#[derive(Deserialize)]
 struct PackageFile {
-    format: String,
-    version: u32,
     #[serde(default, deserialize_with = "crate::bounded::packages")]
     packages: Vec<Package>,
 }
@@ -119,43 +133,41 @@ impl Library {
     /// # Errors
     /// I/O, size, JSON and format errors stop at the first bad file; consistency problems are
     /// all collected into [`LibraryError::Invalid`].
+    ///
+    /// Package files are checked here and read again on first use (see [`Library::package`]);
+    /// equal symbols and pin maps are shared between devices.
     pub fn load_dir(dir: &Path) -> Result<Library, LibraryError> {
         let mut budget = 0u64;
         let index_path = dir.join(INDEX_FILE);
         let index = parse_index(&index_path, &read_limited(&index_path, dir, &mut budget)?)?;
         let mut issues = Vec::new();
-        let (mut devices, mut packages) = (Vec::new(), Vec::new());
-        let mut seen = HashSet::new();
-        for entry in &index.libraries {
-            let issue = |kind| Issue { library: entry.name.clone(), item: None, kind };
-            if let Some(kind) = name_problem(&entry.name, "library") {
-                issues.push(issue(kind));
-                continue;
-            }
-            if !seen.insert(entry.name.to_uppercase()) {
-                issues.push(issue(IssueKind::DuplicateLibrary));
-                continue;
-            }
-            let Some(path) = pack_path(dir, &entry.file) else {
-                issues.push(issue(IssueKind::BadPath(entry.file.clone())));
-                continue;
-            };
-            let devs = parse_devices(&path, &read_limited(&path, dir, &mut budget)?)?;
-            if usize::try_from(entry.device_count).ok() != Some(devs.len()) {
-                issues.push(issue(IssueKind::CountMismatch { index: entry.device_count, file: devs.len() }));
-            }
-            devices.extend(devs.into_iter().map(|d| adopt(d, &entry.name, &mut issues)));
-            if let Some(file) = &entry.package_file {
-                let Some(path) = pack_path(dir, file) else {
-                    issues.push(issue(IssueKind::BadPath(file.clone())));
-                    continue;
-                };
-                let pkgs = parse_packages(&path, &read_limited(&path, dir, &mut budget)?)?;
-                packages.extend(pkgs.into_iter().map(|p| adopt(p, &entry.name, &mut issues)));
-            }
+        let files = library_files(dir, &index, &mut issues);
+        let mut v = Validator::default();
+        let mut packages = Packages::default();
+        for (entry, _, file) in &files {
+            let Some(path) = file else { continue };
+            let pkgs: Vec<Package> =
+                parse_packages(path, &read_limited(path, dir, &mut budget)?)?.into_iter().map(|p| adopt(p, &entry.name, &mut issues)).collect();
+            v.packages(&pkgs);
+            packages.add_file(&entry.name, path.clone(), pkgs.into_iter().map(|p| p.name).collect());
         }
-        issues.extend(validate(&devices, &packages));
-        if issues.is_empty() { Ok(Library::index(devices, packages)) } else { Err(LibraryError::Invalid(issues)) }
+        let mut interner = Interner::default();
+        let mut devices = Vec::new();
+        for (entry, path, _) in &files {
+            let devs = parse_devices(path, &read_limited(path, dir, &mut budget)?)?;
+            if usize::try_from(entry.device_count).ok() != Some(devs.len()) {
+                issues.push(Issue {
+                    library: entry.name.clone(),
+                    item: None,
+                    kind: IssueKind::CountMismatch { index: entry.device_count, file: devs.len() },
+                });
+            }
+            let devs: Vec<Device> = devs.into_iter().map(|d| interner.device(adopt(d, &entry.name, &mut issues))).collect();
+            v.devices(&devs);
+            devices.extend(devs);
+        }
+        issues.extend(v.finish());
+        if issues.is_empty() { Ok(Library::assemble(devices, packages)) } else { Err(LibraryError::Invalid(issues)) }
     }
 
     /// Writes the library as a pack into `dir` (created if missing; existing files with the
@@ -170,13 +182,13 @@ impl Library {
         let mut entries = Vec::new();
         for info in self.libraries() {
             let stem = unique_stem(&info.name, &mut used);
-            let devices: Vec<Device> = self.devices().iter().filter(|d| d.library == info.name).cloned().collect();
+            let devices: Vec<&Device> = self.devices().iter().filter(|d| d.library == info.name).collect();
             let file = format!("{stem}.json");
-            write_json(&dir.join(&file), &DeviceFile { format: DEVICES_FORMAT.into(), version: VERSION, devices })?;
+            write_json(&dir.join(&file), &DeviceFileOut { format: DEVICES_FORMAT, version: VERSION, devices })?;
             let package_file = if info.package_count > 0 {
-                let packages: Vec<Package> = self.packages().iter().filter(|p| p.library == info.name).cloned().collect();
+                let packages: Vec<&Package> = self.packages().filter(|p| p.library == info.name).collect();
                 let file = format!("{stem}.packages.json");
-                write_json(&dir.join(&file), &PackageFile { format: PACKAGES_FORMAT.into(), version: VERSION, packages })?;
+                write_json(&dir.join(&file), &PackageFileOut { format: PACKAGES_FORMAT, version: VERSION, packages })?;
                 Some(file)
             } else {
                 None
@@ -186,6 +198,57 @@ impl Library {
         let index = PackIndex { format: INDEX_FORMAT.into(), version: VERSION, libraries: entries };
         write_json(&dir.join(INDEX_FILE), &index)
     }
+}
+
+/// The index entries that can be read, with their device file and package file paths; bad
+/// names, repeated libraries and bad paths become issues.
+fn library_files<'a>(dir: &Path, index: &'a PackIndex, issues: &mut Vec<Issue>) -> Vec<(&'a IndexEntry, PathBuf, Option<PathBuf>)> {
+    let mut seen = HashSet::new();
+    let mut out = Vec::new();
+    for entry in &index.libraries {
+        let issue = |kind| Issue { library: entry.name.clone(), item: None, kind };
+        if let Some(kind) = name_problem(&entry.name, "library") {
+            issues.push(issue(kind));
+            continue;
+        }
+        if !seen.insert(entry.name.to_uppercase()) {
+            issues.push(issue(IssueKind::DuplicateLibrary));
+            continue;
+        }
+        let Some(path) = pack_path(dir, &entry.file) else {
+            issues.push(issue(IssueKind::BadPath(entry.file.clone())));
+            continue;
+        };
+        let package_file = entry.package_file.as_ref().and_then(|file| {
+            let p = pack_path(dir, file);
+            if p.is_none() {
+                issues.push(issue(IssueKind::BadPath(file.clone())));
+            }
+            p
+        });
+        out.push((entry, path, package_file));
+    }
+    out
+}
+
+/// Reads one package file again (for [`crate::store::Packages`]): packages that no longer pass
+/// the checks are left out.
+///
+/// # Errors
+/// The reason when the file cannot be read or parsed, or a problem concerns the whole file.
+pub(crate) fn load_package_file(path: &Path, library: &str) -> Result<Vec<Package>, String> {
+    let mut budget = 0;
+    let bytes = read_limited(path, path, &mut budget).map_err(|e| e.to_string())?;
+    let mut issues = Vec::new();
+    let pkgs: Vec<Package> = parse_packages(path, &bytes).map_err(|e| e.to_string())?.into_iter().map(|p| adopt(p, library, &mut issues)).collect();
+    let mut v = Validator::default();
+    v.packages(&pkgs);
+    issues.extend(v.finish());
+    if let Some(whole) = issues.iter().find(|i| i.item.is_none()) {
+        return Err(whole.to_string());
+    }
+    let bad: HashSet<&str> = issues.iter().filter_map(|i| i.item.as_deref()).collect();
+    Ok(pkgs.into_iter().filter(|p| !bad.contains(p.name.as_str())).collect())
 }
 
 /// Things that record the library they belong to.
