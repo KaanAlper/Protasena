@@ -22,18 +22,9 @@ pub struct PlacedPin {
 }
 
 /// The units that make up gate `gate` of a symbol: the `gate`-th distinct unit name, in body
-/// style 1 when it has one (else its first body style).
+/// style 1 when it has one (else its first body style). See [`protasena_library::Symbol::gate`].
 pub fn gate_units(device: &Device, gate: u32) -> Vec<&Unit> {
-    let mut names: Vec<&str> = Vec::new();
-    for u in &device.symbol.units {
-        if !names.contains(&u.name.as_str()) {
-            names.push(&u.name);
-        }
-    }
-    let Some(name) = usize::try_from(gate).ok().and_then(|g| names.get(g).copied()) else { return Vec::new() };
-    let of_name = || device.symbol.units.iter().filter(move |u| u.name == name);
-    let style = if of_name().any(|u| u.body_style == 1) { 1 } else { of_name().map(|u| u.body_style).next().unwrap_or(1) };
-    of_name().filter(|u| u.body_style == style).collect()
+    device.symbol.gate(gate)
 }
 
 /// The pins of `component` (its gate of `device`) placed on the sheet. Empty when the gate does

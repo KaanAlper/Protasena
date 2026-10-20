@@ -247,6 +247,11 @@ dependencies = [
 [[package]]
 name = "protasena-render"
 version = "0.1.0"
+dependencies = [
+ "protasena-doc",
+ "protasena-geom",
+ "protasena-library",
+]
 
 [[package]]
 name = "protasena-ui-egui"

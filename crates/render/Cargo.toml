@@ -11,3 +11,6 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
+protasena-doc.workspace = true
+protasena-geom.workspace = true
+protasena-library.workspace = true

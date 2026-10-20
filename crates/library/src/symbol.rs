@@ -25,6 +25,32 @@ impl Symbol {
     pub fn has_pin(&self, number: &str) -> bool {
         self.pins().any(|p| p.number == number)
     }
+
+    /// The units that make up gate `gate`: the `gate`-th distinct unit name, in body style 1
+    /// when it has one (else its first body style). Empty when the gate does not exist.
+    pub fn gate(&self, gate: u32) -> Vec<&Unit> {
+        let mut names: Vec<&str> = Vec::new();
+        for u in &self.units {
+            if !names.contains(&u.name.as_str()) {
+                names.push(&u.name);
+            }
+        }
+        let Some(name) = usize::try_from(gate).ok().and_then(|g| names.get(g).copied()) else { return Vec::new() };
+        let of_name = || self.units.iter().filter(move |u| u.name == name);
+        let style = if of_name().any(|u| u.body_style == 1) { 1 } else { of_name().map(|u| u.body_style).next().unwrap_or(1) };
+        of_name().filter(|u| u.body_style == style).collect()
+    }
+
+    /// How many gates (distinct unit names) the symbol has.
+    pub fn gate_count(&self) -> usize {
+        let mut names: Vec<&str> = Vec::new();
+        for u in &self.units {
+            if !names.contains(&u.name.as_str()) {
+                names.push(&u.name);
+            }
+        }
+        names.len()
+    }
 }
 
 /// One unit (gate) of a symbol in one body style.
