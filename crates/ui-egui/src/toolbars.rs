@@ -116,8 +116,8 @@ pub const EDIT: &[Tool] = &[
 pub const DESIGN: &[Tool] = &[
     toggle("Wire Autorouter", Icon::Autorouter, Cmd("toggle-autorouter"), Pressed::Autorouter),
     Sep,
-    b("Search & Tag", Icon::SearchTag, Off),
-    b("Property Assignment Tool", Icon::PropertyTool, Off),
+    b("Search & Tag", Icon::SearchTag, Cmd("search-tag")),
+    b("Property Assignment Tool", Icon::PropertyTool, Cmd("property-assign")),
     Sep,
     b("New (Root) Sheet", Icon::NewSheet, Cmd("new-sheet")),
     b("Remove/Delete Sheet", Icon::RemoveSheet, Cmd("remove-sheet")),

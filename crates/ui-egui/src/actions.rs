@@ -55,6 +55,8 @@ impl App {
                 self.notify(format!("{} {}", tl!("Exported to"), v["path"].as_str().unwrap_or_default()), false);
             }
             "print-design" => self.printed(v),
+            "search-tag" => self.notify(format!("{}: {}", tl!("Tagged"), v["count"]), false),
+            "property-assign" => self.notify(format!("{}: {}", tl!("Parts changed"), v["changed"]), false),
             _ => {}
         }
     }

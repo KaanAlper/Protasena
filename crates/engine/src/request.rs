@@ -68,6 +68,10 @@ pub enum Request {
     GotoSheet,
     /// Global Annotator options (then `annotate`).
     GlobalAnnotator,
+    /// Search & Tag: the property, operator and value to tag by (then `search-tag`).
+    SearchTag,
+    /// Property Assignment Tool: the string, action and parts (then `property-assign`).
+    PropertyAssign,
     /// Unsaved changes: ask whether to discard them (then the command with `discard: true`).
     ConfirmDiscard {
         /// The command waiting for the answer.

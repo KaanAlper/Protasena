@@ -14,18 +14,25 @@
 2D Graphics Symbols Mode
 2D Graphics Text Mode
 3D Visualizer
+AND (narrow)
 ASCII Data Import Tool
 About Protasena
+Action
 Active Popup Mode
 Add Traces...
 Align Objects
+All Parts in the Design
+All Parts on the Sheet
 All Sheets
 Angle
 Animated Single Step
 Annotated
 Apply Styles From Template
+Apply To
+Assign
 Author
 Base Design
+Begins
 Bill of Materials
 Block Copy
 Block Delete
@@ -44,7 +51,10 @@ Compile To Library
 Component Mode
 Configure Diagnostics
 Configure Power Rails...
+Contains
 Copy To Clipboard
+Count
+Count and Increment must be whole numbers
 Created
 Current Sheet
 Custom
@@ -74,7 +84,9 @@ Edit Wire Label
 Electrical Rules Check
 Element
 Enable Remote Debug Monitor
+Ends
 Enter a number
+Equals
 Error
 Exit Application
 Exit to Parent Sheet
@@ -105,6 +117,7 @@ Goto Previous Root or Sub-sheet
 Goto Sheet
 Graph
 Graph Mode
+Greater Than
 Height (th)
 Help
 Hidden
@@ -116,9 +129,11 @@ Import Image
 Import Legacy Project
 Import Parts
 Import Project Clip
+Increment
 Incremental
 Junction Dot Mode
 Keywords
+Less Than
 Library
 Library Manager
 Licence: MIT OR Apache-2.0
@@ -129,26 +144,34 @@ Make Symbol
 Manage Changes
 Manufacturer
 Mark Output Area
+Match Case
 Message
 Messages
 Mode
 Model Compiler
 Modified
 Mono (black on white)
+NAME=VALUE to assign or rename, NAME to remove; # counts up.
 Netlist Compiler
 Nets
 New (Root) Sheet
 New Project
+New Search
 No Messages
 No PCB package
 No errors found.
 No part on this sheet is called
+Not Begins
+Not Contains
+Not Equals
 Not affiliated with Labcenter Electronics. Proteus is a trademark of Labcenter Electronics.
 OK
+OR (widen)
 Open Project
 Open Sample Project
 Open in the system viewer
 Open-source schematic capture whose layout and workflow follow Proteus 8 Schematic Capture.
+Operator
 Other Properties
 Overview
 PCB Layout
@@ -161,6 +184,7 @@ Packaging Tool
 Part Reference
 Part Value
 Parts
+Parts changed
 Paste From Clipboard
 Pause
 Pause VSM Debugging
@@ -177,10 +201,13 @@ Prints to a PDF file.
 Probe Mode
 Project Name
 Project Notes
+Property
 Property Assignment Tool
 Redo Changes
 Redraw Display
+Remove
 Remove/Delete Sheet
+Rename
 Reset Debug Popup Windows
 Reset Persistent Model Data
 Resolution (dpi)
@@ -207,6 +234,7 @@ Schematic Capture Help
 Schematic Capture Tutorial
 Scope
 Search & Tag
+Search Mode
 Select All Objects
 Selection Mode
 Send To Back
@@ -245,6 +273,8 @@ Subcircuit Mode
 System
 System Settings
 TERMINALS
+Tagged
+Tagged Parts
 Template
 Terminals Mode
 Text

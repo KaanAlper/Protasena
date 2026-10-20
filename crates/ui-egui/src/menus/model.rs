@@ -183,8 +183,8 @@ const VIEW: &[Entry] = &[
 
 const TOOL: &[Entry] = &[
     checked("Wire Autorouter", "W", "toggle-autorouter", Check::Autorouter),
-    off("Search & Tag", Some("T")),
-    off("Property Assignment Tool", Some("A")),
+    cmd("Search & Tag", Some("T"), "search-tag"),
+    cmd("Property Assignment Tool", Some("A"), "property-assign"),
     Sep,
     cmd("Global Annotator", None, "annotate"),
     off("ASCII Data Import Tool", None),

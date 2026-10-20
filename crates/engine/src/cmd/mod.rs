@@ -1,6 +1,7 @@
 //! The commands, by area. Ids are stable and lower-case; labels, menu paths and shortcuts are
 //! Proteus's.
 
+mod assign;
 mod block;
 mod clip;
 mod design;
@@ -11,6 +12,7 @@ mod graphics;
 mod items;
 mod place;
 mod sheets;
+mod tag;
 mod view;
 mod wire;
 
@@ -38,6 +40,8 @@ pub(crate) fn all_specs() -> Vec<CommandSpec> {
     v.extend(graphics::specs());
     v.extend(wire::specs());
     v.extend(design::specs());
+    v.extend(tag::specs());
+    v.extend(assign::specs());
     v.extend(sheets::specs());
     v
 }

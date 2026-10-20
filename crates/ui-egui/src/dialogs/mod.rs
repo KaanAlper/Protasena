@@ -10,6 +10,7 @@ mod forms;
 pub mod pick_devices;
 pub mod pick_model;
 pub mod results;
+pub mod tools;
 
 use egui::{Align, Layout, RichText, Ui, vec2};
 use protasena_engine::{Request, Session};
@@ -53,6 +54,10 @@ pub enum Dialog {
     Export(Box<export::ExportForm>),
     /// Print Design.
     Print(Box<export::PrintForm>),
+    /// Search & Tag.
+    SearchTag(tools::SearchTagForm),
+    /// Property Assignment Tool.
+    PropertyAssign(tools::PropertyAssignForm),
     /// Unsaved changes: Save, Don't Save or Cancel?
     SaveChanges {
         /// What waits for the answer.
@@ -102,6 +107,8 @@ impl Dialog {
             Request::SheetProperties { sheet } => Dialog::Sheet(SheetForm::new(s, sheet)?),
             Request::GotoSheet => Dialog::GotoSheet(GotoForm::new(s)),
             Request::GlobalAnnotator => Dialog::Annotator { total: false },
+            Request::SearchTag => Dialog::SearchTag(tools::SearchTagForm::default()),
+            Request::PropertyAssign => Dialog::PropertyAssign(tools::PropertyAssignForm::new(!s.selection().is_empty())),
             Request::ConfirmDiscard { then } => Dialog::SaveChanges { then: Then::from_command(then) },
             Request::OpenProject => Dialog::path(PathPurpose::Open { discard: false }, ""),
             Request::SaveProjectAs => Dialog::path(PathPurpose::SaveAs, ""),
@@ -130,6 +137,8 @@ impl Dialog {
             Dialog::Sheet(_) => tl!("Edit Sheet Properties"),
             Dialog::GotoSheet(_) => tl!("Goto Sheet"),
             Dialog::Annotator { .. } => tl!("Global Annotator"),
+            Dialog::SearchTag(_) => tl!("Search & Tag"),
+            Dialog::PropertyAssign(_) => tl!("Property Assignment Tool"),
             Dialog::Export(d) => d.kind.title,
             Dialog::Print(_) => tl!("Print Design"),
             Dialog::SaveChanges { .. } => tl!("Unsaved Changes"),
@@ -149,6 +158,8 @@ impl Dialog {
             Dialog::Design(d) => &mut d.error,
             Dialog::Sheet(d) => &mut d.error,
             Dialog::Export(d) => &mut d.out.error,
+            Dialog::SearchTag(d) => &mut d.error,
+            Dialog::PropertyAssign(d) => &mut d.error,
             Dialog::Print(d) => &mut d.out.error,
             Dialog::GotoSheet(_) | Dialog::Annotator { .. } | Dialog::SaveChanges { .. } => return,
         };
@@ -178,6 +189,8 @@ impl Dialog {
             Dialog::GotoSheet(d) => d.ui(ui, s),
             Dialog::Annotator { total } => forms::annotator(ui, total),
             Dialog::Export(d) => d.ui(ui),
+            Dialog::SearchTag(d) => d.ui(ui),
+            Dialog::PropertyAssign(d) => d.ui(ui),
             Dialog::Print(d) => d.ui(ui),
             Dialog::SaveChanges { then } => ConfirmForm::ui(ui, *then),
         }
