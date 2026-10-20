@@ -115,8 +115,17 @@ pub fn convert_footprints(files: Vec<FpFile>, jobs: usize) -> Result<Vec<Result<
 
 /// Converts every symbol library in `dir`.
 pub fn convert_symbols(dir: &Path, map: &Map, fps: &FootprintIndex, jobs: usize) -> Result<Vec<Result<SymResult, Failure>>, String> {
-    let files = list(dir, "kicad_sym", false)?;
-    par::map(&files, jobs, |(lib, path)| {
+    convert_symbol_files(&list(dir, "kicad_sym", false)?, map, fps, jobs)
+}
+
+/// Converts the symbol libraries given as `(library name, file)`.
+pub fn convert_symbol_files(
+    files: &[(String, PathBuf)],
+    map: &Map,
+    fps: &FootprintIndex,
+    jobs: usize,
+) -> Result<Vec<Result<SymResult, Failure>>, String> {
+    par::map(files, jobs, |(lib, path)| {
         let fail = |error: String| Failure { what: format!("{lib}.kicad_sym"), error };
         let parsed = parse_symbol_lib(&read(path).map_err(fail)?).map_err(|e| fail(e.to_string()))?;
         Ok(convert_lib(lib, &parsed, map, fps))

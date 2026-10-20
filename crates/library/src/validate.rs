@@ -83,7 +83,7 @@ pub(crate) fn name_problem(name: &str, what: &'static str) -> Option<IssueKind> 
 }
 
 /// Pad names per package name.
-type PadSets = HashMap<String, HashSet<String>>;
+pub(crate) type PadSets = HashMap<String, HashSet<String>>;
 
 #[derive(Default)]
 struct Issues(Vec<Issue>);
@@ -105,6 +105,20 @@ impl Issues {
             self.push(library, item, kind);
         }
     }
+}
+
+/// The problems of one package on its own.
+pub(crate) fn package_issues(pkg: &Package) -> Vec<Issue> {
+    let mut out = Issues::default();
+    check_package(&mut out, pkg);
+    out.0
+}
+
+/// The problems of one device on its own, with `pads` answering for the packages it uses.
+pub(crate) fn device_issues(dev: &Device, pads: &PadSets) -> Vec<Issue> {
+    let mut out = Issues::default();
+    check_device(&mut out, dev, pads);
+    out.0
 }
 
 fn check_package(out: &mut Issues, pkg: &Package) {

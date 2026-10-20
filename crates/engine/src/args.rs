@@ -108,6 +108,23 @@ impl<'a> Args<'a> {
         }
     }
 
+    /// An optional list of at most `max` strings of at most [`MAX_TEXT`] bytes each.
+    pub fn strings(&self, key: &str, max: usize) -> Result<Option<Vec<&'a str>>> {
+        let Some(v) = self.get(key) else { return Ok(None) };
+        let list = v.as_array().ok_or_else(|| self.bad(format!("`{key}` must be a list of strings")))?;
+        if list.len() > max {
+            return Err(self.bad(format!("`{key}` holds more than {max} entries")));
+        }
+        list.iter()
+            .map(|x| match x {
+                Value::String(s) if s.len() <= MAX_TEXT => Ok(s.as_str()),
+                Value::String(_) => Err(self.bad(format!("an entry of `{key}` is longer than {MAX_TEXT} bytes"))),
+                _ => Err(self.bad(format!("`{key}` must be a list of strings"))),
+            })
+            .collect::<Result<Vec<_>>>()
+            .map(Some)
+    }
+
     /// A required string.
     pub fn str_req(&self, key: &str) -> Result<&'a str> {
         self.str(key)?.ok_or_else(|| self.bad(format!("`{key}` (string) is required")))

@@ -36,6 +36,42 @@ pub fn config_dir_from(var: impl Fn(&str) -> Option<String>, os: &str) -> Option
     }
 }
 
+/// Environment variable naming the cache directory (overrides the platform's).
+pub const CACHE_DIR_VAR: &str = "PROTASENA_CACHE_DIR";
+
+/// The cache directory (converted KiCad libraries): [`CACHE_DIR_VAR`] when set, else the
+/// platform's per-user cache directory with a `Protasena` folder (`%LOCALAPPDATA%\Protasena`
+/// on Windows, `~/Library/Caches/Protasena` on macOS, `$XDG_CACHE_HOME/protasena` or
+/// `~/.cache/protasena` elsewhere). `None` when no home directory is known.
+pub fn cache_dir() -> Option<PathBuf> {
+    cache_dir_from(|k| std::env::var_os(k).map(|v| v.to_string_lossy().into_owned()), std::env::consts::OS)
+}
+
+/// [`cache_dir`] for a given environment and operating system.
+pub fn cache_dir_from(var: impl Fn(&str) -> Option<String>, os: &str) -> Option<PathBuf> {
+    let get = |k: &str| var(k).filter(|v| !v.trim().is_empty());
+    if let Some(dir) = get(CACHE_DIR_VAR) {
+        return Some(PathBuf::from(dir));
+    }
+    match os {
+        "windows" => get("LOCALAPPDATA").map(|d| PathBuf::from(d).join("Protasena")),
+        "macos" => get("HOME").map(|h| PathBuf::from(h).join("Library").join("Caches").join("Protasena")),
+        _ => match get("XDG_CACHE_HOME").filter(|d| Path::new(d).is_absolute()) {
+            Some(d) => Some(PathBuf::from(d).join("protasena")),
+            None => get("HOME").map(|h| PathBuf::from(h).join(".cache").join("protasena")),
+        },
+    }
+}
+
+/// Folder name of the user's writable libraries in [`config_dir`].
+pub const USER_LIBRARY_DIR: &str = "libraries";
+
+/// The user's writable libraries (Make Device, the Library Manager): a pack in
+/// [`USER_LIBRARY_DIR`] of [`config_dir`].
+pub fn user_library_dir() -> Option<PathBuf> {
+    config_dir().map(|d| d.join(USER_LIBRARY_DIR))
+}
+
 /// The settings file: [`SETTINGS_FILE`] in [`config_dir`].
 pub fn settings_path() -> Option<PathBuf> {
     config_dir().map(|d| d.join(SETTINGS_FILE))

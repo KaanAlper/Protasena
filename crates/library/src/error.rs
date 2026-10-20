@@ -89,6 +89,9 @@ pub enum IssueKind {
     BadName(&'static str),
     /// Two libraries in the index have the same name.
     DuplicateLibrary,
+    /// An added library ([`crate::Library::with_extra`]) has the name of a library already
+    /// loaded.
+    LibraryTaken,
     /// Two devices share a name (compared without case); `first_library` holds the first one.
     DuplicateDevice {
         /// Library of the device seen first.
@@ -171,6 +174,7 @@ impl fmt::Display for IssueKind {
             Self::EmptyName(what) => write!(f, "empty {what} name"),
             Self::BadName(what) => write!(f, "{what} name is too long or contains control characters"),
             Self::DuplicateLibrary => write!(f, "library listed twice in the index"),
+            Self::LibraryTaken => write!(f, "a library of this name is already loaded"),
             Self::DuplicateDevice { first_library } => write!(f, "device name already used in library {first_library}"),
             Self::DuplicatePackage { first_library } => write!(f, "package name already used in library {first_library}"),
             Self::DanglingPackage(p) => write!(f, "package {p} does not exist"),

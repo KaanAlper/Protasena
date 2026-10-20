@@ -79,7 +79,10 @@ pub use netlist_file::{NetlistFormat, export_netlist};
 pub use pdsprj_import::{PDSPRJ_LIBRARY, convert as convert_pdsprj, import_pdsprj, import_pdsprj_bytes};
 pub use pdsprj_report::{EmbeddedDevice, ImportError, ImportReport, UnknownRecords};
 pub use settings::{
-    DisplayOptions, MAX_ENTRIES, MAX_SETTINGS_BYTES, MAX_STRING, NamedSheetSize, PropertyDefinition, SETTINGS_FORMAT, SETTINGS_VERSION, SHEET_SIDE,
-    SystemSettings, TextEditorOptions, decode_settings, default_sheet_sizes, encode_settings,
+    DisplayOptions, MAX_ENTRIES, MAX_KICAD_LIBRARIES, MAX_SETTINGS_BYTES, MAX_STRING, NamedSheetSize, PropertyDefinition, SETTINGS_FORMAT,
+    SETTINGS_VERSION, SHEET_SIDE, SystemSettings, TextEditorOptions, decode_settings, default_sheet_sizes, encode_settings,
 };
-pub use settings_file::{CONFIG_DIR_VAR, SETTINGS_FILE, config_dir, config_dir_from, load_settings, save_settings, settings_path};
+pub use settings_file::{
+    CACHE_DIR_VAR, CONFIG_DIR_VAR, SETTINGS_FILE, USER_LIBRARY_DIR, cache_dir, cache_dir_from, config_dir, config_dir_from, load_settings,
+    save_settings, settings_path, user_library_dir,
+};

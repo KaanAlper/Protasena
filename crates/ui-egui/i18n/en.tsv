@@ -159,6 +159,7 @@ Increment
 Incremental
 Junction Dot Mode
 Keywords
+KiCad libraries
 Left Edges
 Less Than
 Library
@@ -310,6 +311,7 @@ Snap 0.1in
 Snap 0.5in
 Snap 10th
 Snap 50th
+Some KiCad libraries could not be imported: see the Library Manager
 Source Code
 Square
 Start VSM Debugging
@@ -376,6 +378,7 @@ Zoom In
 Zoom Out
 Zoom To Area
 Zoom To View Entire Sheet
+add a .kicad_sym file, a .pretty folder or a folder holding them
 also
 default
 devices removed

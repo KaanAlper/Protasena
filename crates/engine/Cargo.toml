@@ -14,6 +14,7 @@ workspace = true
 protasena-doc = { workspace = true, features = ["serde"] }
 protasena-geom = { workspace = true, features = ["serde"] }
 protasena-io.workspace = true
+protasena-libimport.workspace = true
 protasena-library.workspace = true
 protasena-netlist.workspace = true
 protasena-render.workspace = true

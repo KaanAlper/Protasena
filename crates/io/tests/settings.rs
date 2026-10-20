@@ -98,3 +98,29 @@ fn the_configuration_directory_follows_the_platform_and_the_override() {
     assert_eq!(config_dir_from(env(&[("HOME", "/Users/u")]), "macos"), Some(PathBuf::from("/Users/u/Library/Application Support/Protasena")));
     assert_eq!(config_dir_from(env(&[("PROTASENA_CONFIG_DIR", "  ")]), "linux"), None);
 }
+
+#[test]
+fn the_cache_directory_follows_the_platform_and_the_override() {
+    let env = |pairs: &'static [(&'static str, &'static str)]| move |k: &str| pairs.iter().find(|(n, _)| *n == k).map(|(_, v)| (*v).to_owned());
+    assert_eq!(cache_dir_from(env(&[("PROTASENA_CACHE_DIR", "/c"), ("HOME", "/home/u")]), "linux"), Some(PathBuf::from("/c")));
+    assert_eq!(cache_dir_from(env(&[("HOME", "/home/u")]), "linux"), Some(PathBuf::from("/home/u/.cache/protasena")));
+    assert_eq!(cache_dir_from(env(&[("XDG_CACHE_HOME", "/x"), ("HOME", "/h")]), "linux"), Some(PathBuf::from("/x/protasena")));
+    assert_eq!(cache_dir_from(env(&[("XDG_CACHE_HOME", "rel"), ("HOME", "/h")]), "linux"), Some(PathBuf::from("/h/.cache/protasena")));
+    assert_eq!(cache_dir_from(env(&[("LOCALAPPDATA", "C:\\Local")]), "windows"), Some(PathBuf::from("C:\\Local").join("Protasena")));
+    assert_eq!(cache_dir_from(env(&[("HOME", "/Users/u")]), "macos"), Some(PathBuf::from("/Users/u/Library/Caches/Protasena")));
+    assert_eq!(cache_dir_from(env(&[]), "linux"), None);
+}
+
+#[test]
+fn kicad_library_paths_are_kept_in_order_without_blanks_or_repeats() {
+    let text =
+        r#"{"format":"protasena-settings","version":1,"settings":{"kicad_libraries":["/a/My.kicad_sym","","/b","/a/My.kicad_sym","/c\u0000"]}}"#;
+    let (s, w) = decode_settings(text.as_bytes());
+    assert_eq!(s.kicad_libraries, ["/a/My.kicad_sym", "/b"]);
+    assert_eq!(w.len(), 1, "{w:?}");
+    let (bad, w) = decode_settings(br#"{"format":"protasena-settings","version":1,"settings":{"kicad_libraries":"/a"}}"#);
+    assert!(bad.kicad_libraries.is_empty());
+    assert!(w[0].contains("kicad_libraries"), "{w:?}");
+    let back = decode_settings(encode_settings(&s).unwrap().as_bytes()).0;
+    assert_eq!(back, s);
+}

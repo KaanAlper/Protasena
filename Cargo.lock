@@ -2544,6 +2544,7 @@ dependencies = [
  "protasena-doc",
  "protasena-geom",
  "protasena-io",
+ "protasena-libimport",
  "protasena-library",
  "protasena-netlist",
  "protasena-pdsprj",

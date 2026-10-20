@@ -21,6 +21,8 @@ pub const MAX_SETTINGS_BYTES: u64 = 1024 * 1024;
 pub const MAX_ENTRIES: usize = 1000;
 /// Longest string kept, in bytes.
 pub const MAX_STRING: usize = 4096;
+/// Most KiCad library paths kept.
+pub const MAX_KICAD_LIBRARIES: usize = 256;
 
 /// System ▸ Set Display Options.
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
@@ -93,6 +95,9 @@ pub struct SystemSettings {
     pub library_dir: Option<String>,
     /// System Settings: the folder the file choosers start in.
     pub project_dir: Option<String>,
+    /// System Settings and the Library Manager: the user's own KiCad libraries, imported at
+    /// run time (`.kicad_sym` files, `.pretty` folders, or folders holding them), in order.
+    pub kicad_libraries: Vec<String>,
     /// Set Display Options.
     pub display: DisplayOptions,
     /// Set Sheet Sizes: the sizes Edit Sheet Properties offers.
@@ -123,6 +128,7 @@ impl Default for SystemSettings {
         Self {
             library_dir: None,
             project_dir: None,
+            kicad_libraries: Vec::new(),
             display: DisplayOptions::default(),
             sheet_sizes: default_sheet_sizes(),
             keys: BTreeMap::new(),
@@ -163,6 +169,13 @@ impl SystemSettings {
                 w.push("a folder setting is empty or not a usable path".to_owned());
                 *dir = None;
             }
+        }
+        let before = self.kicad_libraries.len();
+        let mut seen = std::collections::HashSet::new();
+        self.kicad_libraries.retain(|p| !p.trim().is_empty() && short(p) && !p.contains('\0') && seen.insert(p.clone()));
+        self.kicad_libraries.truncate(MAX_KICAD_LIBRARIES);
+        if self.kicad_libraries.len() != before {
+            w.push(format!("{} KiCad library paths were dropped (empty, repeated or too many)", before - self.kicad_libraries.len()));
         }
         let before = self.sheet_sizes.len();
         self.sheet_sizes.retain(|s| !s.name.trim().is_empty() && short(&s.name) && number_ok(s.width, SHEET_SIDE) && number_ok(s.height, SHEET_SIDE));
@@ -230,6 +243,7 @@ pub fn decode_settings(bytes: &[u8]) -> (SystemSettings, Vec<String>) {
     let mut s = SystemSettings {
         library_dir: field(obj, "library_dir", &mut w),
         project_dir: field(obj, "project_dir", &mut w),
+        kicad_libraries: field(obj, "kicad_libraries", &mut w),
         display: field(obj, "display", &mut w),
         sheet_sizes: field(obj, "sheet_sizes", &mut w),
         keys: field(obj, "keys", &mut w),

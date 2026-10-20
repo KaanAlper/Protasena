@@ -21,8 +21,10 @@ pub(super) fn specs() -> Vec<CommandSpec> {
     vec![
         CommandSpec::new("system-settings", "System Settings", folders)
             .menu(&["System", "System Settings"])
-            .params("{library_dir?: path|null, project_dir?: path|null} — null: none")
+            .params("{library_dir?: path|null, project_dir?: path|null, kicad_libraries?: [path]} — null: none; kicad_libraries: the user's own KiCad libraries (.kicad_sym files, .pretty folders or folders holding them), imported at once")
             .dialog(|_| Some(Request::System { section: "folders" })),
+        CommandSpec::new("import-kicad-libraries", "Import KiCad Libraries", |s, _| Ok(s.import_kicad()))
+            .params("{} — imports the KiCad libraries of System Settings again (converted files are cached: only changed ones are converted)"),
         CommandSpec::new("set-display-options", "Set Display Options", |s, a| group(s, a, |x| &mut x.display))
             .menu(&["System", "Set Display Options"])
             .params("{grid_lines?: bool, wheel_zoom?: 1.1-10, pick_pixels?: 1-50, reset?: bool}")
@@ -80,7 +82,16 @@ fn folders(s: &mut Session, a: &Args) -> Result<Value> {
             *slot = if v.trim().is_empty() { None } else { Some(v.trim().to_owned()) };
         }
     }
-    take(s, a, new)
+    if let Some(paths) = a.strings("kicad_libraries", protasena_io::MAX_KICAD_LIBRARIES)? {
+        let mut seen = std::collections::HashSet::new();
+        new.kicad_libraries = paths.iter().map(|p| p.trim()).filter(|p| !p.is_empty() && seen.insert(*p)).map(str::to_owned).collect();
+    }
+    let reimport = new.kicad_libraries != s.settings.kicad_libraries;
+    let mut v = take(s, a, new)?;
+    if reimport && let (Value::Object(out), Value::Object(more)) = (&mut v, s.import_kicad()) {
+        out.extend(more);
+    }
+    Ok(v)
 }
 
 fn keyboard(s: &mut Session, a: &Args) -> Result<Value> {

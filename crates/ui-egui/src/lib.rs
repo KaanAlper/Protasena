@@ -34,7 +34,6 @@ use std::path::PathBuf;
 use std::sync::mpsc::Receiver;
 
 use protasena_engine::Session;
-use protasena_library::Library;
 use serde::{Deserialize, Serialize};
 
 pub use control::{ControlRequest, ControlResponse, PendingReply};
@@ -131,7 +130,7 @@ pub struct App {
     /// What waits for a save to succeed (the unsaved-changes question's Save).
     after_save: Option<unsaved::Then>,
     control_rx: Option<Receiver<ControlRequest>>,
-    library_rx: Option<Receiver<Result<Library, String>>>,
+    library_rx: Option<Receiver<protasena_engine::LoadedLibraries>>,
     shots: remote::Shots,
     shown_theme: Option<egui::Theme>,
     fonts: bool,
@@ -176,8 +175,9 @@ impl App {
         self.control_rx = Some(rx);
     }
 
-    /// Takes the parts library from `rx` once it has loaded (from `dir`).
-    pub fn with_library_loading(mut self, dir: String, rx: Receiver<Result<Library, String>>) -> Self {
+    /// Takes the parts library (the pack from `dir`, or only the user's KiCad libraries when
+    /// `dir` is empty) from `rx` once it has loaded.
+    pub fn with_library_loading(mut self, dir: String, rx: Receiver<protasena_engine::LoadedLibraries>) -> Self {
         self.library = LibraryStatus::Loading(dir);
         self.library_rx = Some(rx);
         self
@@ -248,21 +248,23 @@ impl App {
 
     fn poll_library(&mut self) {
         let Some(rx) = &self.library_rx else { return };
-        let Ok(result) = rx.try_recv() else { return };
+        let Ok(loaded) = rx.try_recv() else { return };
         let dir = match &self.library {
             LibraryStatus::Loading(d) => d.clone(),
             _ => String::new(),
         };
-        match result {
-            Ok(lib) => {
-                let devices = lib.len();
-                self.session.set_library(lib);
-                self.library = LibraryStatus::Loaded { dir, devices };
-            }
-            Err(e) => {
+        let had_pack = loaded.base.is_some();
+        match self.session.take_libraries(loaded) {
+            None if had_pack => self.library = LibraryStatus::Loaded { dir, devices: self.session.library().len() },
+            None => self.library = LibraryStatus::Builtin,
+            Some(e) => {
                 self.notify(format!("{}: {e}", tl!("The parts library could not be loaded")), true);
                 self.library = LibraryStatus::Failed(e);
             }
+        }
+        let problems = self.session.kicad_sources().map(|r| r.errors.len()).sum::<usize>();
+        if problems > 0 && !matches!(self.library, LibraryStatus::Failed(_)) {
+            self.notify(format!("{} ({problems})", tl!("Some KiCad libraries could not be imported: see the Library Manager")), true);
         }
         self.library_rx = None;
     }

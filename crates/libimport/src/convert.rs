@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use protasena_library::{Device, Library, LibraryError, Package};
 
 use crate::device::Draft;
-use crate::inputs::{self, FpResult};
+use crate::inputs::{self, FpFile, FpResult};
 use crate::link::{FootprintIndex, FpEntry};
 use crate::map::Map;
 use crate::names::{self, Request};
@@ -40,33 +40,10 @@ pub struct Options {
 /// Only for problems that stop the whole run (unreadable input directory, unwritable output).
 pub fn run(opts: &Options) -> Result<Report, String> {
     let mut report = Report { upstream: opts.upstream.clone(), ..Report::default() };
-    let packages = footprints(opts, &mut report)?;
-    let index = FootprintIndex::new(packages.iter().map(|(entry, _)| entry.clone()).collect());
-    let mut drafts = Vec::new();
-    for result in inputs::convert_symbols(&opts.symbols, &opts.map, &index, opts.jobs)? {
-        match result {
-            Ok(r) => {
-                report.counts.symbol_libraries += 1;
-                report.counts.symbols += r.symbols;
-                report.counts.derived_symbols += r.derived;
-                report.notes.merge(&r.notes);
-                merge_unknown(&mut report.kicad_unknown, &r.unknown);
-                report.failures.extend(r.failures);
-                if !opts.map.libraries.contains_key(&r.lib) {
-                    report.unmapped_libraries.push(r.lib.clone());
-                }
-                drafts.extend(r.drafts);
-            }
-            Err(f) => report.failures.push(f),
-        }
-    }
-    report.unused_map_devices = unused_map_devices(&opts.map, &drafts);
-    let devices = finish_devices(drafts, &mut report);
-    let packages: Vec<Package> = packages.into_iter().map(|(_, p)| p).collect();
-    let library = validated(devices, packages, &mut report);
-    count(&library, &mut report);
-    report.counts.alternates_dropped = report.notes.get("pin alternates dropped (primary function kept)");
-    report.counts.kicad_unknown_tokens = report.kicad_unknown.values().map(|&v| v as u64).sum();
+    let (lib_count, fp_files) = inputs::footprint_files(&opts.footprints)?;
+    report.counts.footprint_libraries = lib_count;
+    let sym_files = inputs::list(&opts.symbols, "kicad_sym", false)?;
+    let library = convert_files(&sym_files, fp_files, &opts.map, opts.jobs, &mut report)?;
     pack::prepare(&opts.out)?;
     pack::write(&opts.out, &libs(&library))?;
     if let Err(e) = Library::load_dir(&opts.out) {
@@ -76,14 +53,48 @@ pub fn run(opts: &Options) -> Result<Report, String> {
     Ok(report)
 }
 
+/// Converts the given symbol libraries (`(name, file)`) and footprint files into a validated
+/// library, counting into `report` (its footprint library count is the caller's).
+///
+/// # Errors
+/// Only when a worker thread fails.
+pub fn convert_files(symbols: &[(String, PathBuf)], footprints: Vec<FpFile>, map: &Map, jobs: usize, report: &mut Report) -> Result<Library, String> {
+    let packages = convert_footprints(footprints, jobs, report)?;
+    let index = FootprintIndex::new(packages.iter().map(|(entry, _)| entry.clone()).collect());
+    let mut drafts = Vec::new();
+    for result in inputs::convert_symbol_files(symbols, map, &index, jobs)? {
+        match result {
+            Ok(r) => {
+                report.counts.symbol_libraries += 1;
+                report.counts.symbols += r.symbols;
+                report.counts.derived_symbols += r.derived;
+                report.notes.merge(&r.notes);
+                merge_unknown(&mut report.kicad_unknown, &r.unknown);
+                report.failures.extend(r.failures);
+                if !map.libraries.contains_key(&r.lib) {
+                    report.unmapped_libraries.push(r.lib.clone());
+                }
+                drafts.extend(r.drafts);
+            }
+            Err(f) => report.failures.push(f),
+        }
+    }
+    report.unused_map_devices = unused_map_devices(map, &drafts);
+    let devices = finish_devices(drafts, report);
+    let packages: Vec<Package> = packages.into_iter().map(|(_, p)| p).collect();
+    let library = validated(devices, packages, report);
+    count(&library, report);
+    report.counts.alternates_dropped = report.notes.get("pin alternates dropped (primary function kept)");
+    report.counts.kicad_unknown_tokens = report.kicad_unknown.values().map(|&v| v as u64).sum();
+    Ok(library)
+}
+
 /// Converts the footprints; package names are the footprint names, or `Library:Name` when a
 /// name occurs in more than one library.
-fn footprints(opts: &Options, report: &mut Report) -> Result<Vec<(FpEntry, Package)>, String> {
-    let (lib_count, files) = inputs::footprint_files(&opts.footprints)?;
-    report.counts.footprint_libraries = lib_count;
+fn convert_footprints(files: Vec<FpFile>, jobs: usize, report: &mut Report) -> Result<Vec<(FpEntry, Package)>, String> {
     report.counts.footprints = files.len();
     let mut ok: Vec<FpResult> = Vec::new();
-    for r in inputs::convert_footprints(files, opts.jobs)? {
+    for r in inputs::convert_footprints(files, jobs)? {
         match r {
             Ok(r) => ok.push(r),
             Err(f) => report.failures.push(f),

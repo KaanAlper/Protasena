@@ -110,6 +110,13 @@ impl Packages {
         self
     }
 
+    /// The same set without the slots of these libraries.
+    pub(crate) fn without_libraries(mut self, drop: &HashSet<&str>) -> Self {
+        self.slots.retain(|s| !drop.contains(s.library.as_str()));
+        self.reindex();
+        self
+    }
+
     /// This set followed by `other` (a name in both is answered by `other`).
     pub(crate) fn chain(self, other: Packages) -> Self {
         let shadowed: HashSet<String> = other.by_name.keys().cloned().collect();

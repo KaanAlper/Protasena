@@ -3,7 +3,7 @@
 //!
 //! Two users share this code: the `protasena-libconv` app, which converts KiCad's official
 //! libraries into the published pack ([`run`]), and the application, which imports the user's
-//! own KiCad libraries at run time.
+//! own KiCad libraries at run time ([`user`]).
 //!
 //! KiCad libraries are only ever read as data here; the converted pack is published separately
 //! (`KaanAlper/Protasena-library`, CC-BY-SA 4.0) and never vendored into this repository.
@@ -36,6 +36,7 @@ pub mod par;
 pub mod pin;
 pub mod report;
 pub mod symbol;
+pub mod user;
 
 pub use convert::{Options, run};
 pub use map::Map;

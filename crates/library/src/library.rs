@@ -13,13 +13,15 @@ use crate::validate::{Validator, validate};
 /// Packages of a loaded pack are read from their files on first use ([`Library::package`]).
 #[derive(Debug, Clone, Default)]
 pub struct Library {
-    devices: Vec<Device>,
-    packages: Packages,
+    pub(crate) devices: Vec<Device>,
+    pub(crate) packages: Packages,
     /// Upper-case device name → index into `devices`.
     by_name: HashMap<String, usize>,
     /// Lower-case name, description and keywords per device, joined by newlines.
     haystacks: Vec<String>,
     libraries: Vec<LibraryInfo>,
+    /// The libraries [`Library::with_extra`] added.
+    pub(crate) extra_libraries: Vec<String>,
 }
 
 /// A pack library and how much it holds.
@@ -109,9 +111,13 @@ impl Library {
         let order = rank(&libraries);
         devices.sort_by_key(|d| order(&d.library));
         packages.sort_by_library(&order);
-        let by_name = devices.iter().enumerate().map(|(i, d)| (d.name.to_uppercase(), i)).collect();
+        // A name repeated in another library (see `with_extra`) is found in the first one.
+        let mut by_name = HashMap::with_capacity(devices.len());
+        for (i, d) in devices.iter().enumerate() {
+            by_name.entry(d.name.to_uppercase()).or_insert(i);
+        }
         let haystacks = devices.iter().map(haystack).collect();
-        Library { devices, packages, by_name, haystacks, libraries }
+        Library { devices, packages, by_name, haystacks, libraries, extra_libraries: Vec::new() }
     }
 
     /// This library with `top` laid over it: `top` wins name clashes. A device of `self` is

@@ -161,15 +161,19 @@ fn main() -> ExitCode {
             if let Some(w) = warnings.first() {
                 app.notify(w.clone(), true);
             }
-            if let Some(dir) = args.library.clone().or_else(protasena_io::library_dir).or(settings_library) {
+            let pack = args.library.clone().or_else(protasena_io::library_dir).or(settings_library);
+            let kicad: Vec<PathBuf> = app.session.settings().kicad_libraries.iter().map(PathBuf::from).collect();
+            let cache = protasena_io::cache_dir();
+            app.session.set_cache_dir(cache.clone());
+            if pack.is_some() || !kicad.is_empty() {
                 let (tx, rx) = std::sync::mpsc::channel();
                 let ctx = cc.egui_ctx.clone();
-                let d = dir.clone();
+                let p = pack.clone();
                 let _ = std::thread::Builder::new().name("library".into()).spawn(move || {
-                    let _ = tx.send(protasena_io::load_library_from(Some(&d)).map_err(|e| e.to_string()));
+                    let _ = tx.send(protasena_engine::load_libraries(p.as_deref(), &kicad, cache.as_deref()));
                     ctx.request_repaint();
                 });
-                app = app.with_library_loading(dir.display().to_string(), rx);
+                app = app.with_library_loading(pack.map(|d| d.display().to_string()).unwrap_or_default(), rx);
             }
             if let Some(port) = args.control {
                 let ctx = cc.egui_ctx.clone();

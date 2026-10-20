@@ -83,6 +83,12 @@ pub struct Session {
     /// The system settings (System menu), with the file they are saved to.
     pub(crate) settings: protasena_io::SystemSettings,
     pub(crate) settings_path: Option<PathBuf>,
+    /// The user's KiCad libraries, path by path (added to `library`).
+    pub(crate) imported: Vec<protasena_libimport::user::Source>,
+    /// Problems of the libraries added to the pack.
+    pub(crate) library_problems: Vec<String>,
+    /// Where converted KiCad libraries are cached.
+    pub(crate) cache_dir: Option<PathBuf>,
 }
 
 impl Default for Session {
@@ -130,17 +136,19 @@ impl Session {
             log: Vec::new(),
             settings: protasena_io::SystemSettings::default(),
             settings_path: None,
+            imported: Vec::new(),
+            library_problems: Vec::new(),
+            cache_dir: None,
         }
     }
 
-    /// Replaces the device library (for example once the parts pack has loaded in the
-    /// background). The design is unchanged: parts whose device the new library lacks are drawn
-    /// as boxes, and the DEVICES list keeps its names.
+    /// Replaces the base library (the built-in parts and the pack, for example once the pack
+    /// has loaded in the background); the imported KiCad libraries are added to it again. The
+    /// design is unchanged: parts whose device the new library lacks are drawn as boxes, and
+    /// the DEVICES list keeps its names.
     pub fn set_library(&mut self, library: Library) {
         self.library = library;
-        self.hover = None;
-        self.machine = Machine::Idle;
-        self.touch();
+        self.remerge();
     }
 
     // ----- read access for the UI -----

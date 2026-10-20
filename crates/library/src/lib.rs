@@ -35,6 +35,7 @@ mod bounded;
 mod builtin;
 mod device;
 mod error;
+mod extra;
 mod intern;
 mod library;
 pub mod limits;

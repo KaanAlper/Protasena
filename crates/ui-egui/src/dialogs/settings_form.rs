@@ -24,6 +24,8 @@ pub enum Kind {
     Bool,
     /// A text, or null (empty).
     Text,
+    /// A list of texts, one per line (empty lines are dropped).
+    Lines,
     /// One of these values, with their labels.
     Choice(fn() -> [(&'static str, &'static str); 3]),
 }
@@ -200,17 +202,19 @@ impl SettingsForm {
                 vec![
                     Row { label: tl!("Library folder"), cells: vec![c(&["library_dir"], Kind::Text)] },
                     Row { label: tl!("Project folder"), cells: vec![c(&["project_dir"], Kind::Text)] },
+                    Row { label: tl!("KiCad libraries"), cells: vec![c(&["kicad_libraries"], Kind::Lines)] },
                 ],
-                serde_json::json!({ "library_dir": st.library_dir, "project_dir": st.project_dir }),
+                serde_json::json!({ "library_dir": st.library_dir, "project_dir": st.project_dir, "kicad_libraries": st.kicad_libraries }),
             ),
             _ => return None,
         };
         let mut typed = HashMap::new();
         for cell in rows.iter().flat_map(|r| r.cells.iter().flatten()) {
-            if matches!(cell.kind, Kind::Number | Kind::Text) {
+            if matches!(cell.kind, Kind::Number | Kind::Text | Kind::Lines) {
                 let shown = match get(&value, cell.path) {
                     Some(Value::Number(n)) => n.to_string(),
                     Some(Value::String(s)) => s.clone(),
+                    Some(Value::Array(a)) => a.iter().filter_map(Value::as_str).collect::<Vec<_>>().join("\n"),
                     _ => String::new(),
                 };
                 typed.insert(cell.path.join("."), shown);
@@ -232,6 +236,7 @@ impl SettingsForm {
                 },
                 Kind::Text if typed.is_empty() => Value::Null,
                 Kind::Text => Value::String(typed.to_owned()),
+                Kind::Lines => typed.lines().map(str::trim).filter(|l| !l.is_empty()).map(|l| Value::String(l.to_owned())).collect(),
                 Kind::Colour | Kind::Bool | Kind::Choice(_) => continue,
             };
             set(&mut v, cell.path, new);
@@ -286,6 +291,10 @@ impl SettingsForm {
                 let r = ui.add(egui::TextEdit::singleline(text).desired_width(width).hint_text(tl!("default")));
                 control::record(ui, &r, &name, "field", None);
             }
+            Kind::Lines => {
+                let text = self.typed.entry(cell.path.join(".")).or_default();
+                *text = lines(ui, &name, text);
+            }
             Kind::Bool => {
                 let mut on = get(&self.value, cell.path).and_then(Value::as_bool).unwrap_or(false);
                 let r = ui.checkbox(&mut on, "");
@@ -336,4 +345,32 @@ impl SettingsForm {
             }
         });
     }
+}
+
+/// A list of texts, one field each and an empty field for a new one; a removed or emptied
+/// field drops out. Returns the list again, one text per line.
+fn lines(ui: &mut Ui, name: &str, text: &str) -> String {
+    let mut rows: Vec<String> = text.lines().map(str::to_owned).chain(std::iter::once(String::new())).collect();
+    let last = rows.len().saturating_sub(1);
+    let mut remove = None;
+    ui.vertical(|ui| {
+        for (i, row) in rows.iter_mut().enumerate() {
+            ui.horizontal(|ui| {
+                let hint = if i == last { tl!("add a .kicad_sym file, a .pretty folder or a folder holding them") } else { "" };
+                let r = ui.add(egui::TextEdit::singleline(row).desired_width(380.0).hint_text(hint));
+                control::record(ui, &r, &format!("{name} {}", i + 1), "field", None);
+                if i != last {
+                    let b = ui.small_button("−");
+                    control::record(ui, &b, &format!("{name} {} {}", i + 1, tl!("Remove")), "button", None);
+                    if b.clicked() {
+                        remove = Some(i);
+                    }
+                }
+            });
+        }
+    });
+    if let Some(i) = remove {
+        rows.remove(i);
+    }
+    rows.iter().map(|r| r.trim()).filter(|r| !r.is_empty()).collect::<Vec<_>>().join("\n")
 }

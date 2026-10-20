@@ -1,6 +1,6 @@
 # UI parity
 
-> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (Global Toolbar ▸ Bill of Materials) · **Target:** Labcenter Proteus 8 Professional (Windows)
+> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (System Settings ▸ KiCad libraries) · **Target:** Labcenter Proteus 8 Professional (Windows)
 
 Protasena's Schematic Capture interface element by element against Proteus's: menus, toolbars,
 the mode toolbar, the overview window, the object selector, the editing window, the status bar
@@ -145,7 +145,7 @@ enabled when its command's enabled rule allows it.
 | Template ▸ Set Junction Dot Style |  | ◐ | Runs `set-junction-style`: dot size (diameter) and shape (circle, square, diamond). Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
 | Template ▸ Apply Styles From Template |  | ✗ | Shown disabled: no command yet (item without a command) |
 | Template ▸ Save Design as Template |  | ✗ | Shown disabled: no command yet (item without a command) |
-| System ▸ System Settings |  | ◐ | Runs `system-settings`: the parts library folder (used when neither `--library` nor `PROTASENA_LIBRARY_DIR` is given, at the next start) and the folder the file choosers start in. Saved at once to the user's settings file (`settings.json` in the configuration directory, `PROTASENA_CONFIG_DIR` overrides it); not part of the design or undo. Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
+| System ▸ System Settings |  | ◐ | Runs `system-settings`: the parts library folder (used when neither `--library` nor `PROTASENA_LIBRARY_DIR` is given, at the next start), the folder the file choosers start in, and the list of the user's own KiCad libraries (`.kicad_sym` files, `.pretty` folders or folders holding them; imported at once and at every start, see `docs/gaps.md` S2). Saved at once to the user's settings file (`settings.json` in the configuration directory, `PROTASENA_CONFIG_DIR` overrides it); not part of the design or undo. Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
 | System ▸ Text Viewer |  | ✗ | Shown disabled: no command yet (item without a command) |
 | System ▸ Set Display Options |  | ◐ | Runs `set-display-options`: grid as lines, the mouse-wheel zoom factor, the pick distance in pixels. Saved at once to the user's settings file (`settings.json` in the configuration directory, `PROTASENA_CONFIG_DIR` overrides it); not part of the design or undo. Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
 | System ▸ Set Keyboard Mapping |  | ◐ | Runs `set-keyboard-mapping`: a table of every command with a menu item or key, its key editable, conflicts shown while typing and refused (no key runs two commands), Restore Defaults; menus show the keys in use. Saved at once to the user's settings file (`settings.json` in the configuration directory, `PROTASENA_CONFIG_DIR` overrides it); not part of the design or undo. Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
@@ -336,3 +336,4 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | 2026-10-20 | minor | Subcircuit Mode, the PORTS list, Subcircuit Port and Edit Subcircuit dialogs, Goto Child Sheet (Ctrl+C), Design ▸ Exit to Parent Sheet (Ctrl+X) and its toolbar button, sheets in hierarchy order; Edit Wire Label's Global box. Built the conventional way (to compare); 3 of 263 rows match |
 | 2026-10-20 | minor | Template ▸ Set Design Colours, Graphic Styles, Text Styles, 2D Graphics Defaults, Junction Dot Style and System ▸ System Settings, Set Display Options, Set Keyboard Mapping, Set Property Definitions, Set Sheet Sizes, Set Text Editor, Restore Default Settings built the conventional way with their dialogs (to compare); 3 of 268 rows match |
 | 2026-10-20 | minor | Global Toolbar ▸ Bill of Materials with our own report window and CSV/HTML export (to compare); 3 of 269 rows match |
+| 2026-10-20 | minor | System ▸ System Settings lists the user's own KiCad libraries, imported at run time (to compare); no row changes status |
