@@ -56,6 +56,7 @@ Design Title
 Device
 Device Pins Mode
 Doc. No
+Don't Save
 Drag a rectangle around the area to show
 Edit
 Edit Component
@@ -184,6 +185,7 @@ Run Simulation (timed breakpoint)
 Run To Source Line
 SPICE netlist
 SYMBOLS
+Save
 Save Design as Template
 Save Project
 Save Project As
@@ -235,7 +237,7 @@ Terminals Mode
 Text
 Text Script Mode
 Text Viewer
-The design has unsaved changes. Discard them?
+The design has unsaved changes. Save them?
 The parts library could not be loaded
 Tidy Design
 Toggle False Origin

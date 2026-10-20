@@ -27,6 +27,7 @@ pub mod sidepane;
 pub mod statusbar;
 pub mod theme;
 pub mod toolbars;
+pub mod unsaved;
 pub mod widgets;
 
 use std::path::PathBuf;
@@ -119,8 +120,13 @@ pub struct App {
     pub library: LibraryStatus,
     /// Events injected by the control channel, fed to egui one by one.
     pub synthetic: Vec<egui::Event>,
-    /// Set by File ▸ Exit Application and `app.quit`.
+    /// Set once the window may close (File ▸ Exit Application, the close button, `app.quit`,
+    /// after the unsaved-changes question when there was one); the app shell closes it.
     pub quit_requested: bool,
+    /// The window may close without asking again.
+    close_confirmed: bool,
+    /// What waits for a save to succeed (the unsaved-changes question's Save).
+    after_save: Option<unsaved::Then>,
     control_rx: Option<Receiver<ControlRequest>>,
     library_rx: Option<Receiver<Result<Library, String>>>,
     shots: remote::Shots,
@@ -144,6 +150,8 @@ impl App {
             library: LibraryStatus::Builtin,
             synthetic: Vec::new(),
             quit_requested: false,
+            close_confirmed: false,
+            after_save: None,
             control_rx: None,
             library_rx: None,
             shots: remote::Shots::default(),
@@ -191,6 +199,9 @@ impl App {
             self.fonts = true;
         }
         self.poll_library();
+        if ctx.input(|i| i.viewport().close_requested()) {
+            self.close_requested(ctx);
+        }
         let title = self.window_title();
         if title != self.title {
             ctx.send_viewport_cmd(egui::ViewportCommand::Title(title.clone()));

@@ -1,6 +1,6 @@
 # UI parity
 
-> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** major (first rows: the Schematic Capture window of M1 Task 9 against the observed inventory) · **Target:** Labcenter Proteus 8 Professional (Windows)
+> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (unsaved-changes question on Exit and window close) · **Target:** Labcenter Proteus 8 Professional (Windows)
 
 Protasena's Schematic Capture interface element by element against Proteus's: menus, toolbars,
 the mode toolbar, the overview window, the object selector, the editing window, the status bar
@@ -51,7 +51,7 @@ enabled when its command's enabled rule allows it.
 | File ▸ Mark Output Area |  | ✗ | Shown disabled: no command yet (item without a command) |
 | File ▸ Explore Project Folder |  | ✗ | Shown disabled: no command yet (item without a command) |
 | File ▸ Edit Project Description |  | ✗ | Shown disabled: no command yet (item without a command) |
-| File ▸ Exit Application | Alt+F4 | ◐ | Closes the window; it does not ask about unsaved changes yet |
+| File ▸ Exit Application | Alt+F4 | ◐ | Closes the window; with unsaved changes it asks Save / Don't Save / Cancel first (as does the window's close button). The question is our own: to compare |
 | File ▸ (recent projects list) |  | ✗ | Not built: no recent-project list |
 | Edit ▸ Undo Changes | Ctrl+Z | ◐ | Runs `undo`. Label, place and shortcut as observed; enabled rule, behaviour and dialog not compared |
 | Edit ▸ Redo Changes | Ctrl+Y | ◐ | Runs `redo`. Label, place and shortcut as observed; enabled rule, behaviour and dialog not compared |
@@ -299,7 +299,7 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | Edit Sheet Properties | the sheet's | ◐ | Sheet Name and Sheet Size (A4…A0, ANSI A…E); Proteus's size list not observed |
 | Goto Sheet | the current sheet | ◐ | Numbered sheet list |
 | Global Annotator | Incremental | ◐ | Incremental or Total; Proteus's options not observed |
-| Unsaved changes (New, Open) | | ◐ | Our own question; Proteus's prompt to compare |
+| Unsaved changes (New, Open, Exit, window close) | | ◐ | Our own question "The design has unsaved changes. Save them?" with Save (saves, asking for a file when the project has none, and carries on once saved), Don't Save, Cancel; Proteus's prompt (wording, buttons, order, default) to compare |
 | Open Project, Save Project As, Netlist Compiler file | | ◐ | The system's file chooser (`.psproj`, `.pdsprj` opens by import); a path prompt when there is none. Proteus's Netlist Compiler options not observed |
 | Electrical Rules Check result | | ◐ | A window listing the findings; Proteus's report window not observed |
 | Netlist Compiler result | | ◐ | File, nets, parts and findings |
@@ -310,3 +310,4 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 |---|---|---|
 | 2026-10-20 | major | First version: empty skeleton, sections for the Schematic Capture layout |
 | 2026-10-20 | major | Rows for every menu item, toolbar button, mode, pane element, status field and dialog of the M1 Task 9 window; 3 of 253 rows match (layout order), behaviour not yet compared |
+| 2026-10-20 | minor | Exit Application and the window's close button ask Save / Don't Save / Cancel with unsaved changes, as New and Open do (to compare) |

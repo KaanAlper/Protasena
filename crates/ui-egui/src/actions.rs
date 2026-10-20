@@ -8,6 +8,7 @@ use serde_json::{Value, json};
 use crate::dialogs::results::Results;
 use crate::dialogs::{Dialog, PathPurpose};
 use crate::menus::model::UiAct;
+use crate::unsaved::Then;
 use crate::{App, tl};
 
 impl App {
@@ -45,7 +46,10 @@ impl App {
         match id {
             "erc" => self.results = Some(Results::Erc(v.clone())),
             "export-netlist" => self.results = Some(Results::Netlist(v.clone())),
-            "save" | "save-as" => self.notify(format!("{} {}", tl!("Saved"), v["path"].as_str().unwrap_or_default()), false),
+            "save" | "save-as" => {
+                self.notify(format!("{} {}", tl!("Saved"), v["path"].as_str().unwrap_or_default()), false);
+                self.saved();
+            }
             "annotate" => self.notify(format!("{}: {}", tl!("Annotated"), v["changed"]), false),
             _ => {}
         }
@@ -63,7 +67,7 @@ impl App {
     /// Shows the dialog the engine asks for.
     pub fn request(&mut self, r: Request) {
         match r {
-            Request::OpenProject if self.session.is_dirty() => self.dialog = Some(Dialog::ConfirmDiscard { then: "open" }),
+            Request::OpenProject if self.session.is_dirty() => self.dialog = Some(Dialog::SaveChanges { then: Then::Open }),
             Request::OpenProject => self.choose_open(false),
             Request::SaveProjectAs => self.choose_save(PathPurpose::SaveAs),
             Request::ExportNetlist => self.choose_save(PathPurpose::Netlist),
@@ -85,7 +89,8 @@ impl App {
         }
     }
 
-    fn choose_save(&mut self, purpose: PathPurpose) {
+    /// Asks where to save (the native chooser when there is one) and saves or exports there.
+    pub(crate) fn choose_save(&mut self, purpose: PathPurpose) {
         let name = self.session.project().name.clone();
         let (suggested, exts): (String, &[&str]) = match purpose {
             PathPurpose::Netlist => (format!("{name}.json"), &["json", "cir"]),
@@ -100,10 +105,11 @@ impl App {
                     _ => self.complete("save-as", json!({ "path": path })),
                 };
                 if let Err(e) = r {
+                    self.after_save = None;
                     self.notify(e, true);
                 }
             }
-            Some(None) => {}
+            Some(None) => self.after_save = None,
             None => self.dialog = Some(Dialog::path(purpose, &suggested)),
         }
     }
@@ -111,7 +117,7 @@ impl App {
     /// A window action from a menu item.
     pub fn ui_act(&mut self, act: UiAct) {
         match act {
-            UiAct::Exit => self.quit_requested = true,
+            UiAct::Exit => self.request_exit(),
             UiAct::ZoomArea => {
                 self.canvas.zoom_area = Some(None);
                 self.notify(tl!("Drag a rectangle around the area to show"), false);

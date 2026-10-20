@@ -148,7 +148,7 @@ pub(crate) fn handle(app: &mut App, ctx: &egui::Context, req: &ControlRequest) -
             }
         }
         "app.quit" => {
-            app.quit_requested = true;
+            app.quit_now();
             ctx.send_viewport_cmd(egui::ViewportCommand::Close);
             ok(Value::Null)
         }

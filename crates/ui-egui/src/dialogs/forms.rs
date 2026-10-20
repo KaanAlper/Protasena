@@ -8,6 +8,8 @@ use protasena_geom::Pt;
 use serde_json::json;
 
 use super::{Dialog, Reply, error_line, field, ok_cancel};
+use crate::theme::Tokens;
+use crate::unsaved::Then;
 use crate::{control, tl};
 
 /// Find/Edit Component: the reference of the part to edit.
@@ -251,19 +253,31 @@ pub(super) fn annotator(ui: &mut Ui, total: &mut bool) -> Reply {
     Reply::None
 }
 
-/// The unsaved-changes question.
+/// The unsaved-changes question: Save, Don't Save, Cancel (see [`crate::unsaved`]).
 pub struct ConfirmForm;
 
 impl ConfirmForm {
-    pub(super) fn ui(ui: &mut Ui, then: &mut &'static str) -> Reply {
-        ui.label(tl!("The design has unsaved changes. Discard them?"));
-        let (ok, cancel) = ok_cancel(ui, true);
-        if cancel {
-            return Reply::Cancel;
-        }
-        if ok {
-            return Reply::Discard(then);
-        }
-        Reply::None
+    pub(super) fn ui(ui: &mut Ui, then: Then) -> Reply {
+        ui.label(tl!("The design has unsaved changes. Save them?"));
+        ui.add_space(10.0);
+        let mut reply = Reply::None;
+        ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
+            let t = Tokens::get();
+            let size = egui::vec2(96.0, 26.0);
+            let cancel = ui.add_sized(size, egui::Button::new(tl!("Cancel")));
+            control::record(ui, &cancel, tl!("Cancel"), "button", None);
+            let discard = ui.add_sized(size, egui::Button::new(tl!("Don't Save")));
+            control::record(ui, &discard, tl!("Don't Save"), "button", None);
+            let save = ui.add(egui::Button::new(egui::RichText::new(tl!("Save")).color(t.on_accent)).fill(t.accent).min_size(size));
+            control::record(ui, &save, tl!("Save"), "button", None);
+            if cancel.clicked() {
+                reply = Reply::Cancel;
+            } else if discard.clicked() {
+                reply = Reply::SaveChanges { then, save: false };
+            } else if save.clicked() {
+                reply = Reply::SaveChanges { then, save: true };
+            }
+        });
+        reply
     }
 }

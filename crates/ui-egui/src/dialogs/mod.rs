@@ -18,6 +18,7 @@ pub use files::{DesignForm, PathForm, PathPurpose, SheetForm, netlist_format};
 pub use forms::{ConfirmForm, FindForm, GotoForm, LabelForm, TERMINAL_KINDS, Target, TerminalForm, TextForm};
 
 use crate::theme::Tokens;
+use crate::unsaved::Then;
 use crate::{App, control, tl};
 
 /// The open dialog.
@@ -47,10 +48,10 @@ pub enum Dialog {
         /// Total (renumber all) instead of incremental.
         total: bool,
     },
-    /// Unsaved changes: discard them?
-    ConfirmDiscard {
-        /// The command waiting (`new` or `open`).
-        then: &'static str,
+    /// Unsaved changes: Save, Don't Save or Cancel?
+    SaveChanges {
+        /// What waits for the answer.
+        then: Then,
     },
 }
 
@@ -71,8 +72,13 @@ pub enum Reply {
     },
     /// Show another dialog instead.
     Then(Dialog),
-    /// The unsaved changes may go: carry on with `new` or `open`.
-    Discard(&'static str),
+    /// The unsaved-changes answer: save first (`save`) or not, then carry on with `then`.
+    SaveChanges {
+        /// What waits.
+        then: Then,
+        /// Save before carrying on.
+        save: bool,
+    },
 }
 
 impl Dialog {
@@ -91,7 +97,7 @@ impl Dialog {
             Request::SheetProperties { sheet } => Dialog::Sheet(SheetForm::new(s, sheet)?),
             Request::GotoSheet => Dialog::GotoSheet(GotoForm::new(s)),
             Request::GlobalAnnotator => Dialog::Annotator { total: false },
-            Request::ConfirmDiscard { then } => Dialog::ConfirmDiscard { then },
+            Request::ConfirmDiscard { then } => Dialog::SaveChanges { then: Then::from_command(then) },
             Request::OpenProject => Dialog::path(PathPurpose::Open { discard: false }, ""),
             Request::SaveProjectAs => Dialog::path(PathPurpose::SaveAs, ""),
             Request::ExportNetlist => Dialog::path(PathPurpose::Netlist, ""),
@@ -117,7 +123,7 @@ impl Dialog {
             Dialog::Sheet(_) => tl!("Edit Sheet Properties"),
             Dialog::GotoSheet(_) => tl!("Goto Sheet"),
             Dialog::Annotator { .. } => tl!("Global Annotator"),
-            Dialog::ConfirmDiscard { .. } => tl!("Unsaved Changes"),
+            Dialog::SaveChanges { .. } => tl!("Unsaved Changes"),
         }
     }
 
@@ -133,7 +139,7 @@ impl Dialog {
             Dialog::Path(d) => &mut d.error,
             Dialog::Design(d) => &mut d.error,
             Dialog::Sheet(d) => &mut d.error,
-            Dialog::GotoSheet(_) | Dialog::Annotator { .. } | Dialog::ConfirmDiscard { .. } => return,
+            Dialog::GotoSheet(_) | Dialog::Annotator { .. } | Dialog::SaveChanges { .. } => return,
         };
         *slot = Some(e);
     }
@@ -151,7 +157,7 @@ impl Dialog {
             Dialog::Sheet(d) => d.ui(ui),
             Dialog::GotoSheet(d) => d.ui(ui, s),
             Dialog::Annotator { total } => forms::annotator(ui, total),
-            Dialog::ConfirmDiscard { then } => ConfirmForm::ui(ui, then),
+            Dialog::SaveChanges { then } => ConfirmForm::ui(ui, *then),
         }
     }
 }
@@ -175,14 +181,10 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
     }
     match reply {
         Reply::None => app.dialog = Some(d),
-        Reply::Cancel => {}
+        Reply::Cancel => app.after_save = None,
         Reply::Then(next) => app.dialog = Some(next),
-        Reply::Discard("open") => app.choose_open(true),
-        Reply::Discard(then) => {
-            if let Err(e) = app.complete(then, serde_json::json!({ "discard": true })) {
-                app.notify(e, true);
-            }
-        }
+        Reply::SaveChanges { then, save: true } => app.save_then(then),
+        Reply::SaveChanges { then, save: false } => app.carry_on(then),
         Reply::Run { cmd, params, keep } => match app.complete(cmd, params) {
             Ok(()) if keep => app.dialog = Some(d),
             Ok(()) => {}
