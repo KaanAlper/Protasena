@@ -26,6 +26,8 @@ protasena-ui-egui = { path = "crates/ui-egui" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["float_roundtrip"] }
 toml = { version = "1", default-features = false, features = ["std", "serde", "parse"] }
+# raw deflate for the .pdsprj ZIP container (MIT OR Zlib OR Apache-2.0)
+miniz_oxide = { version = "0.8", default-features = false, features = ["with-alloc"] }
 
 # testing (dev-dependencies only)
 proptest = { version = "1", default-features = false, features = ["std"] }

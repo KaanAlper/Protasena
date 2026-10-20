@@ -11,3 +11,4 @@ repository.workspace = true
 workspace = true
 
 [dependencies]
+miniz_oxide.workspace = true
