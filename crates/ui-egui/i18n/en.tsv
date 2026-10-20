@@ -106,10 +106,12 @@ Exit to Parent Sheet
 Explore Project Folder
 Export Adobe PDF File
 Export Bitmap
+Export CSV...
 Export DXF File
 Export Encapsulated Postscript
 Export Graph Data...
 Export Graphics
+Export HTML...
 Export Metafile
 Export Project Clip
 Export SVG File
@@ -211,6 +213,7 @@ PCB Preview
 PINS
 PORTS
 PROBES
+Package
 Packaging Tool
 Paper
 Part Reference
@@ -244,9 +247,11 @@ Project folder
 Property
 Property Assignment Tool
 Put every system setting (folders, display, keys, property definitions, sheet sizes, text editor) back to Protasena's defaults?
+Quantity
 Redo Changes
 Redraw Display
 Reference
+References
 Remove
 Remove/Delete Sheet
 Rename
@@ -331,6 +336,7 @@ Text
 Text Script Mode
 Text Viewer
 The PDF could not be opened
+The design has no parts.
 The design has unsaved changes. Save them?
 The parts library could not be loaded
 Tidy Design
@@ -376,9 +382,11 @@ devices removed
 e.g. RES, 74LS00
 findings
 is not a number
+lines
 none
 not a key
 objects removed
 of
+parts
 th
 width and height must be numbers

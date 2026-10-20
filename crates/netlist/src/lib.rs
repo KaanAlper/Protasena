@@ -4,7 +4,8 @@
 //! [`Library`](protasena_library::Library)) into a [`Netlist`]: nets with stable names, parts,
 //! unconnected pins and a basic electrical rules check. [`placed_pins`] gives a component's pins
 //! in sheet space (symbol pin × component transform). [`export`] writes our JSON netlist and a
-//! SPICE-style text netlist.
+//! SPICE-style text netlist. [`bill_of_materials`] groups the parts for the Bill of Materials
+//! (CSV and HTML in [`export`]).
 //!
 //! # Connection rules
 //! Positions are compared with a tolerance of [`TOLERANCE`] thou, sheet by sheet.
@@ -73,6 +74,7 @@
 //! ```
 #![warn(missing_docs)]
 
+mod bom;
 mod collect;
 mod error;
 pub mod export;
@@ -84,6 +86,7 @@ mod pins;
 mod resolve;
 mod source;
 
+pub use bom::{Bom, BomLine, bill_of_materials};
 pub use error::NetlistError;
 pub use geometry::{MAX_COORD, TOLERANCE};
 pub use model::{ErcItem, ErcKind, Net, Netlist, Node, Part, PartPin, Severity};

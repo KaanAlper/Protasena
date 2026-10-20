@@ -21,6 +21,8 @@ pub enum PathPurpose {
     SaveAs,
     /// Netlist Compiler output.
     Netlist,
+    /// Bill of Materials export in this format (`csv` or `html`).
+    Bom(&'static str),
 }
 
 impl PathPurpose {
@@ -30,6 +32,7 @@ impl PathPurpose {
             PathPurpose::Open { .. } => tl!("Open Project"),
             PathPurpose::SaveAs => tl!("Save Project As"),
             PathPurpose::Netlist => tl!("Netlist Compiler"),
+            PathPurpose::Bom(_) => tl!("Bill of Materials"),
         }
     }
 }
@@ -77,6 +80,7 @@ impl PathForm {
                     let format = if self.spice { "spice" } else { netlist_format(path) };
                     Reply::Run { cmd: "export-netlist", params: json!({ "path": path, "format": format }), keep: false }
                 }
+                PathPurpose::Bom(format) => Reply::Run { cmd: "bill-of-materials", params: json!({ "path": path, "format": format }), keep: false },
             };
         }
         Reply::None

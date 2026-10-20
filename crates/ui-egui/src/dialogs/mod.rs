@@ -137,6 +137,8 @@ impl Dialog {
             Request::PropertyDefinitions => Dialog::List(system::ListForm::properties(s)),
             Request::SheetSizes => Dialog::List(system::ListForm::sheet_sizes(s)),
             Request::RestoreDefaults => Dialog::RestoreDefaults,
+            // A result window, not a dialog: the app runs the command and shows it.
+            Request::BillOfMaterials => return None,
             Request::ConfirmDiscard { then } => Dialog::SaveChanges { then: Then::from_command(then) },
             Request::OpenProject => Dialog::path(PathPurpose::Open { discard: false }, ""),
             Request::SaveProjectAs => Dialog::path(PathPurpose::SaveAs, ""),

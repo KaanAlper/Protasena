@@ -46,6 +46,10 @@ impl App {
         match id {
             "erc" => self.results = Some(Results::Erc(v.clone())),
             "export-netlist" => self.results = Some(Results::Netlist(v.clone())),
+            "bill-of-materials" if v.get("path").is_some() => {
+                self.notify(format!("{} {}", tl!("Exported to"), v["path"].as_str().unwrap_or_default()), false);
+            }
+            "bill-of-materials" => self.results = Some(Results::Bom(v.clone())),
             "save" | "save-as" => {
                 self.notify(format!("{} {}", tl!("Saved"), v["path"].as_str().unwrap_or_default()), false);
                 self.saved();
@@ -82,6 +86,11 @@ impl App {
             Request::OpenProject => self.choose_open(false),
             Request::SaveProjectAs => self.choose_save(PathPurpose::SaveAs),
             Request::ExportNetlist => self.choose_save(PathPurpose::Netlist),
+            Request::BillOfMaterials => {
+                if let Err(e) = self.complete("bill-of-materials", json!({})) {
+                    self.notify(e, true);
+                }
+            }
             Request::PrintDesign => {
                 let form = crate::dialogs::export::PrintForm::new(&self.session, self.services.open_path.is_some());
                 self.dialog = Some(Dialog::Print(Box::new(form)));
@@ -110,6 +119,8 @@ impl App {
         let name = self.session.project().name.clone();
         let (suggested, exts): (String, &[&str]) = match purpose {
             PathPurpose::Netlist => (format!("{name}.json"), &["json", "cir"]),
+            PathPurpose::Bom("html") => (format!("{name}-bom.html"), &["html"]),
+            PathPurpose::Bom(_) => (format!("{name}-bom.csv"), &["csv"]),
             _ => (format!("{name}.psproj"), &["psproj"]),
         };
         let start = self.start_dir();
@@ -119,6 +130,7 @@ impl App {
                 let path = path.display().to_string();
                 let r = match purpose {
                     PathPurpose::Netlist => self.complete("export-netlist", json!({ "path": path, "format": crate::dialogs::netlist_format(&path) })),
+                    PathPurpose::Bom(format) => self.complete("bill-of-materials", json!({ "path": path, "format": format })),
                     _ => self.complete("save-as", json!({ "path": path })),
                 };
                 if let Err(e) = r {

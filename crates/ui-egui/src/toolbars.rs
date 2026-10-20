@@ -71,7 +71,7 @@ pub const GLOBAL: &[Tool] = &[
     b("3D Visualizer", Icon::View3d, Off),
     b("Gerber Viewer", Icon::Gerber, Off),
     b("Design Explorer", Icon::Explorer, Off),
-    b("Bill of Materials", Icon::Bom, Off),
+    b("Bill of Materials", Icon::Bom, Cmd("bill-of-materials")),
     b("Source Code", Icon::SourceCode, Off),
     b("Project Notes", Icon::Notes, Off),
     Sep,

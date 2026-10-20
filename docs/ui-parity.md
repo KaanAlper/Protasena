@@ -1,6 +1,6 @@
 # UI parity
 
-> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (Template and System menu settings) · **Target:** Labcenter Proteus 8 Professional (Windows)
+> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (Global Toolbar ▸ Bill of Materials) · **Target:** Labcenter Proteus 8 Professional (Windows)
 
 Protasena's Schematic Capture interface element by element against Proteus's: menus, toolbars,
 the mode toolbar, the overview window, the object selector, the editing window, the status bar
@@ -8,7 +8,7 @@ and dialogs. Rows come from the observed UI inventory (`plan/proteus/notes/ui-in
 local), written in our own words. Status: ✅ matches, ◐ partial (differences listed), ✗ missing,
 ★ intentional improvement approved by the owner. Work items: [gaps.md](gaps.md).
 
-**Headline (measured, counted from the rows below): 3 of 268 rows match** (✅ 3, ◐ 173, ✗ 92).
+**Headline (measured, counted from the rows below): 3 of 269 rows match** (✅ 3, ◐ 175, ✗ 91).
 Proteus could only be observed from its menus, window tree and one screenshot (it runs elevated
 on the reference PC, so no click, tooltip or dialog reached it): labels, order, shortcut texts
 and placement are taken from that observation; every behaviour, enabled rule and dialog is
@@ -17,7 +17,7 @@ is our own by design and is not a parity criterion.
 
 **Items without a command** (shown disabled, listed as ✗ below; measured from the menu and
 toolbar tables in `crates/ui-egui`): 66 menu items (plus the recent-projects and graph lists)
-and 13 toolbar buttons have no engine command yet, nor do 8 of the 22 modes, the animation
+and 12 toolbar buttons have no engine command yet, nor do 8 of the 22 modes, the animation
 buttons, the design variant box and the L button.
 
 ## Menu bar
@@ -179,7 +179,7 @@ Buttons mirror the menu item of the same name.
 | Global Toolbar ▸ 3D Visualizer |  | ✗ | Shown disabled: no command yet |
 | Global Toolbar ▸ Gerber Viewer |  | ✗ | Shown disabled: no command yet |
 | Global Toolbar ▸ Design Explorer |  | ✗ | Shown disabled: no command yet |
-| Global Toolbar ▸ Bill of Materials |  | ✗ | Shown disabled: no command yet |
+| Global Toolbar ▸ Bill of Materials |  | ◐ | Runs `bill-of-materials` and shows our own report window. Proteus opens a Bill of Materials module of its own (not observed): to compare |
 | Global Toolbar ▸ Source Code |  | ✗ | Shown disabled: no command yet |
 | Global Toolbar ▸ Project Notes |  | ✗ | Shown disabled: no command yet |
 | Global Toolbar ▸ Help |  | ✗ | Shown disabled: no command yet |
@@ -310,6 +310,7 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | Set Property Definitions / Set Sheet Sizes ▸ rows, Add, Remove | the settings in use | ◐ | Our own editable lists. To compare |
 | System Settings, Set Display Options, Set Text Editor | the settings in use | ◐ | Our own forms. To compare |
 | Restore Default Settings | | ◐ | Our own question with OK and Cancel. To compare |
+| Bill of Materials window ▸ table, Export CSV..., Export HTML... | every part of the design | ◐ | Our own window: Quantity, References (natural order), Value, Device, Package, Description, one line per value, device and package; power symbols left out, gates counted once, unannotated parts one by one, all sheets; the exports go through the file chooser (CSV per RFC 4180, a plain HTML page). Proteus's report (categories, columns, templates) not observed: to compare |
 | Unsaved changes (New, Open, Exit, window close) | | ◐ | Our own question "The design has unsaved changes. Save them?" with Save (saves, asking for a file when the project has none, and carries on once saved), Don't Save, Cancel; Proteus's prompt (wording, buttons, order, default) to compare |
 | Open Project, Save Project As, Netlist Compiler file | | ◐ | The system's file chooser (`.psproj`, `.pdsprj` opens by import); a path prompt when there is none. Proteus's Netlist Compiler options not observed |
 | Electrical Rules Check result | | ◐ | A window listing the findings; Proteus's report window not observed |
@@ -334,3 +335,4 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | 2026-10-20 | minor | Edit ▸ Align Objects (Ctrl+A), Send To Back (Ctrl+B), Bring To Front (Ctrl+F) and Tidy Design built the conventional way (to compare) |
 | 2026-10-20 | minor | Subcircuit Mode, the PORTS list, Subcircuit Port and Edit Subcircuit dialogs, Goto Child Sheet (Ctrl+C), Design ▸ Exit to Parent Sheet (Ctrl+X) and its toolbar button, sheets in hierarchy order; Edit Wire Label's Global box. Built the conventional way (to compare); 3 of 263 rows match |
 | 2026-10-20 | minor | Template ▸ Set Design Colours, Graphic Styles, Text Styles, 2D Graphics Defaults, Junction Dot Style and System ▸ System Settings, Set Display Options, Set Keyboard Mapping, Set Property Definitions, Set Sheet Sizes, Set Text Editor, Restore Default Settings built the conventional way with their dialogs (to compare); 3 of 268 rows match |
+| 2026-10-20 | minor | Global Toolbar ▸ Bill of Materials with our own report window and CSV/HTML export (to compare); 3 of 269 rows match |

@@ -106,6 +106,8 @@ pub enum Request {
     SheetSizes,
     /// Restore Default Settings: ask first (then `restore-default-settings`).
     RestoreDefaults,
+    /// The Bill of Materials window (it runs `bill-of-materials` to show and export it).
+    BillOfMaterials,
     /// Unsaved changes: ask whether to discard them (then the command with `discard: true`).
     ConfirmDiscard {
         /// The command waiting for the answer.

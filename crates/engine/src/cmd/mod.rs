@@ -4,6 +4,7 @@
 mod arrange;
 mod assign;
 mod block;
+mod bom;
 mod clip;
 mod design;
 mod edit;
@@ -37,6 +38,7 @@ pub(crate) fn all_specs() -> Vec<CommandSpec> {
     let mut v = Vec::new();
     v.extend(file::specs());
     v.extend(export::specs());
+    v.extend(bom::specs());
     v.extend(edit::specs());
     v.extend(clip::specs());
     v.extend(block::specs());
