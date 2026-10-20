@@ -128,6 +128,70 @@ pub fn text_box(at: Pt, text: &str, size: f64, angle: f64, h: HAlign, v: VAlign)
     Rect::from_points(corners).unwrap_or_else(|| Rect::from_point(at))
 }
 
+/// Whether a closed outline is convex (collinear points allowed).
+pub fn is_convex(points: &[Pt]) -> bool {
+    let n = points.len();
+    if n < 4 {
+        return true;
+    }
+    let mut sign = 0.0_f64;
+    for i in 0..n {
+        let (Some(a), Some(b), Some(c)) = (points.get(i), points.get((i + 1) % n), points.get((i + 2) % n)) else { return false };
+        let cross = (*b - *a).cross(*c - *b);
+        if cross.abs() > 1e-9 {
+            if sign != 0.0 && cross.signum() != sign {
+                return false;
+            }
+            sign = cross.signum();
+        }
+    }
+    true
+}
+
+/// Triangles covering a simple closed outline (ear clipping), as index triples into `points`.
+/// Outlines that are not simple get as many triangles as could be cut; at most 4096 points.
+pub fn triangulate(points: &[Pt]) -> Vec<[usize; 3]> {
+    let n = points.len();
+    if !(3..=4096).contains(&n) || !points.iter().all(|p| p.is_finite()) {
+        return Vec::new();
+    }
+    let area: f64 = (0..n).filter_map(|i| Some(points.get(i)?.to_vec().cross(points.get((i + 1) % n)?.to_vec()))).sum();
+    let ccw = area > 0.0;
+    let mut idx: Vec<usize> = (0..n).collect();
+    let mut out = Vec::with_capacity(n.saturating_sub(2));
+    let at = |i: usize| points.get(i).copied().unwrap_or(Pt::ORIGIN);
+    let mut guard = 0usize;
+    while idx.len() > 3 && guard < n * n {
+        guard += 1;
+        let m = idx.len();
+        let ear = (0..m).find(|&k| {
+            let get = |o: usize| idx.get((k + o) % m).copied().unwrap_or(0);
+            let (ia, ib, ic) = (get(0), get(1), get(2));
+            let (a, b, c) = (at(ia), at(ib), at(ic));
+            let cross = (b - a).cross(c - b);
+            let convex = if ccw { cross > 1e-12 } else { cross < -1e-12 };
+            convex && !idx.iter().any(|&j| j != ia && j != ib && j != ic && inside(at(j), a, b, c))
+        });
+        let Some(k) = ear else { break };
+        let get = |o: usize| idx.get((k + o) % m).copied().unwrap_or(0);
+        out.push([get(0), get(1), get(2)]);
+        idx.remove((k + 1) % m);
+    }
+    if let [a, b, c] = idx.as_slice() {
+        out.push([*a, *b, *c]);
+    }
+    out
+}
+
+fn inside(p: Pt, a: Pt, b: Pt, c: Pt) -> bool {
+    let d1 = (b - a).cross(p - a);
+    let d2 = (c - b).cross(p - b);
+    let d3 = (a - c).cross(p - c);
+    let neg = d1 < 0.0 || d2 < 0.0 || d3 < 0.0;
+    let pos = d1 > 0.0 || d2 > 0.0 || d3 > 0.0;
+    !(neg && pos)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -156,6 +220,21 @@ mod tests {
         assert_eq!((b.len(), b[0], b[8]), (9, Pt::new(0.0, 0.0), Pt::new(100.0, 0.0)));
         assert_eq!(segments_for(f64::INFINITY, 1.0, 0.5), 1);
         assert_eq!(segments_for(1e12, 1e12, 1e-12), MAX_SEGMENTS);
+    }
+
+    #[test]
+    fn concave_outlines_are_cut_into_triangles() {
+        let l = [Pt::new(0.0, 0.0), Pt::new(2.0, 0.0), Pt::new(2.0, 1.0), Pt::new(1.0, 1.0), Pt::new(1.0, 2.0), Pt::new(0.0, 2.0)];
+        assert!(!is_convex(&l));
+        let tris = triangulate(&l);
+        assert_eq!(tris.len(), 4);
+        let area: f64 = tris.iter().map(|t| ((l[t[1]] - l[t[0]]).cross(l[t[2]] - l[t[0]]) / 2.0).abs()).sum();
+        assert!(close(area, 3.0), "{area}");
+        let mut cw = l;
+        cw.reverse();
+        assert_eq!(triangulate(&cw).len(), 4);
+        assert!(is_convex(&[Pt::new(0.0, 0.0), Pt::new(1.0, 0.0), Pt::new(1.0, 1.0), Pt::new(0.0, 1.0)]));
+        assert!(triangulate(&[Pt::new(f64::NAN, 0.0), Pt::ORIGIN, Pt::new(1.0, 1.0)]).is_empty());
     }
 
     #[test]

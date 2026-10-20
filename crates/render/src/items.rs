@@ -38,23 +38,46 @@ pub fn find_device<'a>(library: &'a Library, c: &Component) -> Option<&'a Device
     library.get(&r.name).filter(matches).or_else(|| library.devices().iter().filter(|d| d.name.eq_ignore_ascii_case(&r.name)).find(matches))
 }
 
-/// A component: its symbol (or a box when the device is missing), reference and value.
+/// A component: its symbol (or a box when the device is missing), reference and value. The
+/// texts are aligned by where their anchor lies against the body: above it they sit on the
+/// anchor, below it they hang from it, beside it they start (or end) there, the reference over
+/// the value.
 pub fn component_prims(c: &Component, library: &Library) -> Vec<Prim> {
     let owner = Some(ItemId::Component(c.id));
     let mut out = match find_device(library, c) {
         Some(d) => symbol_prims(d, c.unit, c.transform),
         None => missing_prims(c.transform),
     };
+    let body = out.iter().filter(|p| matches!(p.ink, Ink::Body | Ink::BodyFill | Ink::Missing)).filter_map(Prim::bounds).reduce(Rect::union);
     let origin = c.origin();
     if c.reference_label.visible && !c.reference.is_empty() {
         let at = origin + c.reference_label.offset;
-        out.push(text(at, &c.reference, REFERENCE_SIZE, HAlign::Center, VAlign::Bottom, Ink::Reference));
+        let (h, v) = field_align(body, at, VAlign::Bottom);
+        out.push(text(at, &c.reference, REFERENCE_SIZE, h, v, Ink::Reference));
     }
     if c.value_label.visible && !c.value.is_empty() {
         let at = origin + c.value_label.offset;
-        out.push(text(at, &c.value, VALUE_SIZE, HAlign::Center, VAlign::Top, Ink::Value));
+        let (h, v) = field_align(body, at, VAlign::Top);
+        out.push(text(at, &c.value, VALUE_SIZE, h, v, Ink::Value));
     }
     out.into_iter().map(|p| p.owned(owner)).collect()
+}
+
+/// How a reference or value text lines up with its anchor, given the body's bounds; `beside`
+/// is its vertical alignment when it sits beside the body (Bottom: over the anchor).
+pub fn field_align(body: Option<Rect>, at: Pt, beside: VAlign) -> (HAlign, VAlign) {
+    let Some(b) = body else { return (HAlign::Center, beside) };
+    if at.y >= b.max.y {
+        (HAlign::Center, VAlign::Bottom)
+    } else if at.y <= b.min.y {
+        (HAlign::Center, VAlign::Top)
+    } else if at.x >= b.max.x {
+        (HAlign::Left, beside)
+    } else if at.x <= b.min.x {
+        (HAlign::Right, beside)
+    } else {
+        (HAlign::Center, VAlign::Middle)
+    }
 }
 
 fn missing_prims(t: Transform) -> Vec<Prim> {
@@ -224,6 +247,18 @@ mod tests {
         let missing = Component::new(ComponentId(8), DeviceRef::new("", "NOPE"), "U1", "");
         let prims = component_prims(&missing, &lib);
         assert!(prims.iter().any(|p| p.ink == Ink::Missing));
+    }
+
+    #[test]
+    fn texts_line_up_with_the_body_side_they_are_on() {
+        let b = Some(Rect::new(Pt::new(-100.0, -50.0), Pt::new(100.0, 50.0)));
+        assert_eq!(field_align(b, Pt::new(0.0, 100.0), VAlign::Bottom), (HAlign::Center, VAlign::Bottom));
+        assert_eq!(field_align(b, Pt::new(0.0, -100.0), VAlign::Bottom), (HAlign::Center, VAlign::Top));
+        assert_eq!(field_align(b, Pt::new(150.0, 10.0), VAlign::Bottom), (HAlign::Left, VAlign::Bottom));
+        assert_eq!(field_align(b, Pt::new(150.0, -10.0), VAlign::Top), (HAlign::Left, VAlign::Top));
+        assert_eq!(field_align(b, Pt::new(-150.0, 0.0), VAlign::Top), (HAlign::Right, VAlign::Top));
+        assert_eq!(field_align(b, Pt::ORIGIN, VAlign::Top), (HAlign::Center, VAlign::Middle));
+        assert_eq!(field_align(None, Pt::ORIGIN, VAlign::Top), (HAlign::Center, VAlign::Top));
     }
 
     #[test]

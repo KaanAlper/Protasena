@@ -39,7 +39,8 @@ mod symbol;
 
 pub use items::{
     BUS_WIDTH, JUNCTION_RADIUS, LABEL_SIZE, MISSING_HALF, REFERENCE_SIZE, TEXT_SIZE, VALUE_SIZE, WIRE_WIDTH, bus_entry_prims, bus_prims,
-    component_prims, find_device, item_prims, junction_prims, label_prims, sheet_display_list, sheet_rect, terminal_prims, text_prims, wire_prims,
+    component_prims, field_align, find_device, item_prims, junction_prims, label_prims, sheet_display_list, sheet_rect, terminal_prims, text_prims,
+    wire_prims,
 };
 pub use package::package_prims;
 pub use prim::{DisplayList, HAlign, Ink, Prim, Shape, VAlign};
