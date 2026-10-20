@@ -12,10 +12,12 @@ workspace = true
 
 [dependencies]
 protasena-doc = { workspace = true, features = ["serde"] }
+protasena-geom.workspace = true
 protasena-library.workspace = true
 protasena-netlist.workspace = true
+protasena-pdsprj.workspace = true
 serde.workspace = true
 serde_json.workspace = true
 
 [dev-dependencies]
-protasena-geom.workspace = true
+miniz_oxide.workspace = true

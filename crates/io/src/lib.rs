@@ -7,7 +7,9 @@
 //!   [`library_dir`] (`PROTASENA_LIBRARY_DIR`).
 //! - [`atomic_write`] replaces a file in one step, optionally keeping a backup.
 //!
-//! The `.pdsprj` mapping arrives with M1 Task 10.
+//! - **Proteus projects** (`.pdsprj`, read-only): [`import_pdsprj`] maps what the
+//!   `protasena-pdsprj` reader decodes (wires, buses, junctions, components, terminals) into a
+//!   project and returns an [`ImportReport`] of everything it skipped or guessed.
 //!
 //! # The `.psproj` format
 //! ```text
@@ -57,6 +59,8 @@ mod file;
 mod library_pack;
 pub mod limits;
 mod netlist_file;
+mod pdsprj_import;
+mod pdsprj_report;
 mod pretty;
 
 pub use atomic::{atomic_write, backup_path};
@@ -65,3 +69,5 @@ pub use error::{ExportError, LoadError, SaveError};
 pub use file::{load, save};
 pub use library_pack::{LIBRARY_DIR_VAR, library_dir, library_dir_from, load_library, load_library_from, merge_libraries};
 pub use netlist_file::{NetlistFormat, export_netlist};
+pub use pdsprj_import::{PDSPRJ_LIBRARY, convert as convert_pdsprj, import_pdsprj, import_pdsprj_bytes};
+pub use pdsprj_report::{EmbeddedDevice, ImportError, ImportReport, UnknownRecords};
