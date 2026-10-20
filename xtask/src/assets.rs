@@ -28,9 +28,10 @@ pub fn is_asset(path: &str) -> bool {
     !CODE_NAMES.contains(&name) && !CODE_EXT.contains(&ext.as_str())
 }
 
-/// Every `` `…` `` span in `md`.
+/// Every `` `…` `` span in the table rows of `md` (lines starting with `|`; prose that names
+/// a directory attributes nothing).
 fn backticked(md: &str) -> Vec<&str> {
-    md.split('`').skip(1).step_by(2).collect()
+    md.lines().filter(|l| l.trim_start().starts_with('|')).flat_map(|l| l.split('`').skip(1).step_by(2)).collect()
 }
 
 /// Paths that need an ATTRIBUTION.md entry but lack one.
@@ -113,6 +114,13 @@ mod tests {
         ]);
         let md = "| `assets/icons/a.svg` | us | original | MIT OR Apache-2.0 |\n| `crates/kicad/tests/data/` | us | original | CC0-1.0 |";
         assert_eq!(missing(&files, md), strings(&["docs/images/b.png", "apps/p/logo.png"]));
+    }
+
+    #[test]
+    fn paths_named_outside_the_table_attribute_nothing() {
+        let files = strings(&["crates/ui-egui/i18n/en.tsv"]);
+        let md = "Every non-code file under `crates/` and `apps/` is listed.\n\n| Asset | Author |\n|---|---|\n| `apps/x/` | us |";
+        assert_eq!(missing(&files, md), files, "the prose mention of `crates/` is not a row");
     }
 
     #[test]
