@@ -143,6 +143,14 @@ dependencies = [
 [[package]]
 name = "protasena-io"
 version = "0.1.0"
+dependencies = [
+ "protasena-doc",
+ "protasena-geom",
+ "protasena-library",
+ "protasena-netlist",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "protasena-kicad"
