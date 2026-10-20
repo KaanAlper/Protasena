@@ -51,7 +51,7 @@ fn confirm_new(s: &Session) -> Option<Request> {
     s.dirty.then_some(Request::ConfirmDiscard { then: "new" })
 }
 
-fn path_param(a: &Args, key: &str) -> Result<Option<PathBuf>> {
+pub(super) fn path_param(a: &Args, key: &str) -> Result<Option<PathBuf>> {
     match a.str(key)? {
         None => Ok(None),
         Some("") => Err(a.bad(format!("`{key}` is empty"))),

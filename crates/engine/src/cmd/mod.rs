@@ -5,6 +5,7 @@ mod block;
 mod clip;
 mod design;
 mod edit;
+mod export;
 mod file;
 mod graphics;
 mod items;
@@ -27,6 +28,7 @@ use crate::registry::CommandSpec;
 pub(crate) fn all_specs() -> Vec<CommandSpec> {
     let mut v = Vec::new();
     v.extend(file::specs());
+    v.extend(export::specs());
     v.extend(edit::specs());
     v.extend(clip::specs());
     v.extend(block::specs());

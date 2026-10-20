@@ -50,6 +50,11 @@ pub enum Request {
     SaveProjectAs,
     /// Netlist Compiler options and file (then `export-netlist`).
     ExportNetlist,
+    /// Export Graphics options and file (then the `export-*` command of the format).
+    ExportGraphics {
+        /// The format the menu item writes (`png` for Export Bitmap, which also offers `bmp`).
+        format: &'static str,
+    },
     /// Edit Design Properties (then `design-properties`).
     DesignProperties,
     /// Edit Sheet Properties (then `sheet-properties`).

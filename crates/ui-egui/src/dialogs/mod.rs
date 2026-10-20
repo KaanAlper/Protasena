@@ -4,6 +4,7 @@
 //! `docs/gaps.md`).
 
 pub mod edit_component;
+pub mod export;
 mod files;
 mod forms;
 pub mod pick_devices;
@@ -48,6 +49,8 @@ pub enum Dialog {
         /// Total (renumber all) instead of incremental.
         total: bool,
     },
+    /// Export Graphics (one of its items).
+    Export(Box<export::ExportForm>),
     /// Unsaved changes: Save, Don't Save or Cancel?
     SaveChanges {
         /// What waits for the answer.
@@ -101,6 +104,7 @@ impl Dialog {
             Request::OpenProject => Dialog::path(PathPurpose::Open { discard: false }, ""),
             Request::SaveProjectAs => Dialog::path(PathPurpose::SaveAs, ""),
             Request::ExportNetlist => Dialog::path(PathPurpose::Netlist, ""),
+            Request::ExportGraphics { format } => Dialog::Export(Box::new(export::ExportForm::new(s, export::export_kind(format)?))),
         })
     }
 
@@ -123,6 +127,7 @@ impl Dialog {
             Dialog::Sheet(_) => tl!("Edit Sheet Properties"),
             Dialog::GotoSheet(_) => tl!("Goto Sheet"),
             Dialog::Annotator { .. } => tl!("Global Annotator"),
+            Dialog::Export(d) => d.kind.title,
             Dialog::SaveChanges { .. } => tl!("Unsaved Changes"),
         }
     }
@@ -139,9 +144,18 @@ impl Dialog {
             Dialog::Path(d) => &mut d.error,
             Dialog::Design(d) => &mut d.error,
             Dialog::Sheet(d) => &mut d.error,
+            Dialog::Export(d) => &mut d.out.error,
             Dialog::GotoSheet(_) | Dialog::Annotator { .. } | Dialog::SaveChanges { .. } => return,
         };
         *slot = Some(e);
+    }
+
+    /// The file options of an export or print dialog.
+    fn output(&mut self) -> Option<&mut export::Output> {
+        match self {
+            Dialog::Export(d) => Some(&mut d.out),
+            _ => None,
+        }
     }
 
     fn body(&mut self, ui: &mut Ui, s: &Session) -> Reply {
@@ -157,6 +171,7 @@ impl Dialog {
             Dialog::Sheet(d) => d.ui(ui),
             Dialog::GotoSheet(d) => d.ui(ui, s),
             Dialog::Annotator { total } => forms::annotator(ui, total),
+            Dialog::Export(d) => d.ui(ui),
             Dialog::SaveChanges { then } => ConfirmForm::ui(ui, *then),
         }
     }
@@ -178,6 +193,9 @@ pub fn show(app: &mut App, ctx: &egui::Context) {
     control::record_rect(ctx, egui::Id::new(("dialog-area", title)), modal.response.rect, title, "dialog", true, None);
     if modal.should_close() && matches!(reply, Reply::None) {
         reply = Reply::Cancel;
+    }
+    if let Some(out) = d.output() {
+        app.browse(out);
     }
     match reply {
         Reply::None => app.dialog = Some(d),

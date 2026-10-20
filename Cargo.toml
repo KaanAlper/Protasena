@@ -28,6 +28,8 @@ serde_json = { version = "1", features = ["float_roundtrip"] }
 toml = { version = "1", default-features = false, features = ["std", "serde", "parse"] }
 # raw deflate for the .pdsprj ZIP container (MIT OR Zlib OR Apache-2.0)
 miniz_oxide = { version = "0.8", default-features = false, features = ["with-alloc"] }
+# 2D rasterizer for bitmap export in protasena-render (BSD-3-Clause; pure Rust, no assets)
+tiny-skia = { version = "0.11", default-features = false, features = ["std", "simd"] }
 
 # user interface (layer L5 and the apps only; versions as AsenaCAD's)
 egui = "0.36"

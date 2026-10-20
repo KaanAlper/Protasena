@@ -19,6 +19,7 @@ About Protasena
 Active Popup Mode
 Add Traces...
 Align Objects
+All Sheets
 Angle
 Animated Single Step
 Annotated
@@ -31,6 +32,7 @@ Block Delete
 Block Move
 Block Rotate
 Bring To Front
+Browse...
 Buses Mode
 Cancel
 Category
@@ -44,6 +46,7 @@ Configure Diagnostics
 Configure Power Rails...
 Copy To Clipboard
 Created
+Current Sheet
 Custom
 Cut To Clipboard
 DEVICES
@@ -71,6 +74,7 @@ Edit Wire Label
 Electrical Rules Check
 Element
 Enable Remote Debug Monitor
+Enter a number
 Error
 Exit Application
 Exit to Parent Sheet
@@ -85,8 +89,10 @@ Export Metafile
 Export Project Clip
 Export SVG File
 Export Vector File
+Exported to
 File
 Find/Edit Component
+Format
 GENERATORS
 GRAPHICS
 GRAPHS
@@ -128,6 +134,7 @@ Messages
 Mode
 Model Compiler
 Modified
+Mono (black on white)
 Netlist Compiler
 Nets
 New (Root) Sheet
@@ -173,6 +180,7 @@ Redraw Display
 Remove/Delete Sheet
 Reset Debug Popup Windows
 Reset Persistent Model Data
+Resolution (dpi)
 Restore Default Settings
 Results
 Revision
@@ -190,9 +198,11 @@ Save Design as Template
 Save Project
 Save Project As
 Saved
+Scale
 Schematic Capture
 Schematic Capture Help
 Schematic Capture Tutorial
+Scope
 Search & Tag
 Select All Objects
 Selection Mode
@@ -248,6 +258,7 @@ Toolbar Configuration
 Total
 Type
 Type keywords or choose a category
+Type the file name: this window has no file chooser
 Undo Changes
 Unsaved Changes
 VSM Model/SDK Help

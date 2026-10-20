@@ -12,6 +12,8 @@
 //! - [`sheet_display_list`]: a whole sheet in drawing order, with its border.
 //! - [`package_prims`]: a PCB package (pads and silkscreen) for the package preview.
 //! - [`geometry`]: arcs through three points, flattening, readable text directions.
+//! - [`export`]: display lists as SVG, PDF, EPS, DXF, PNG and BMP files (Export Graphics,
+//!   Print Design).
 //!
 //! Hit testing stays in the engine (`protasena_engine::hit`).
 //!
@@ -31,6 +33,7 @@
 //! ```
 #![warn(missing_docs)]
 
+pub mod export;
 pub mod geometry;
 mod graphics;
 mod items;

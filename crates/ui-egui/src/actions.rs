@@ -51,6 +51,9 @@ impl App {
                 self.saved();
             }
             "annotate" => self.notify(format!("{}: {}", tl!("Annotated"), v["changed"]), false),
+            "export-graphics" | "export-bitmap" | "export-dxf" | "export-eps" | "export-pdf" | "export-svg" => {
+                self.notify(format!("{} {}", tl!("Exported to"), v["path"].as_str().unwrap_or_default()), false);
+            }
             _ => {}
         }
     }
@@ -111,6 +114,24 @@ impl App {
             }
             Some(None) => self.after_save = None,
             None => self.dialog = Some(Dialog::path(purpose, &suggested)),
+        }
+    }
+
+    /// The export dialogs' Browse button: asks the file chooser (when the app has one) for the
+    /// file, keeping the extension offered.
+    pub(crate) fn browse(&mut self, out: &mut crate::dialogs::export::Output) {
+        if !std::mem::take(&mut out.browse) {
+            return;
+        }
+        let Some(pick) = self.services.pick_save.as_ref() else {
+            out.error = Some(tl!("Type the file name: this window has no file chooser").to_owned());
+            return;
+        };
+        let current = std::path::Path::new(out.path.trim());
+        let name = current.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
+        let ext = current.extension().map(|e| e.to_string_lossy().into_owned()).unwrap_or_default();
+        if let Some(p) = pick(&name, &[ext.as_str()]) {
+            out.path = p.display().to_string();
         }
     }
 

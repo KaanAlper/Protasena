@@ -106,12 +106,12 @@ const fn ui(label: &'static str, shortcut: Option<&'static str>, act: UiAct) -> 
 use Entry::Sep;
 
 const EXPORT_GRAPHICS: &[Entry] = &[
-    off("Export Bitmap", None),
+    cmd("Export Bitmap", None, "export-bitmap"),
     off("Export Metafile", None),
-    off("Export DXF File", None),
-    off("Export Encapsulated Postscript", None),
-    off("Export Adobe PDF File", None),
-    off("Export SVG File", None),
+    cmd("Export DXF File", None, "export-dxf"),
+    cmd("Export Encapsulated Postscript", None, "export-eps"),
+    cmd("Export Adobe PDF File", None, "export-pdf"),
+    cmd("Export SVG File", None, "export-svg"),
     off("Export Vector File", None),
 ];
 
