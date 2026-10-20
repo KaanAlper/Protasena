@@ -21,7 +21,16 @@ Contributors and agents: read [AGENTS.md](AGENTS.md) first.
 ## Parts library
 
 Built from KiCad's official libraries (CC-BY-SA 4.0) and distributed separately in
-`KaanAlper/Protasena-library`; never Proteus's library. See `NOTICE`.
+[KaanAlper/Protasena-library](https://github.com/KaanAlper/Protasena-library); never Proteus's
+library. See `NOTICE`. To use it, clone that repository and point `PROTASENA_LIBRARY_DIR` at its
+`pack/` directory:
+
+    git clone https://github.com/KaanAlper/Protasena-library
+    export PROTASENA_LIBRARY_DIR=$PWD/Protasena-library/pack
+
+Without it Protasena runs with its small built-in set of generic parts. The pack is produced by
+`apps/protasena-libconv` (`cargo run --release -p protasena-libconv -- --help`) using the
+category and naming table in `apps/protasena-libconv/data/map.toml`.
 
 ## License
 

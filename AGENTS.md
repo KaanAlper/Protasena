@@ -100,6 +100,13 @@ answer `--help`/`--version`: `cargo run -p protasena-cli -- --help`. When the UI
 section documents `--control PORT` (JSON-lines control channel: `ui.screenshot`, `ui.click`,
 `engine.execute`, `ui.elements`); look at screenshots of every UI change.
 
+**Parts library**: the converted KiCad pack lives outside this repo
+(`KaanAlper/Protasena-library`, CC-BY-SA 4.0). Point `PROTASENA_LIBRARY_DIR` at its `pack/`
+directory (`index.json` inside); without it only the built-in generic parts exist, and tests
+never need it. Regenerate it with `protasena-libconv` (command and pinned KiCad tag in that
+repo's README; mapping table `apps/protasena-libconv/data/map.toml`); never copy pack or KiCad
+files into this repo.
+
 **Proteus helpers** in `tools/proteus/` (see its `README.md`): `shot-proteus.sh` is the only way
 to screenshot Proteus (it crops to Proteus's window on the PC; never call `asenascale shot`
 yourself); `uia-dump.ps1` dumps the UI Automation tree of Proteus's main window. Their output

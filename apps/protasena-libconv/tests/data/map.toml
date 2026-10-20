@@ -1,0 +1,18 @@
+# Map for the protasena-libconv tests (Protasena contributors, CC0-1.0).
+
+[manufacturers]
+Acme = "Acme Parts"
+
+[libraries]
+Passives = { category = "Miscellaneous", sub_category = "Fixture parts" }
+
+[[rules]]
+library = "Passives"
+symbol = "R*"
+category = "Resistors"
+sub_category = "Generic"
+
+[devices]
+"Passives:R" = { name = "RES", primitive = "ANALOG" }
+"Passives:GND" = { name = "GROUND" }
+"Passives:Missing" = { name = "NOPE" }

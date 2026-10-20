@@ -1,0 +1,535 @@
+# protasena-libconv map: KiCad libraries and symbols → Pick Devices names, categories and
+# manufacturers. Written by the Protasena contributors (MIT OR Apache-2.0); it holds no KiCad
+# or Proteus data, only our own classification of KiCad's library names.
+#
+# Lookup order for a symbol: [devices] entry, then the first matching [[rules]] entry, then its
+# [libraries] entry, then a name derived from the library (`Foo_Bar` → "Foo" / "Bar"; such
+# libraries are listed as unmapped in the report). Category names follow the Pick Devices
+# style; where no such category fits we use our own plain names.
+
+# A `_`-separated word of a library name → manufacturer of its parts.
+[manufacturers]
+Altera = "Altera"
+AnalogDevices = "Analog Devices"
+CologneChip = "Cologne Chip"
+Cypress = "Cypress"
+Dialog = "Dialog Semiconductor"
+Efinix = "Efinix"
+Espressif = "Espressif"
+Freescale = "Freescale"
+Intel = "Intel"
+Lattice = "Lattice"
+Microchip = "Microchip"
+Microsemi = "Microsemi"
+Motorola = "Motorola"
+Nordic = "Nordic Semiconductor"
+NXP = "NXP"
+Parallax = "Parallax"
+Puya = "Puya"
+RaspberryPi = "Raspberry Pi"
+Renesas = "Renesas"
+SiFive = "SiFive"
+SiliconLabs = "Silicon Labs"
+ST = "STMicroelectronics"
+STC = "STC"
+Texas = "Texas Instruments"
+Trident = "Trident"
+WCH = "WCH"
+Xilinx = "Xilinx"
+
+# Every KiCad 9 symbol library.
+[libraries]
+"4xxx" = { category = "CMOS 4000 series" }
+"4xxx_IEEE" = { category = "CMOS 4000 series", sub_category = "IEEE symbols" }
+"74xGxx" = { category = "TTL 74 series", sub_category = "Single and dual gates" }
+"74xx" = { category = "TTL 74 series" }
+"74xx_IEEE" = { category = "TTL 74 series", sub_category = "IEEE symbols" }
+Amplifier_Audio = { category = "Analog ICs", sub_category = "Audio amplifiers" }
+Amplifier_Buffer = { category = "Operational Amplifiers", sub_category = "Buffers" }
+Amplifier_Current = { category = "Analog ICs", sub_category = "Current sense amplifiers" }
+Amplifier_Difference = { category = "Operational Amplifiers", sub_category = "Difference amplifiers" }
+Amplifier_Instrumentation = { category = "Operational Amplifiers", sub_category = "Instrumentation amplifiers" }
+Amplifier_Operational = { category = "Operational Amplifiers" }
+Amplifier_Video = { category = "Analog ICs", sub_category = "Video amplifiers" }
+Analog = { category = "Analog ICs", sub_category = "Miscellaneous" }
+Analog_ADC = { category = "Data Converters", sub_category = "A/D converters" }
+Analog_DAC = { category = "Data Converters", sub_category = "D/A converters" }
+Analog_Switch = { category = "Analog ICs", sub_category = "Analog switches" }
+Audio = { category = "Analog ICs", sub_category = "Audio" }
+Auxiliary_Items = { category = "Miscellaneous", sub_category = "Auxiliary items" }
+Battery_Management = { category = "Power Management", sub_category = "Battery management" }
+Buffer = { category = "Logic ICs", sub_category = "Buffers" }
+CPLD_Altera = { category = "PLDs & FPGAs", sub_category = "CPLDs" }
+CPLD_Microchip = { category = "PLDs & FPGAs", sub_category = "CPLDs" }
+CPLD_Renesas = { category = "PLDs & FPGAs", sub_category = "CPLDs" }
+CPLD_Xilinx = { category = "PLDs & FPGAs", sub_category = "CPLDs" }
+CPU = { category = "Microprocessor ICs", sub_category = "CPUs" }
+CPU_NXP_6800 = { category = "Microprocessor ICs", sub_category = "6800 family" }
+CPU_NXP_68000 = { category = "Microprocessor ICs", sub_category = "68000 family" }
+CPU_NXP_IMX = { category = "Microprocessor ICs", sub_category = "i.MX" }
+CPU_PowerPC = { category = "Microprocessor ICs", sub_category = "PowerPC" }
+Comparator = { category = "Analog ICs", sub_category = "Comparators" }
+Connector = { category = "Connectors", sub_category = "Miscellaneous" }
+Connector_Audio = { category = "Connectors", sub_category = "Audio" }
+Connector_Generic = { category = "Connectors", sub_category = "Generic" }
+Connector_Generic_MountingPin = { category = "Connectors", sub_category = "Generic with mounting pin" }
+Connector_Generic_Shielded = { category = "Connectors", sub_category = "Generic shielded" }
+Converter_ACDC = { category = "Power Management", sub_category = "AC-DC converters" }
+Converter_DCDC = { category = "Power Management", sub_category = "DC-DC converter modules" }
+DSP_AnalogDevices = { category = "Microprocessor ICs", sub_category = "DSPs" }
+DSP_Freescale = { category = "Microprocessor ICs", sub_category = "DSPs" }
+DSP_Microchip_DSPIC33 = { category = "Microprocessor ICs", sub_category = "dsPIC33" }
+DSP_Motorola = { category = "Microprocessor ICs", sub_category = "DSPs" }
+DSP_Texas = { category = "Microprocessor ICs", sub_category = "DSPs" }
+Device = { category = "Miscellaneous", sub_category = "Generic devices" }
+Diode = { category = "Diodes" }
+Diode_Bridge = { category = "Diodes", sub_category = "Bridge rectifiers" }
+Diode_Laser = { category = "Optoelectronics", sub_category = "Laser diodes" }
+Display_Character = { category = "Optoelectronics", sub_category = "Character displays" }
+Display_Graphic = { category = "Optoelectronics", sub_category = "Graphic displays" }
+Driver_Display = { category = "Driver ICs", sub_category = "Display drivers" }
+Driver_FET = { category = "Driver ICs", sub_category = "Gate drivers" }
+Driver_Haptic = { category = "Driver ICs", sub_category = "Haptic drivers" }
+Driver_LED = { category = "Driver ICs", sub_category = "LED drivers" }
+Driver_Motor = { category = "Driver ICs", sub_category = "Motor drivers" }
+Driver_Relay = { category = "Driver ICs", sub_category = "Relay drivers" }
+Driver_TEC = { category = "Driver ICs", sub_category = "Thermoelectric cooler drivers" }
+FPGA_CologneChip_GateMate = { category = "PLDs & FPGAs", sub_category = "GateMate" }
+FPGA_Efinix_Trion = { category = "PLDs & FPGAs", sub_category = "Trion" }
+FPGA_Lattice = { category = "PLDs & FPGAs", sub_category = "Lattice FPGAs" }
+FPGA_Microsemi = { category = "PLDs & FPGAs", sub_category = "Microsemi FPGAs" }
+FPGA_Xilinx = { category = "PLDs & FPGAs", sub_category = "Xilinx FPGAs" }
+FPGA_Xilinx_Artix7 = { category = "PLDs & FPGAs", sub_category = "Artix-7" }
+FPGA_Xilinx_Kintex7 = { category = "PLDs & FPGAs", sub_category = "Kintex-7" }
+FPGA_Xilinx_Spartan6 = { category = "PLDs & FPGAs", sub_category = "Spartan-6" }
+FPGA_Xilinx_Virtex5 = { category = "PLDs & FPGAs", sub_category = "Virtex-5" }
+FPGA_Xilinx_Virtex6 = { category = "PLDs & FPGAs", sub_category = "Virtex-6" }
+FPGA_Xilinx_Virtex7 = { category = "PLDs & FPGAs", sub_category = "Virtex-7" }
+Fiber_Optic = { category = "Optoelectronics", sub_category = "Fibre optics" }
+Filter = { category = "Miscellaneous", sub_category = "Filters" }
+GPU = { category = "Microprocessor ICs", sub_category = "Graphics processors" }
+Graphic = { category = "Miscellaneous", sub_category = "Graphic symbols" }
+Interface = { category = "Interface ICs", sub_category = "Miscellaneous" }
+Interface_CAN_LIN = { category = "Interface ICs", sub_category = "CAN and LIN" }
+Interface_CurrentLoop = { category = "Interface ICs", sub_category = "Current loop" }
+Interface_Ethernet = { category = "Interface ICs", sub_category = "Ethernet" }
+Interface_Expansion = { category = "Interface ICs", sub_category = "I/O expanders" }
+Interface_HDMI = { category = "Interface ICs", sub_category = "HDMI" }
+Interface_HID = { category = "Interface ICs", sub_category = "Human interface devices" }
+Interface_LineDriver = { category = "Interface ICs", sub_category = "Line drivers" }
+Interface_Optical = { category = "Interface ICs", sub_category = "Optical" }
+Interface_Telecom = { category = "Interface ICs", sub_category = "Telecom" }
+Interface_UART = { category = "Interface ICs", sub_category = "UART and RS-232/485" }
+Interface_USB = { category = "Interface ICs", sub_category = "USB" }
+Isolator = { category = "Optoelectronics", sub_category = "Isolators and optocouplers" }
+Isolator_Analog = { category = "Analog ICs", sub_category = "Isolation amplifiers" }
+Jumper = { category = "Connectors", sub_category = "Jumpers" }
+LED = { category = "Optoelectronics", sub_category = "LEDs" }
+Logic_LevelTranslator = { category = "Logic ICs", sub_category = "Level translators" }
+Logic_Programmable = { category = "PLDs & FPGAs", sub_category = "PALs and GALs" }
+MCU_AnalogDevices = { category = "Microprocessor ICs", sub_category = "Analog Devices" }
+MCU_Cypress = { category = "Microprocessor ICs", sub_category = "Cypress" }
+MCU_Dialog = { category = "Microprocessor ICs", sub_category = "Dialog" }
+MCU_Espressif = { category = "Microprocessor ICs", sub_category = "ESP32" }
+MCU_Intel = { category = "Microprocessor ICs", sub_category = "Intel" }
+MCU_Microchip_8051 = { category = "Microprocessor ICs", sub_category = "8051 family" }
+MCU_Microchip_ATmega = { category = "Microprocessor ICs", sub_category = "AVR ATmega" }
+MCU_Microchip_ATtiny = { category = "Microprocessor ICs", sub_category = "AVR ATtiny" }
+MCU_Microchip_AVR = { category = "Microprocessor ICs", sub_category = "AVR" }
+MCU_Microchip_AVR_Dx = { category = "Microprocessor ICs", sub_category = "AVR Dx" }
+MCU_Microchip_PIC10 = { category = "Microprocessor ICs", sub_category = "PIC10" }
+MCU_Microchip_PIC12 = { category = "Microprocessor ICs", sub_category = "PIC12" }
+MCU_Microchip_PIC16 = { category = "Microprocessor ICs", sub_category = "PIC16" }
+MCU_Microchip_PIC18 = { category = "Microprocessor ICs", sub_category = "PIC18" }
+MCU_Microchip_PIC24 = { category = "Microprocessor ICs", sub_category = "PIC24" }
+MCU_Microchip_PIC32 = { category = "Microprocessor ICs", sub_category = "PIC32" }
+MCU_Microchip_SAMA = { category = "Microprocessor ICs", sub_category = "SAMA" }
+MCU_Microchip_SAMD = { category = "Microprocessor ICs", sub_category = "SAMD" }
+MCU_Microchip_SAME = { category = "Microprocessor ICs", sub_category = "SAME" }
+MCU_Microchip_SAML = { category = "Microprocessor ICs", sub_category = "SAML" }
+MCU_Microchip_SAMV = { category = "Microprocessor ICs", sub_category = "SAMV" }
+MCU_Module = { category = "Microprocessor ICs", sub_category = "Modules and boards" }
+MCU_NXP_ColdFire = { category = "Microprocessor ICs", sub_category = "ColdFire" }
+MCU_NXP_HC11 = { category = "Microprocessor ICs", sub_category = "HC11" }
+MCU_NXP_HC12 = { category = "Microprocessor ICs", sub_category = "HC12" }
+MCU_NXP_HCS12 = { category = "Microprocessor ICs", sub_category = "HCS12" }
+MCU_NXP_Kinetis = { category = "Microprocessor ICs", sub_category = "Kinetis" }
+MCU_NXP_LPC = { category = "Microprocessor ICs", sub_category = "LPC" }
+MCU_NXP_MAC7100 = { category = "Microprocessor ICs", sub_category = "MAC7100" }
+MCU_NXP_MCore = { category = "Microprocessor ICs", sub_category = "M-CORE" }
+MCU_NXP_NTAG = { category = "Microprocessor ICs", sub_category = "NTAG" }
+MCU_NXP_S08 = { category = "Microprocessor ICs", sub_category = "S08" }
+MCU_Nordic = { category = "Microprocessor ICs", sub_category = "nRF" }
+MCU_Parallax = { category = "Microprocessor ICs", sub_category = "Propeller" }
+MCU_Puya = { category = "Microprocessor ICs", sub_category = "Puya" }
+MCU_RaspberryPi = { category = "Microprocessor ICs", sub_category = "RP2040 family" }
+MCU_Renesas_Synergy_S1 = { category = "Microprocessor ICs", sub_category = "Synergy S1" }
+MCU_STC = { category = "Microprocessor ICs", sub_category = "STC 8051" }
+MCU_ST_STM32C0 = { category = "Microprocessor ICs", sub_category = "STM32C0" }
+MCU_ST_STM32F0 = { category = "Microprocessor ICs", sub_category = "STM32F0" }
+MCU_ST_STM32F1 = { category = "Microprocessor ICs", sub_category = "STM32F1" }
+MCU_ST_STM32F2 = { category = "Microprocessor ICs", sub_category = "STM32F2" }
+MCU_ST_STM32F3 = { category = "Microprocessor ICs", sub_category = "STM32F3" }
+MCU_ST_STM32F4 = { category = "Microprocessor ICs", sub_category = "STM32F4" }
+MCU_ST_STM32F7 = { category = "Microprocessor ICs", sub_category = "STM32F7" }
+MCU_ST_STM32G0 = { category = "Microprocessor ICs", sub_category = "STM32G0" }
+MCU_ST_STM32G4 = { category = "Microprocessor ICs", sub_category = "STM32G4" }
+MCU_ST_STM32H5 = { category = "Microprocessor ICs", sub_category = "STM32H5" }
+MCU_ST_STM32H7 = { category = "Microprocessor ICs", sub_category = "STM32H7" }
+MCU_ST_STM32L0 = { category = "Microprocessor ICs", sub_category = "STM32L0" }
+MCU_ST_STM32L1 = { category = "Microprocessor ICs", sub_category = "STM32L1" }
+MCU_ST_STM32L4 = { category = "Microprocessor ICs", sub_category = "STM32L4" }
+MCU_ST_STM32L5 = { category = "Microprocessor ICs", sub_category = "STM32L5" }
+MCU_ST_STM32MP1 = { category = "Microprocessor ICs", sub_category = "STM32MP1" }
+MCU_ST_STM32U0 = { category = "Microprocessor ICs", sub_category = "STM32U0" }
+MCU_ST_STM32U5 = { category = "Microprocessor ICs", sub_category = "STM32U5" }
+MCU_ST_STM32WB = { category = "Microprocessor ICs", sub_category = "STM32WB" }
+MCU_ST_STM32WL = { category = "Microprocessor ICs", sub_category = "STM32WL" }
+MCU_ST_STM8 = { category = "Microprocessor ICs", sub_category = "STM8" }
+MCU_SiFive = { category = "Microprocessor ICs", sub_category = "RISC-V" }
+MCU_SiliconLabs = { category = "Microprocessor ICs", sub_category = "Silicon Labs" }
+MCU_Texas = { category = "Microprocessor ICs", sub_category = "Texas Instruments" }
+MCU_Texas_MSP430 = { category = "Microprocessor ICs", sub_category = "MSP430" }
+MCU_Texas_SimpleLink = { category = "Microprocessor ICs", sub_category = "SimpleLink" }
+MCU_Trident = { category = "Microprocessor ICs", sub_category = "Trident" }
+MCU_WCH_RiscV = { category = "Microprocessor ICs", sub_category = "WCH RISC-V" }
+Mechanical = { category = "Miscellaneous", sub_category = "Mechanical" }
+Memory_EEPROM = { category = "Memory ICs", sub_category = "EEPROM" }
+Memory_EPROM = { category = "Memory ICs", sub_category = "EPROM" }
+Memory_Flash = { category = "Memory ICs", sub_category = "Flash" }
+Memory_NVRAM = { category = "Memory ICs", sub_category = "Non-volatile RAM" }
+Memory_RAM = { category = "Memory ICs", sub_category = "RAM" }
+Memory_ROM = { category = "Memory ICs", sub_category = "ROM" }
+Memory_UniqueID = { category = "Memory ICs", sub_category = "Unique ID" }
+Motor = { category = "Electromechanical", sub_category = "Motors" }
+Oscillator = { category = "Miscellaneous", sub_category = "Oscillators" }
+Potentiometer_Digital = { category = "Resistors", sub_category = "Digital potentiometers" }
+Power_Management = { category = "Power Management", sub_category = "Miscellaneous" }
+Power_Protection = { category = "Power Management", sub_category = "Protection" }
+Power_Supervisor = { category = "Power Management", sub_category = "Supervisors" }
+RF = { category = "RF and Wireless", sub_category = "Miscellaneous" }
+RF_AM_FM = { category = "RF and Wireless", sub_category = "AM/FM receivers" }
+RF_Amplifier = { category = "RF and Wireless", sub_category = "Amplifiers" }
+RF_Bluetooth = { category = "RF and Wireless", sub_category = "Bluetooth" }
+RF_Filter = { category = "RF and Wireless", sub_category = "Filters" }
+RF_GPS = { category = "RF and Wireless", sub_category = "GNSS" }
+RF_GSM = { category = "RF and Wireless", sub_category = "Cellular" }
+RF_Mixer = { category = "RF and Wireless", sub_category = "Mixers" }
+RF_Module = { category = "RF and Wireless", sub_category = "Modules" }
+RF_NFC = { category = "RF and Wireless", sub_category = "NFC" }
+RF_RFID = { category = "RF and Wireless", sub_category = "RFID" }
+RF_Switch = { category = "RF and Wireless", sub_category = "Switches" }
+RF_WiFi = { category = "RF and Wireless", sub_category = "Wi-Fi" }
+RF_ZigBee = { category = "RF and Wireless", sub_category = "Zigbee" }
+Reference_Current = { category = "Analog ICs", sub_category = "Current references" }
+Reference_Voltage = { category = "Analog ICs", sub_category = "Voltage references" }
+Regulator_Controller = { category = "Power Management", sub_category = "Regulator controllers" }
+Regulator_Current = { category = "Power Management", sub_category = "Current regulators" }
+Regulator_Linear = { category = "Power Management", sub_category = "Linear regulators" }
+Regulator_SwitchedCapacitor = { category = "Power Management", sub_category = "Charge pumps" }
+Regulator_Switching = { category = "Power Management", sub_category = "Switching regulators" }
+Relay = { category = "Switches & Relays", sub_category = "Relays" }
+Relay_SolidState = { category = "Switches & Relays", sub_category = "Solid-state relays" }
+Security = { category = "Miscellaneous", sub_category = "Security ICs" }
+Sensor = { category = "Transducers", sub_category = "Miscellaneous" }
+Sensor_Audio = { category = "Transducers", sub_category = "Audio" }
+Sensor_Current = { category = "Transducers", sub_category = "Current" }
+Sensor_Distance = { category = "Transducers", sub_category = "Distance" }
+Sensor_Energy = { category = "Transducers", sub_category = "Energy metering" }
+Sensor_Gas = { category = "Transducers", sub_category = "Gas" }
+Sensor_Humidity = { category = "Transducers", sub_category = "Humidity" }
+Sensor_Magnetic = { category = "Transducers", sub_category = "Magnetic" }
+Sensor_Motion = { category = "Transducers", sub_category = "Motion" }
+Sensor_Optical = { category = "Transducers", sub_category = "Light" }
+Sensor_Pressure = { category = "Transducers", sub_category = "Pressure" }
+Sensor_Proximity = { category = "Transducers", sub_category = "Proximity" }
+Sensor_Temperature = { category = "Transducers", sub_category = "Temperature" }
+Sensor_Touch = { category = "Transducers", sub_category = "Touch" }
+Sensor_Voltage = { category = "Transducers", sub_category = "Voltage" }
+Simulation_SPICE = { category = "Simulator Primitives", sub_category = "SPICE sources and models" }
+Switch = { category = "Switches & Relays", sub_category = "Switches" }
+Timer = { category = "Analog ICs", sub_category = "Timers" }
+Timer_PLL = { category = "Analog ICs", sub_category = "PLLs and clock generators" }
+Timer_RTC = { category = "Miscellaneous", sub_category = "Real-time clocks" }
+Transformer = { category = "Inductors", sub_category = "Transformers" }
+Transistor_Array = { category = "Transistors", sub_category = "Arrays" }
+Transistor_BJT = { category = "Transistors", sub_category = "Bipolar" }
+Transistor_FET = { category = "Transistors", sub_category = "MOSFETs" }
+Transistor_FET_Other = { category = "Transistors", sub_category = "Other FETs" }
+Transistor_IGBT = { category = "Transistors", sub_category = "IGBTs" }
+Transistor_Power_Module = { category = "Transistors", sub_category = "Power modules" }
+Triac_Thyristor = { category = "Switching Devices", sub_category = "Thyristors and triacs" }
+Valve = { category = "Thermionic Valves" }
+Video = { category = "Interface ICs", sub_category = "Video" }
+power = { category = "Power Symbols" }
+
+# Per-symbol rules: the first match wins; a missing field keeps the library's value.
+[[rules]]
+library = "74xx*"
+symbol = "74LS*"
+category = "TTL 74LS series"
+
+[[rules]]
+library = "74xx*"
+symbol = "74HCT*"
+category = "TTL 74HCT series"
+
+[[rules]]
+library = "74xx*"
+symbol = "74HC*"
+category = "TTL 74HC series"
+
+[[rules]]
+library = "Device"
+symbol = "R"
+category = "Resistors"
+sub_category = "Generic"
+
+[[rules]]
+library = "Device"
+symbol = "R_*"
+category = "Resistors"
+sub_category = "Generic"
+
+[[rules]]
+library = "Device"
+symbol = "Thermistor*"
+category = "Resistors"
+sub_category = "Thermistors"
+
+[[rules]]
+library = "Device"
+symbol = "Varistor*"
+category = "Resistors"
+sub_category = "Varistors"
+
+[[rules]]
+library = "Device"
+symbol = "VoltageDivider*"
+category = "Resistors"
+sub_category = "Networks"
+
+[[rules]]
+library = "Device"
+symbol = "C_Polarized*"
+category = "Capacitors"
+sub_category = "Electrolytic"
+
+[[rules]]
+library = "Device"
+symbol = "C"
+category = "Capacitors"
+sub_category = "Generic"
+
+[[rules]]
+library = "Device"
+symbol = "C_*"
+category = "Capacitors"
+sub_category = "Generic"
+
+[[rules]]
+library = "Device"
+symbol = "L"
+category = "Inductors"
+sub_category = "Generic"
+
+[[rules]]
+library = "Device"
+symbol = "L_*"
+category = "Inductors"
+sub_category = "Generic"
+
+[[rules]]
+library = "Device"
+symbol = "FerriteBead*"
+category = "Inductors"
+sub_category = "Ferrite beads"
+
+[[rules]]
+library = "Device"
+symbol = "Transformer*"
+category = "Inductors"
+sub_category = "Transformers"
+
+[[rules]]
+library = "Device"
+symbol = "LED*"
+category = "Optoelectronics"
+sub_category = "LEDs"
+
+[[rules]]
+library = "Device"
+symbol = "D_Zener*"
+category = "Diodes"
+sub_category = "Zener"
+
+[[rules]]
+library = "Device"
+symbol = "D_Schottky*"
+category = "Diodes"
+sub_category = "Schottky"
+
+[[rules]]
+library = "Device"
+symbol = "D_TVS*"
+category = "Diodes"
+sub_category = "Transient suppressors"
+
+[[rules]]
+library = "Device"
+symbol = "D_*Photo*"
+category = "Optoelectronics"
+sub_category = "Photodiodes"
+
+[[rules]]
+library = "Device"
+symbol = "D"
+category = "Diodes"
+sub_category = "Generic"
+
+[[rules]]
+library = "Device"
+symbol = "D_*"
+category = "Diodes"
+sub_category = "Generic"
+
+[[rules]]
+library = "Device"
+symbol = "DIAC*"
+category = "Switching Devices"
+sub_category = "DIACs"
+
+[[rules]]
+library = "Device"
+symbol = "Q_*MOS*"
+category = "Transistors"
+sub_category = "MOSFETs"
+
+[[rules]]
+library = "Device"
+symbol = "Q_*JFET*"
+category = "Transistors"
+sub_category = "JFETs"
+
+[[rules]]
+library = "Device"
+symbol = "Q_*"
+category = "Transistors"
+sub_category = "Generic"
+
+[[rules]]
+library = "Device"
+symbol = "Crystal*"
+category = "Miscellaneous"
+sub_category = "Crystals and resonators"
+
+[[rules]]
+library = "Device"
+symbol = "Resonator*"
+category = "Miscellaneous"
+sub_category = "Crystals and resonators"
+
+[[rules]]
+library = "Device"
+symbol = "*Fuse*"
+category = "Miscellaneous"
+sub_category = "Fuses and breakers"
+
+[[rules]]
+library = "Device"
+symbol = "CircuitBreaker*"
+category = "Miscellaneous"
+sub_category = "Fuses and breakers"
+
+[[rules]]
+library = "Device"
+symbol = "Battery*"
+category = "Miscellaneous"
+sub_category = "Batteries"
+
+[[rules]]
+library = "Device"
+symbol = "Speaker*"
+category = "Speakers & Sounders"
+
+[[rules]]
+library = "Device"
+symbol = "Buzzer*"
+category = "Speakers & Sounders"
+
+[[rules]]
+library = "Device"
+symbol = "Earphone*"
+category = "Speakers & Sounders"
+
+[[rules]]
+library = "Device"
+symbol = "Microphone*"
+category = "Transducers"
+sub_category = "Audio"
+
+[[rules]]
+library = "Device"
+symbol = "Thermocouple*"
+category = "Transducers"
+sub_category = "Temperature"
+
+[[rules]]
+library = "Device"
+symbol = "HallGenerator*"
+category = "Transducers"
+sub_category = "Magnetic"
+
+[[rules]]
+library = "Device"
+symbol = "Lamp*"
+category = "Optoelectronics"
+sub_category = "Lamps"
+
+[[rules]]
+library = "Device"
+symbol = "Solar*"
+category = "Optoelectronics"
+sub_category = "Solar cells"
+
+[[rules]]
+library = "Device"
+symbol = "Antenna*"
+category = "RF and Wireless"
+sub_category = "Antennas"
+
+[[rules]]
+library = "Device"
+symbol = "Opamp*"
+category = "Operational Amplifiers"
+sub_category = "Generic"
+
+[[rules]]
+library = "Device"
+symbol = "*meter"
+category = "Miscellaneous"
+sub_category = "Meters"
+
+# Single symbols with a Proteus-style device name (and a PRIMITIVE property for the plain
+# passives). Further fields override the rules above.
+[devices]
+"Device:R" = { name = "RES", primitive = "ANALOG" }
+"Device:C" = { name = "CAP", primitive = "ANALOG" }
+"Device:C_Polarized" = { name = "CAP-ELEC", primitive = "ANALOG" }
+"Device:L" = { name = "INDUCTOR", primitive = "ANALOG" }
+"Device:D" = { name = "DIODE" }
+"Device:LED" = { name = "LED" }
+"Device:Q_NPN" = { name = "NPN" }
+"Device:Q_PNP" = { name = "PNP" }
+"Device:Battery" = { name = "BATTERY" }
+"Device:Crystal" = { name = "CRYSTAL" }
+"Device:Fuse" = { name = "FUSE" }
+"Device:Lamp" = { name = "LAMP" }
+"Device:Speaker" = { name = "SPEAKER" }
+"Device:Buzzer" = { name = "BUZZER" }
+"Switch:SW_Push" = { name = "BUTTON" }
+"Switch:SW_SPST" = { name = "SWITCH" }
+"power:GND" = { name = "GROUND" }
+"power:VCC" = { name = "POWER" }
+"74xx:74LS00" = { name = "74LS00" }
+"4xxx:4001" = { name = "4001" }
