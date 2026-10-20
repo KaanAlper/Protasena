@@ -152,6 +152,15 @@ dependencies = [
 [[package]]
 name = "protasena-engine"
 version = "0.1.0"
+dependencies = [
+ "protasena-doc",
+ "protasena-geom",
+ "protasena-io",
+ "protasena-library",
+ "protasena-netlist",
+ "serde",
+ "serde_json",
+]
 
 [[package]]
 name = "protasena-geom"
