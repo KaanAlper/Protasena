@@ -6,7 +6,7 @@ mod common;
 use std::io::{self, Write};
 
 use common::{sample_project, scratch};
-use protasena_io::{SaveError, atomic_write, backup_path, load, save};
+use protasena_io::{SaveError, atomic_write, backup_path, save};
 
 fn names(dir: &std::path::Path) -> Vec<String> {
     let mut names: Vec<_> = std::fs::read_dir(dir).unwrap().map(|e| e.unwrap().file_name().to_string_lossy().into_owned()).collect();
@@ -68,6 +68,7 @@ fn saving_onto_a_directory_fails_and_leaves_it() {
 #[cfg(unix)]
 #[test]
 fn saving_into_a_read_only_directory_leaves_the_old_project() {
+    use protasena_io::load;
     use std::os::unix::fs::PermissionsExt;
     let dir = scratch("read-only");
     let path = dir.join("design.psproj");
