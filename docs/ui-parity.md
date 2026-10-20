@@ -1,6 +1,6 @@
 # UI parity
 
-> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (Tool ▸ Search & Tag, Property Assignment Tool) · **Target:** Labcenter Proteus 8 Professional (Windows)
+> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (Edit ▸ Align Objects, Send To Back, Bring To Front, Tidy Design) · **Target:** Labcenter Proteus 8 Professional (Windows)
 
 Protasena's Schematic Capture interface element by element against Proteus's: menus, toolbars,
 the mode toolbar, the overview window, the object selector, the editing window, the status bar
@@ -8,14 +8,14 @@ and dialogs. Rows come from the observed UI inventory (`plan/proteus/notes/ui-in
 local), written in our own words. Status: ✅ matches, ◐ partial (differences listed), ✗ missing,
 ★ intentional improvement approved by the owner. Work items: [gaps.md](gaps.md).
 
-**Headline (measured, counted from the rows below): 3 of 257 rows match** (✅ 3, ◐ 143, ✗ 111).
+**Headline (measured, counted from the rows below): 3 of 258 rows match** (✅ 3, ◐ 148, ✗ 107).
 Proteus could only be observed from its menus, window tree and one screenshot (it runs elevated
 on the reference PC, so no click, tooltip or dialog reached it): labels, order, shortcut texts
 and placement are taken from that observation; every behaviour, enabled rule and dialog is
 "not compared" until an observation session can drive Proteus. The look (colours, icons, fonts)
 is our own by design and is not a parity criterion.
 
-**Items without a command** (shown disabled, listed as ✗ below): 83 menu items (plus the
+**Items without a command** (shown disabled, listed as ✗ below): 79 menu items (plus the
 recent-projects and graph lists) and 14 toolbar buttons have no engine command yet, nor do 14 of
 the 22 modes, the animation buttons, the design variant box and the L button.
 
@@ -61,10 +61,10 @@ enabled when its command's enabled rule allows it.
 | Edit ▸ Cut To Clipboard |  | ◐ | Runs `cut`. Label, place and shortcut as observed; enabled rule, behaviour and dialog not compared |
 | Edit ▸ Copy To Clipboard |  | ◐ | Runs `copy`. Label, place and shortcut as observed; enabled rule, behaviour and dialog not compared |
 | Edit ▸ Paste From Clipboard |  | ◐ | Runs `paste`. Label, place and shortcut as observed; enabled rule, behaviour and dialog not compared |
-| Edit ▸ Align Objects | Ctrl+A | ✗ | Shown disabled: no command yet (item without a command) |
-| Edit ▸ Send To Back | Ctrl+B | ✗ | Shown disabled: no command yet (item without a command) |
-| Edit ▸ Bring To Front | Ctrl+F | ✗ | Shown disabled: no command yet (item without a command) |
-| Edit ▸ Tidy Design |  | ✗ | Shown disabled: no command yet (item without a command) |
+| Edit ▸ Align Objects | Ctrl+A | ◐ | Runs `align` (with a selection): lines the selected objects up by their left, right, top or bottom edges or their centres, each move rounded to the snap grid, attached wires following. Built the conventional way: Proteus's choices to compare |
+| Edit ▸ Send To Back | Ctrl+B | ◐ | Runs `send-to-back` (with a selection): first in the drawing order of their kind (kinds keep the sheet's drawing order). To compare |
+| Edit ▸ Bring To Front | Ctrl+F | ◐ | Runs `bring-to-front` (with a selection): last in the drawing order of their kind. To compare |
+| Edit ▸ Tidy Design |  | ◐ | Runs `tidy`: drops devices no part uses from the DEVICES list, and removes junction dots on no wire or bus, zero-length wires and empty texts (one undo step). Our own definition: what Proteus removes to compare |
 | View ▸ Redraw Display | R | ◐ | Runs `redraw`. Label, place and shortcut as observed; enabled rule, behaviour and dialog not compared |
 | View ▸ Toggle Grid | G | ◐ | Runs `toggle-grid`; the check mark shows its state. Behaviour not compared |
 | View ▸ Toggle False Origin | O | ◐ | Runs `toggle-false-origin`; the check mark shows its state. Behaviour not compared |
@@ -307,6 +307,7 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | Print Design ▸ Scope, Mono, Open in the system viewer, File | All Sheets; colour; on when the window can open files; `<project>-print.pdf` in the system's temporary directory | ◐ | Our own dialog; the system viewer is `xdg-open`, `open` or `explorer`, and a failure to start it is reported. Proteus's print dialog (printer, copies, scale, area) to compare |
 | Search & Tag ▸ Property, Operator, String, Search Mode, Match Case | REF; Equals; empty; New Search; off | ◐ | Our own dialog; Proteus's field set and defaults to compare |
 | Property Assignment Tool ▸ String, Action, Apply To, Count, Increment | empty; Assign; the tagged parts (the sheet when nothing is tagged); 1; 1 | ◐ | Our own dialog; Proteus's actions and Apply To choices to compare |
+| Align Objects ▸ Left Edges, Horizontal Centres, Right Edges, Top Edges, Vertical Centres, Bottom Edges | Left Edges | ◐ | Our own dialog; Proteus's choices to compare |
 
 ## Revision history
 
@@ -319,3 +320,4 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | 2026-10-20 | minor | File ▸ Export Graphics: Export Bitmap (PNG, BMP), DXF, Encapsulated Postscript, Adobe PDF and SVG built the conventional way with their dialog (to compare); Metafile and Vector File not built |
 | 2026-10-20 | minor | File ▸ Print Design prints to a PDF file and can open it in the system viewer (to compare); Print Setup and Printer Information not built |
 | 2026-10-20 | minor | Tool ▸ Search & Tag (T) and Property Assignment Tool (A), with their Design Toolbar buttons and dialogs, built the conventional way (to compare) |
+| 2026-10-20 | minor | Edit ▸ Align Objects (Ctrl+A), Send To Back (Ctrl+B), Bring To Front (Ctrl+F) and Tidy Design built the conventional way (to compare) |

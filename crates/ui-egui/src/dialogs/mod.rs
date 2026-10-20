@@ -54,6 +54,11 @@ pub enum Dialog {
     Export(Box<export::ExportForm>),
     /// Print Design.
     Print(Box<export::PrintForm>),
+    /// Align Objects (the index of the edge chosen).
+    Align {
+        /// Which edge or centre.
+        edge: usize,
+    },
     /// Search & Tag.
     SearchTag(tools::SearchTagForm),
     /// Property Assignment Tool.
@@ -107,6 +112,7 @@ impl Dialog {
             Request::SheetProperties { sheet } => Dialog::Sheet(SheetForm::new(s, sheet)?),
             Request::GotoSheet => Dialog::GotoSheet(GotoForm::new(s)),
             Request::GlobalAnnotator => Dialog::Annotator { total: false },
+            Request::Align => Dialog::Align { edge: 0 },
             Request::SearchTag => Dialog::SearchTag(tools::SearchTagForm::default()),
             Request::PropertyAssign => Dialog::PropertyAssign(tools::PropertyAssignForm::new(!s.selection().is_empty())),
             Request::ConfirmDiscard { then } => Dialog::SaveChanges { then: Then::from_command(then) },
@@ -137,6 +143,7 @@ impl Dialog {
             Dialog::Sheet(_) => tl!("Edit Sheet Properties"),
             Dialog::GotoSheet(_) => tl!("Goto Sheet"),
             Dialog::Annotator { .. } => tl!("Global Annotator"),
+            Dialog::Align { .. } => tl!("Align Objects"),
             Dialog::SearchTag(_) => tl!("Search & Tag"),
             Dialog::PropertyAssign(_) => tl!("Property Assignment Tool"),
             Dialog::Export(d) => d.kind.title,
@@ -161,7 +168,7 @@ impl Dialog {
             Dialog::SearchTag(d) => &mut d.error,
             Dialog::PropertyAssign(d) => &mut d.error,
             Dialog::Print(d) => &mut d.out.error,
-            Dialog::GotoSheet(_) | Dialog::Annotator { .. } | Dialog::SaveChanges { .. } => return,
+            Dialog::GotoSheet(_) | Dialog::Annotator { .. } | Dialog::Align { .. } | Dialog::SaveChanges { .. } => return,
         };
         *slot = Some(e);
     }
@@ -189,6 +196,7 @@ impl Dialog {
             Dialog::GotoSheet(d) => d.ui(ui, s),
             Dialog::Annotator { total } => forms::annotator(ui, total),
             Dialog::Export(d) => d.ui(ui),
+            Dialog::Align { edge } => tools::align(ui, edge),
             Dialog::SearchTag(d) => d.ui(ui),
             Dialog::PropertyAssign(d) => d.ui(ui),
             Dialog::Print(d) => d.ui(ui),

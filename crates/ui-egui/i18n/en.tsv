@@ -38,6 +38,7 @@ Block Copy
 Block Delete
 Block Move
 Block Rotate
+Bottom Edges
 Bring To Front
 Browse...
 Buses Mode
@@ -122,6 +123,7 @@ Height (th)
 Help
 Hidden
 Home Page
+Horizontal Centres
 Horz. Tile Popup Windows
 INSTRUMENTS
 Import ECAD Files
@@ -133,10 +135,12 @@ Increment
 Incremental
 Junction Dot Mode
 Keywords
+Left Edges
 Less Than
 Library
 Library Manager
 Licence: MIT OR Apache-2.0
+Line up the selected objects by their
 Loading parts library…
 MARKERS
 Make Device
@@ -214,6 +218,7 @@ Resolution (dpi)
 Restore Default Settings
 Results
 Revision
+Right Edges
 Rotate Anti-clockwise
 Rotate Clockwise
 Rules check findings
@@ -289,6 +294,7 @@ Toggle Grid
 Toggle X-Cursor
 Tool
 Toolbar Configuration
+Top Edges
 Total
 Type
 Type keywords or choose a category
@@ -300,6 +306,7 @@ Verify Files
 Verify Graphs
 Verify Packagings
 Version
+Vertical Centres
 Vertical Tile Popup Windows
 View
 View Simulation Log
@@ -313,7 +320,9 @@ Zoom In
 Zoom Out
 Zoom To Area
 Zoom To View Entire Sheet
+devices removed
 e.g. RES, 74LS00
 findings
+objects removed
 of
 th

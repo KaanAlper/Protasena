@@ -68,6 +68,8 @@ pub enum Request {
     GotoSheet,
     /// Global Annotator options (then `annotate`).
     GlobalAnnotator,
+    /// Align Objects: which edge or centre to line up (then `align`).
+    Align,
     /// Search & Tag: the property, operator and value to tag by (then `search-tag`).
     SearchTag,
     /// Property Assignment Tool: the string, action and parts (then `property-assign`).

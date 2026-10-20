@@ -11,6 +11,7 @@ use serde_json::{Value, json};
 /// Commands that change the design, with their parameters on the prepared session.
 fn cases(s: &Session) -> Vec<(&'static str, Value)> {
     let r1 = s.sheet().unwrap().components[0].id.0;
+    let r2 = s.sheet().unwrap().components[1].id.0;
     let label_wire = s.sheet().unwrap().wires[0].points[0];
     vec![
         ("place-component", json!({ "at": [3000, 0] })),
@@ -39,6 +40,10 @@ fn cases(s: &Session) -> Vec<(&'static str, Value)> {
         ("rotate-ccw", json!({})),
         ("mirror-x", json!({})),
         ("mirror-y", json!({})),
+        ("align", json!({ "ids": [r1, r2], "edge": "bottom" })),
+        ("send-to-back", json!({})),
+        ("bring-to-front", json!({ "ids": [r1] })),
+        ("property-assign", json!({ "string": "X=#", "apply_to": "sheet" })),
     ]
 }
 

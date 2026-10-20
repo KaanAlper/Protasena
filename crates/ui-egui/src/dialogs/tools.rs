@@ -1,5 +1,5 @@
-//! Tool ▸ Search & Tag and Property Assignment Tool dialogs. Our own layouts (Proteus's were not
-//! observable: fields, order and defaults are to compare).
+//! Tool ▸ Search & Tag and Property Assignment Tool, and Edit ▸ Align Objects dialogs. Our own
+//! layouts (Proteus's were not observable: fields, order and defaults are to compare).
 
 use egui::Ui;
 use serde_json::json;
@@ -155,4 +155,35 @@ impl PropertyAssignForm {
         }
         Reply::None
     }
+}
+
+/// Align Objects' choices: parameter and label.
+fn edges() -> [(&'static str, &'static str); 6] {
+    [
+        ("left", tl!("Left Edges")),
+        ("center-x", tl!("Horizontal Centres")),
+        ("right", tl!("Right Edges")),
+        ("top", tl!("Top Edges")),
+        ("center-y", tl!("Vertical Centres")),
+        ("bottom", tl!("Bottom Edges")),
+    ]
+}
+
+/// Align Objects: which edge or centre of the selected objects to line up (index into the
+/// choices).
+pub(super) fn align(ui: &mut Ui, edge: &mut usize) -> Reply {
+    ui.label(tl!("Line up the selected objects by their"));
+    for (i, (_, label)) in edges().iter().enumerate() {
+        let r = ui.radio_value(edge, i, *label);
+        control::record(ui, &r, label, "radio", Some(*edge == i));
+    }
+    let (ok, cancel) = ok_cancel(ui, true);
+    if cancel {
+        return Reply::Cancel;
+    }
+    if ok {
+        let e = edges().get(*edge).map_or("left", |e| e.0);
+        return Reply::Run { cmd: "align", params: json!({ "edge": e }), keep: false };
+    }
+    Reply::None
 }

@@ -57,6 +57,11 @@ impl App {
             "print-design" => self.printed(v),
             "search-tag" => self.notify(format!("{}: {}", tl!("Tagged"), v["count"]), false),
             "property-assign" => self.notify(format!("{}: {}", tl!("Parts changed"), v["changed"]), false),
+            "tidy" => {
+                let items = v["removed"].as_array().map_or(0, Vec::len);
+                let devices = v["devices_removed"].as_array().map_or(0, Vec::len);
+                self.notify(format!("{}: {items} {}, {devices} {}", tl!("Tidy Design"), tl!("objects removed"), tl!("devices removed")), false);
+            }
             _ => {}
         }
     }

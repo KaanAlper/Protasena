@@ -154,11 +154,11 @@ const EDIT: &[Entry] = &[
     cmd("Copy To Clipboard", None, "copy"),
     cmd("Paste From Clipboard", None, "paste"),
     Sep,
-    off("Align Objects", Some("Ctrl+A")),
-    off("Send To Back", Some("Ctrl+B")),
-    off("Bring To Front", Some("Ctrl+F")),
+    cmd("Align Objects", Some("Ctrl+A"), "align"),
+    cmd("Send To Back", Some("Ctrl+B"), "send-to-back"),
+    cmd("Bring To Front", Some("Ctrl+F"), "bring-to-front"),
     Sep,
-    off("Tidy Design", None),
+    cmd("Tidy Design", None, "tidy"),
 ];
 
 const VIEW: &[Entry] = &[

@@ -203,13 +203,18 @@ fn proteus_shortcuts_and_menus() {
         ("pick-device", "P"),
         ("previous-sheet", "Page-Up"),
         ("next-sheet", "Page-Down"),
+        ("search-tag", "T"),
+        ("property-assign", "A"),
+        ("align", "Ctrl+A"),
+        ("send-to-back", "Ctrl+B"),
+        ("bring-to-front", "Ctrl+F"),
     ];
     for (id, key) in expected {
         assert_eq!(find_command(id).and_then(|c| c.shortcut), Some(key), "{id}");
     }
-    // Proteus binds these to other things (Exit to Parent Sheet, View Simulation Log, Align
-    // Objects, Bring To Front): no clipboard or select-all keys.
-    for key in ["Ctrl+X", "Ctrl+V", "Ctrl+A", "Ctrl+F", "Ctrl+C"] {
+    // Proteus binds these to other things (Exit to Parent Sheet, View Simulation Log; Ctrl+A
+    // and Ctrl+F are Align Objects and Bring To Front above): no clipboard keys.
+    for key in ["Ctrl+X", "Ctrl+V", "Ctrl+C"] {
         assert!(protasena_engine::command_for_key(key).is_none(), "{key}");
     }
     assert_eq!(find_command("undo").unwrap().menu, ["Edit", "Undo Changes"]);

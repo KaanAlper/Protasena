@@ -67,3 +67,36 @@ fn the_tool_menu_and_the_design_toolbar_reach_both_tools() {
     let Some(Dialog::PropertyAssign(d)) = &h.state().dialog else { panic!("a bad count keeps it open") };
     assert!(d.error.is_some());
 }
+
+#[test]
+fn ctrl_a_aligns_ctrl_b_and_ctrl_f_restack_and_tidy_runs_from_the_edit_menu() {
+    let mut h = harness(1600.0, 1000.0, 1.0);
+    three_resistors(&mut h);
+    let second = h.state().session.sheet().unwrap().components[1].id.0;
+    h.state_mut().run("move", json!({ "ids": [second], "by": [0, 500] })).unwrap();
+    h.state_mut().run("select-all", json!({})).unwrap();
+    h.run_steps(2);
+    press(&mut h, Modifiers::CTRL, Key::A);
+    assert!(matches!(h.state().dialog, Some(Dialog::Align { edge: 0 })), "Ctrl+A opens Align Objects");
+    h.get_by_label("Bottom Edges").click();
+    h.run_steps(2);
+    h.get_by_label("OK").click();
+    h.run_steps(3);
+    let ys: Vec<f64> = h.state().session.sheet().unwrap().components.iter().map(|c| c.origin().y).collect();
+    assert!(ys.iter().all(|y| *y == ys[0]), "{ys:?}");
+    let first = h.state().session.sheet().unwrap().components[0].id;
+    h.state_mut().run("select", json!({ "ids": [first.0] })).unwrap();
+    h.run_steps(2);
+    press(&mut h, Modifiers::CTRL, Key::F);
+    assert_eq!(h.state().session.sheet().unwrap().components.last().map(|c| c.id), Some(first), "Ctrl+F: to the front");
+    press(&mut h, Modifiers::CTRL, Key::B);
+    assert_eq!(h.state().session.sheet().unwrap().components.first().map(|c| c.id), Some(first), "Ctrl+B: to the back");
+    h.get_by_label("Edit").click();
+    h.run_steps(3);
+    for item in ["Align Objects", "Send To Back", "Bring To Front", "Tidy Design"] {
+        assert!(find(&h, item, "menu-item").enabled, "{item}");
+    }
+    h.get_by_label("Tidy Design").click();
+    h.run_steps(3);
+    assert!(h.state().toast.as_ref().is_some_and(|t| t.text.starts_with("Tidy Design")), "{:?}", h.state().toast);
+}
