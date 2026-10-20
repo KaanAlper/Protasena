@@ -55,6 +55,8 @@ pub enum Request {
         /// The format the menu item writes (`png` for Export Bitmap, which also offers `bmp`).
         format: &'static str,
     },
+    /// Print Design: what to print and the PDF file (then `print-design`).
+    PrintDesign,
     /// Edit Design Properties (then `design-properties`).
     DesignProperties,
     /// Edit Sheet Properties (then `sheet-properties`).

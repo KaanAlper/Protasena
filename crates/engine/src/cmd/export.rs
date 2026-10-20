@@ -1,9 +1,9 @@
-//! File ▸ Export Graphics (Export Bitmap, DXF, Encapsulated Postscript, Adobe PDF, SVG). The
-//! drawing is the render crate's display list of a sheet; the formats are written by
-//! `protasena_render::export`.
+//! File ▸ Export Graphics (Export Bitmap, DXF, Encapsulated Postscript, Adobe PDF, SVG) and
+//! File ▸ Print Design (printing to a PDF file). The drawing is the render crate's display
+//! list of a sheet; the formats are written by `protasena_render::export`.
 //!
-//! Not built: Export Metafile (a Windows format), Export Vector File and Mark Output Area (the
-//! whole sheet is always exported).
+//! Not built: Export Metafile (a Windows format), Export Vector File, Print Setup, Printer
+//! Information and Mark Output Area (the whole sheet is always exported).
 
 use std::path::Path;
 
@@ -45,6 +45,10 @@ pub(super) fn specs() -> Vec<CommandSpec> {
             .menu(&["File", "Export Graphics", "Export SVG File"])
             .params(PARAMS)
             .dialog(|_| Some(Request::ExportGraphics { format: "svg" })),
+        CommandSpec::new("print-design", "Print Design", print_design)
+            .menu(&["File", "Print Design"])
+            .params("{path?: string, all_sheets?: bool (default true), sheet?, mono?: bool, view?: bool} — prints to a PDF file; `view` is handed back for the window to open the file (the engine never opens it)")
+            .dialog(|_| Some(Request::PrintDesign)),
     ]
 }
 
@@ -54,7 +58,7 @@ fn formats_of(cmd: &str) -> &'static [Format] {
         "export-bitmap" => &[Format::Png, Format::Bmp],
         "export-dxf" => &[Format::Dxf],
         "export-eps" => &[Format::Eps],
-        "export-pdf" => &[Format::Pdf],
+        "export-pdf" | "print-design" => &[Format::Pdf],
         "export-svg" => &[Format::Svg],
         _ => &Format::ALL,
     }
@@ -129,4 +133,14 @@ fn export_graphics(s: &mut Session, a: &Args) -> Result<Value> {
     let format = format_param(a)?;
     let all = a.bool("all_sheets")?.unwrap_or(false);
     write_file(s, a, format, all)
+}
+
+fn print_design(s: &mut Session, a: &Args) -> Result<Value> {
+    let all = a.bool("all_sheets")?.unwrap_or(!a.has("sheet"));
+    let view = a.bool("view")?.unwrap_or(false);
+    let mut v = write_file(s, a, Format::Pdf, all)?;
+    if let Some(o) = v.as_object_mut() {
+        o.insert("view".into(), json!(view));
+    }
+    Ok(v)
 }

@@ -51,6 +51,8 @@ pub enum Dialog {
     },
     /// Export Graphics (one of its items).
     Export(Box<export::ExportForm>),
+    /// Print Design.
+    Print(Box<export::PrintForm>),
     /// Unsaved changes: Save, Don't Save or Cancel?
     SaveChanges {
         /// What waits for the answer.
@@ -105,6 +107,7 @@ impl Dialog {
             Request::SaveProjectAs => Dialog::path(PathPurpose::SaveAs, ""),
             Request::ExportNetlist => Dialog::path(PathPurpose::Netlist, ""),
             Request::ExportGraphics { format } => Dialog::Export(Box::new(export::ExportForm::new(s, export::export_kind(format)?))),
+            Request::PrintDesign => Dialog::Print(Box::new(export::PrintForm::new(s, false))),
         })
     }
 
@@ -128,6 +131,7 @@ impl Dialog {
             Dialog::GotoSheet(_) => tl!("Goto Sheet"),
             Dialog::Annotator { .. } => tl!("Global Annotator"),
             Dialog::Export(d) => d.kind.title,
+            Dialog::Print(_) => tl!("Print Design"),
             Dialog::SaveChanges { .. } => tl!("Unsaved Changes"),
         }
     }
@@ -145,6 +149,7 @@ impl Dialog {
             Dialog::Design(d) => &mut d.error,
             Dialog::Sheet(d) => &mut d.error,
             Dialog::Export(d) => &mut d.out.error,
+            Dialog::Print(d) => &mut d.out.error,
             Dialog::GotoSheet(_) | Dialog::Annotator { .. } | Dialog::SaveChanges { .. } => return,
         };
         *slot = Some(e);
@@ -154,6 +159,7 @@ impl Dialog {
     fn output(&mut self) -> Option<&mut export::Output> {
         match self {
             Dialog::Export(d) => Some(&mut d.out),
+            Dialog::Print(d) => Some(&mut d.out),
             _ => None,
         }
     }
@@ -172,6 +178,7 @@ impl Dialog {
             Dialog::GotoSheet(d) => d.ui(ui, s),
             Dialog::Annotator { total } => forms::annotator(ui, total),
             Dialog::Export(d) => d.ui(ui),
+            Dialog::Print(d) => d.ui(ui),
             Dialog::SaveChanges { then } => ConfirmForm::ui(ui, *then),
         }
     }

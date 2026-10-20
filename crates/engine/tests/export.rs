@@ -1,4 +1,4 @@
-//! File ▸ Export Graphics: the files written, their defaults and refusals.
+//! File ▸ Export Graphics and Print Design: the files written, their defaults and refusals.
 #![allow(clippy::unwrap_used, clippy::indexing_slicing, clippy::panic)]
 
 mod common;
@@ -54,11 +54,24 @@ fn pdf_takes_every_sheet_and_paths_default_to_the_project_file() {
 }
 
 #[test]
+fn print_design_prints_every_sheet_to_pdf_and_hands_back_view() {
+    let dir = scratch("print");
+    let mut s = divider();
+    exec(&mut s, "new-sheet", json!({}));
+    let r = exec(&mut s, "print-design", json!({ "path": path(&dir, "p.pdf"), "view": true }));
+    assert_eq!((r["pages"].as_u64(), r["view"].as_bool(), r["format"].as_str()), (Some(2), Some(true), Some("pdf")));
+    let r = exec(&mut s, "print-design", json!({ "path": path(&dir, "q.pdf"), "sheet": { "index": 1 }, "mono": true }));
+    assert_eq!((r["pages"].as_u64(), r["view"].as_bool()), (Some(1), Some(false)));
+    assert!(std::fs::read(dir.join("q.pdf")).unwrap().starts_with(b"%PDF"));
+}
+
+#[test]
 fn menu_picks_ask_for_the_export_dialog() {
     let mut s = Session::new();
     for (cmd, format) in [("export-bitmap", "png"), ("export-dxf", "dxf"), ("export-eps", "eps"), ("export-pdf", "pdf"), ("export-svg", "svg")] {
         assert_eq!(s.invoke(cmd).unwrap(), Outcome::Dialog(Request::ExportGraphics { format }), "{cmd}");
     }
+    assert_eq!(s.invoke("print-design").unwrap(), Outcome::Dialog(Request::PrintDesign));
 }
 
 #[test]

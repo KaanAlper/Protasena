@@ -1,6 +1,6 @@
-//! File ▸ Export Graphics dialogs: what to draw (the current sheet or every
+//! File ▸ Export Graphics and Print Design dialogs: what to draw (the current sheet or every
 //! sheet), the options of the format (resolution for bitmaps, scale for vector files, mono)
-//! and the file. Our own layout (Proteus's export dialogs are to compare).
+//! and the file. Our own layout (Proteus's export and print dialogs are to compare).
 
 use egui::Ui;
 use protasena_engine::Session;
@@ -48,7 +48,7 @@ fn safe_name(name: &str) -> String {
     if n.is_empty() { "UNTITLED".to_owned() } else { n }
 }
 
-/// The options of what to draw and where.
+/// The options both dialogs share.
 pub struct Output {
     /// Every sheet instead of the current one.
     pub all_sheets: bool,
@@ -166,6 +166,43 @@ impl ExportForm {
                 }
             }
             return Reply::Run { cmd: self.kind.cmd, params, keep: false };
+        }
+        Reply::None
+    }
+}
+
+/// Print Design: printed to a PDF file, which the window may open in the system viewer.
+pub struct PrintForm {
+    /// Scope, mono, file.
+    pub out: Output,
+    /// Open the PDF in the system viewer afterwards.
+    pub view: bool,
+    /// Whether the app can open files in the system viewer.
+    pub can_view: bool,
+}
+
+impl PrintForm {
+    /// The dialog, printing every sheet to a file in the system's temporary directory.
+    pub fn new(s: &Session, can_view: bool) -> Self {
+        let path = std::env::temp_dir().join(format!("{}-print.pdf", safe_name(&s.project().name))).display().to_string();
+        Self { out: Output::new(path, true), view: can_view, can_view }
+    }
+
+    pub(super) fn ui(&mut self, ui: &mut Ui) -> Reply {
+        ui.label(tl!("Prints to a PDF file."));
+        ui.add_space(6.0);
+        self.out.scope(ui, true);
+        let v = ui.add_enabled(self.can_view, egui::Checkbox::new(&mut self.view, tl!("Open in the system viewer")));
+        control::record(ui, &v, tl!("Open in the system viewer"), "checkbox", Some(self.view));
+        let enter = self.out.file(ui);
+        let (ok, cancel) = ok_cancel(ui, !self.out.path.trim().is_empty());
+        if cancel {
+            return Reply::Cancel;
+        }
+        if (ok || enter) && !self.out.path.trim().is_empty() {
+            let params =
+                json!({ "path": self.out.path.trim(), "all_sheets": self.out.all_sheets, "mono": self.out.mono, "view": self.view && self.can_view });
+            return Reply::Run { cmd: "print-design", params, keep: false };
         }
         Reply::None
     }

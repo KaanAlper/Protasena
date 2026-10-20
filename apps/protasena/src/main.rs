@@ -77,7 +77,26 @@ fn services() -> Services {
             rfd::FileDialog::new().add_filter("Projects (psproj, pdsprj)", &["psproj", "pdsprj"]).add_filter("All files", &["*"]).pick_file()
         })),
         pick_save: Some(Box::new(|name: &str, exts: &[&str]| rfd::FileDialog::new().set_file_name(name).add_filter("Files", exts).save_file())),
+        open_path: Some(Box::new(open_in_viewer)),
     }
+}
+
+/// Opens a file with the system's default application (`xdg-open`, `open`, `explorer`). The
+/// child is waited for on a thread of its own, so it never lingers as a zombie; a program that
+/// cannot be started is reported, never a crash.
+fn open_in_viewer(path: &std::path::Path) -> Result<(), String> {
+    let program = if cfg!(target_os = "windows") {
+        "explorer"
+    } else if cfg!(target_os = "macos") {
+        "open"
+    } else {
+        "xdg-open"
+    };
+    let mut child = std::process::Command::new(program).arg(path).spawn().map_err(|e| format!("{program}: {e}"))?;
+    let _ = std::thread::Builder::new().name("viewer".into()).spawn(move || {
+        let _ = child.wait();
+    });
+    Ok(())
 }
 
 fn main() -> ExitCode {

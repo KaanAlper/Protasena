@@ -54,6 +54,7 @@ impl App {
             "export-graphics" | "export-bitmap" | "export-dxf" | "export-eps" | "export-pdf" | "export-svg" => {
                 self.notify(format!("{} {}", tl!("Exported to"), v["path"].as_str().unwrap_or_default()), false);
             }
+            "print-design" => self.printed(v),
             _ => {}
         }
     }
@@ -74,6 +75,10 @@ impl App {
             Request::OpenProject => self.choose_open(false),
             Request::SaveProjectAs => self.choose_save(PathPurpose::SaveAs),
             Request::ExportNetlist => self.choose_save(PathPurpose::Netlist),
+            Request::PrintDesign => {
+                let form = crate::dialogs::export::PrintForm::new(&self.session, self.services.open_path.is_some());
+                self.dialog = Some(Dialog::Print(Box::new(form)));
+            }
             other => self.dialog = Dialog::from_request(&self.session, other),
         }
     }
@@ -114,6 +119,19 @@ impl App {
             }
             Some(None) => self.after_save = None,
             None => self.dialog = Some(Dialog::path(purpose, &suggested)),
+        }
+    }
+
+    /// After Print Design: opens the PDF in the system viewer when the dialog asked for it.
+    fn printed(&mut self, v: &Value) {
+        let path = v["path"].as_str().unwrap_or_default().to_owned();
+        let opened = match (&self.services.open_path, v["view"].as_bool()) {
+            (Some(open), Some(true)) => Some(open(std::path::Path::new(&path))),
+            _ => None,
+        };
+        match opened {
+            Some(Err(e)) => self.notify(format!("{}: {e}", tl!("The PDF could not be opened")), true),
+            _ => self.notify(format!("{} {path}", tl!("Printed to")), false),
         }
     }
 

@@ -48,6 +48,8 @@ pub struct Services {
     pub pick_open: Option<Box<dyn Fn() -> Option<PathBuf>>>,
     /// Choose where to save: suggested file name and the extensions offered.
     pub pick_save: Option<Box<dyn Fn(&str, &[&str]) -> Option<PathBuf>>>,
+    /// Open a file in the system's viewer (Print Design's PDF); `Err` says why it failed.
+    pub open_path: Option<Box<dyn Fn(&std::path::Path) -> Result<(), String>>>,
 }
 
 /// How the grid is drawn.

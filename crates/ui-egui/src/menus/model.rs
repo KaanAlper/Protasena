@@ -131,7 +131,7 @@ const FILE: &[Entry] = &[
     Entry::Sub { label: "Export Graphics", entries: EXPORT_GRAPHICS },
     off("Export Project Clip", None),
     Sep,
-    off("Print Design", None),
+    cmd("Print Design", None, "print-design"),
     off("Print Setup", None),
     off("Printer Information", None),
     off("Mark Output Area", None),

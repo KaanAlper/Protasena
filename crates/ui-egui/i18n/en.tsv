@@ -147,6 +147,7 @@ Not affiliated with Labcenter Electronics. Proteus is a trademark of Labcenter E
 OK
 Open Project
 Open Sample Project
+Open in the system viewer
 Open-source schematic capture whose layout and workflow follow Proteus 8 Schematic Capture.
 Other Properties
 Overview
@@ -170,7 +171,9 @@ Play
 Preview
 Print Design
 Print Setup
+Printed to
 Printer Information
+Prints to a PDF file.
 Probe Mode
 Project Name
 Project Notes
@@ -247,6 +250,7 @@ Terminals Mode
 Text
 Text Script Mode
 Text Viewer
+The PDF could not be opened
 The design has unsaved changes. Save them?
 The parts library could not be loaded
 Tidy Design

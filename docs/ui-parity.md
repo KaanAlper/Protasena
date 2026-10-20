@@ -1,6 +1,6 @@
 # UI parity
 
-> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (File ▸ Export Graphics: Bitmap, DXF, EPS, PDF, SVG) · **Target:** Labcenter Proteus 8 Professional (Windows)
+> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (File ▸ Print Design to a PDF file) · **Target:** Labcenter Proteus 8 Professional (Windows)
 
 Protasena's Schematic Capture interface element by element against Proteus's: menus, toolbars,
 the mode toolbar, the overview window, the object selector, the editing window, the status bar
@@ -8,14 +8,14 @@ and dialogs. Rows come from the observed UI inventory (`plan/proteus/notes/ui-in
 local), written in our own words. Status: ✅ matches, ◐ partial (differences listed), ✗ missing,
 ★ intentional improvement approved by the owner. Work items: [gaps.md](gaps.md).
 
-**Headline (measured, counted from the rows below): 3 of 254 rows match** (✅ 3, ◐ 135, ✗ 116).
+**Headline (measured, counted from the rows below): 3 of 255 rows match** (✅ 3, ◐ 137, ✗ 115).
 Proteus could only be observed from its menus, window tree and one screenshot (it runs elevated
 on the reference PC, so no click, tooltip or dialog reached it): labels, order, shortcut texts
 and placement are taken from that observation; every behaviour, enabled rule and dialog is
 "not compared" until an observation session can drive Proteus. The look (colours, icons, fonts)
 is our own by design and is not a parity criterion.
 
-**Items without a command** (shown disabled, listed as ✗ below): 86 menu items (plus the
+**Items without a command** (shown disabled, listed as ✗ below): 85 menu items (plus the
 recent-projects and graph lists) and 16 toolbar buttons have no engine command yet, nor do 14 of
 the 22 modes, the animation buttons, the design variant box and the L button.
 
@@ -45,8 +45,8 @@ enabled when its command's enabled rule allows it.
 | File ▸ Export Graphics ▸ Export SVG File |  | ◐ | Runs `export-svg`: the current sheet at real size times the scale, texts as SVG text in Helvetica (or a sans-serif). To compare |
 | File ▸ Export Graphics ▸ Export Vector File |  | ✗ | Shown disabled: not built (what Proteus writes here was not observed) |
 | File ▸ Export Project Clip |  | ✗ | Shown disabled: no command yet (item without a command) |
-| File ▸ Print Design |  | ✗ | Shown disabled: no command yet (item without a command) |
-| File ▸ Print Setup |  | ✗ | Shown disabled: no command yet (item without a command) |
+| File ▸ Print Design |  | ◐ | Runs `print-design`: prints to a PDF file (every sheet by default) through the Export Graphics writer and can open it in the system viewer; no printer is driven. Proteus prints to the chosen printer: to compare |
+| File ▸ Print Setup |  | ✗ | Shown disabled: no command yet (item without a command); printing goes to a PDF file |
 | File ▸ Printer Information |  | ✗ | Shown disabled: no command yet (item without a command) |
 | File ▸ Mark Output Area |  | ✗ | Shown disabled: no command yet (item without a command); exports always take the whole sheet |
 | File ▸ Explore Project Folder |  | ✗ | Shown disabled: no command yet (item without a command) |
@@ -304,6 +304,7 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | Electrical Rules Check result | | ◐ | A window listing the findings; Proteus's report window not observed |
 | Netlist Compiler result | | ◐ | File, nets, parts and findings |
 | Export Graphics (Bitmap, DXF, EPS, PDF, SVG) ▸ Format, Scope, Mono, Resolution or Scale, File | PNG (Bitmap); Current Sheet; colour; 200 dpi or 1; the project file with the format's extension | ◐ | Our own dialog; All Sheets only for PDF; Browse... opens the system's file chooser. Proteus's export dialogs (fields, defaults, output area) to compare |
+| Print Design ▸ Scope, Mono, Open in the system viewer, File | All Sheets; colour; on when the window can open files; `<project>-print.pdf` in the system's temporary directory | ◐ | Our own dialog; the system viewer is `xdg-open`, `open` or `explorer`, and a failure to start it is reported. Proteus's print dialog (printer, copies, scale, area) to compare |
 
 ## Revision history
 
@@ -314,3 +315,4 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | 2026-10-20 | minor | Exit Application and the window's close button ask Save / Don't Save / Cancel with unsaved changes, as New and Open do (to compare) |
 | 2026-10-20 | minor | 2D Graphics Line, Box, Circle, Arc and Closed Path modes built the conventional way (to compare) |
 | 2026-10-20 | minor | File ▸ Export Graphics: Export Bitmap (PNG, BMP), DXF, Encapsulated Postscript, Adobe PDF and SVG built the conventional way with their dialog (to compare); Metafile and Vector File not built |
+| 2026-10-20 | minor | File ▸ Print Design prints to a PDF file and can open it in the system viewer (to compare); Print Setup and Printer Information not built |
