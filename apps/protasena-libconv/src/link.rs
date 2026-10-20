@@ -251,7 +251,7 @@ mod tests {
         assert_eq!(links.default.as_deref(), Some("R_0603"), "the field wins over through-hole");
         assert!(links.field_linked && !links.map_linked);
         assert_eq!(links.filter_links, 2);
-        assert_eq!(links.packages[0].pin_map, vec![("1".into(), "1".into()), ("2".into(), "2".into())]);
+        assert_eq!(*links.packages[0].pin_map, [("1".into(), "1".into()), ("2".into(), "2".into())]);
     }
 
     #[test]
@@ -278,7 +278,7 @@ mod tests {
         let map: BTreeMap<String, String> = [("E", "1"), ("B", "2"), ("C", "3")].into_iter().map(|(a, b)| (a.into(), b.into())).collect();
         let links = index().link(Some(Preferred { footprint: "TO-92", pin_map: Some(&map) }), "", "", &pins(&["B", "C", "E"]));
         assert_eq!(links.default.as_deref(), Some("TO-92"));
-        assert_eq!(links.packages[0].pin_map, vec![("B".into(), "2".into()), ("C".into(), "3".into()), ("E".into(), "1".into())]);
+        assert_eq!(*links.packages[0].pin_map, [("B".into(), "2".into()), ("C".into(), "3".into()), ("E".into(), "1".into())]);
     }
 
     #[test]

@@ -181,8 +181,8 @@ fn count(lib: &Library, report: &mut Report) {
     c.pins = lib.devices().iter().map(|d| d.symbol.pins().count()).sum();
     c.devices_with_packages = lib.devices().iter().filter(|d| !d.packages.is_empty()).count();
     c.package_links = lib.devices().iter().map(|d| d.packages.len()).sum();
-    c.packages = lib.packages().len();
-    c.pads = lib.packages().iter().map(|p| p.pads.len()).sum();
+    c.packages = lib.package_count();
+    c.pads = lib.packages().map(|p| p.pads.len()).sum();
 }
 
 /// The libraries in pack order, each with its items.

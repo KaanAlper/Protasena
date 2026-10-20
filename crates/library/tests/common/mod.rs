@@ -47,8 +47,8 @@ pub fn two_pin(name: &str, library: &str, pkg: &str) -> Device {
         prefix: "X".into(),
         description: format!("test part {name}"),
         category: "Tests".into(),
-        symbol: Symbol { units: vec![Unit { name: String::new(), body_style: 1, graphics: vec![], pins }], power: false },
-        packages: vec![PackageRef { name: pkg.into(), pin_map: vec![("1".into(), "1".into()), ("2".into(), "2".into())] }],
+        symbol: Symbol { units: vec![Unit { name: String::new(), body_style: 1, graphics: vec![], pins }], power: false }.into(),
+        packages: vec![PackageRef { name: pkg.into(), pin_map: vec![("1".into(), "1".into()), ("2".into(), "2".into())].into() }],
         default_package: Some(pkg.into()),
         ..Device::default()
     }

@@ -12,7 +12,7 @@ fn builtin_validates_and_lives_in_one_library() {
     assert_eq!(lib.libraries()[0].name, BUILTIN_LIBRARY);
     assert_eq!(lib.libraries()[0].device_count, 11);
     assert_eq!(lib.libraries()[0].package_count, 7);
-    assert!(Library::from_parts(lib.devices().to_vec(), lib.packages().to_vec()).is_ok());
+    assert!(Library::from_parts(lib.devices().to_vec(), lib.packages().cloned().collect()).is_ok());
 }
 
 #[test]

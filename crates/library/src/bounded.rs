@@ -71,6 +71,11 @@ capped_lists! {
     strings: String = MAX_LIST;
 }
 
+/// [`pin_map`], shared.
+pub(crate) fn shared_pin_map<'de, D: Deserializer<'de>>(d: D) -> Result<std::sync::Arc<[(String, String)]>, D::Error> {
+    pin_map(d).map(Into::into)
+}
+
 #[cfg(test)]
 mod tests {
     #[derive(Debug, serde::Deserialize)]

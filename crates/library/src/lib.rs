@@ -9,6 +9,12 @@
 //! # Units
 //! All library geometry is in **thou** (1/1000 in), y up; see [`units`].
 //!
+//! # Memory
+//! A loaded pack keeps its devices in memory, with equal symbols and pin maps shared between
+//! devices, and reads each package file again the first time one of its packages is asked for
+//! ([`Library::package`]). The full KiCad pack (22 583 devices, 15 415 packages) takes about
+//! 200 MB this way (`examples/pack_stats.rs` measures it).
+//!
 //! # Never crash
 //! Packs are hostile input: files are size-limited, every list is length-capped while it is
 //! read ([`limits`]), and inconsistencies are reported as [`Issue`]s, never panics.
@@ -29,10 +35,12 @@ mod bounded;
 mod builtin;
 mod device;
 mod error;
+mod intern;
 mod library;
 pub mod limits;
 mod pack;
 mod package;
+mod store;
 mod symbol;
 pub mod units;
 mod validate;

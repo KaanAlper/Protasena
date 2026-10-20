@@ -69,8 +69,9 @@ pub(super) fn battery() -> Device {
 }
 
 /// Power symbol with one pin at the origin; the pin name is the net name.
-fn power_symbol(net: &str, orient: PinDir, graphics: Vec<crate::symbol::Graphic>) -> Symbol {
-    Symbol { power: true, ..symbol(graphics, vec![pin("1", net, PinKind::PowerIn, (0.0, 0.0), orient, 0.0).bare()]) }
+fn power_symbol(net: &str, orient: PinDir, graphics: Vec<crate::symbol::Graphic>) -> std::sync::Arc<Symbol> {
+    let one = symbol(graphics, vec![pin("1", net, PinKind::PowerIn, (0.0, 0.0), orient, 0.0).bare()]);
+    std::sync::Arc::new(Symbol { power: true, ..(*one).clone() })
 }
 
 fn net_prop(default: &str) -> PropDef {

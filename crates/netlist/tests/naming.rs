@@ -80,13 +80,13 @@ fn dual_library() -> Library {
         name: "DUAL".into(),
         library: "TEST".into(),
         prefix: "U".into(),
-        symbol: Symbol { units: vec![unit("A", "1"), unit("B", "7")], power: false },
+        symbol: Symbol { units: vec![unit("A", "1"), unit("B", "7")], power: false }.into(),
         ..Device::default()
     };
     let builtin = Library::builtin();
     let mut devices = builtin.devices().to_vec();
     devices.push(dual);
-    Library::from_parts(devices, builtin.packages().to_vec()).unwrap()
+    Library::from_parts(devices, builtin.packages().cloned().collect()).unwrap()
 }
 
 #[test]

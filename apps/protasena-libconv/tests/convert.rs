@@ -92,7 +92,7 @@ fn the_map_default_package_comes_first_with_its_pin_map() {
     assert_eq!(names, ["Other_2pad", "TestFP:R_Test"], "map default first, field next, no repeats");
     assert_eq!(res.default_package.as_deref(), Some("Other_2pad"));
     assert_eq!(res.prop_def("PACKAGE").unwrap().default.as_deref(), Some("Other_2pad"));
-    assert_eq!(res.packages[0].pin_map, vec![("1".into(), "2".into()), ("2".into(), "1".into())]);
+    assert_eq!(*res.packages[0].pin_map, [("1".into(), "2".into()), ("2".into(), "1".into())]);
 }
 
 #[test]

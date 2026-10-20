@@ -60,7 +60,7 @@ pub fn build(lib: &str, s: &KSymbol, map: &Map, fps: &FootprintIndex, notes: &mu
         manufacturer: map.manufacturer(lib),
         stock_code: String::new(),
         keywords: keywords(s, notes),
-        symbol,
+        symbol: symbol.into(),
         packages,
         default_package,
         prop_defs,
