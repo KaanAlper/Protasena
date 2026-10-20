@@ -71,6 +71,8 @@ pub struct Counts {
     pub package_links: usize,
     /// Links from the symbol's `Footprint` field.
     pub footprint_field_links: usize,
+    /// Default packages named by the map (`default_package`).
+    pub map_default_links: usize,
     /// Links found through `ki_fp_filters` (pad set equal to the pin set).
     pub filter_links: usize,
     /// Devices whose filter matches were cut at the per-device limit.

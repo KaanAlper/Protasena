@@ -22,7 +22,11 @@ fn out_dir(name: &str) -> PathBuf {
 }
 
 fn convert(name: &str) -> (Report, Library, PathBuf) {
-    let map = Map::parse(&fs::read_to_string(data("map.toml")).unwrap()).unwrap();
+    convert_with(name, &fs::read_to_string(data("map.toml")).unwrap())
+}
+
+fn convert_with(name: &str, map_text: &str) -> (Report, Library, PathBuf) {
+    let map = Map::parse(map_text).unwrap();
     let out = out_dir(name);
     let opts = Options { symbols: data("symbols"), footprints: data("footprints"), map, out: out.clone(), jobs: 3, upstream: "fixtures".into() };
     let report = run(&opts).unwrap();
@@ -72,6 +76,34 @@ fn device_fields_come_from_kicad_properties_and_the_map() {
     assert_eq!(derived.description, "Fixture small resistor");
     assert_eq!(derived.symbol.units.len(), 1, "units inherited from R");
     assert_eq!(derived.prop_def("VALUE").unwrap().default.as_deref(), Some("R_Small"));
+}
+
+#[test]
+fn the_map_default_package_comes_first_with_its_pin_map() {
+    let map = fs::read_to_string(data("map.toml")).unwrap().replace(
+        r#""Passives:R" = { name = "RES", primitive = "ANALOG" }"#,
+        r#""Passives:R" = { name = "RES", primitive = "ANALOG", default_package = "OtherFP:Other_2pad", pin_map = { "1" = "2", "2" = "1" } }"#,
+    );
+    let (report, lib, _) = convert_with("map_default", &map);
+    assert_eq!(report.failures, vec![], "{report:#?}");
+    assert_eq!(report.counts.map_default_links, 1);
+    let res = lib.get("RES").unwrap();
+    let names: Vec<&str> = res.packages.iter().map(|p| p.name.as_str()).collect();
+    assert_eq!(names, ["Other_2pad", "TestFP:R_Test"], "map default first, field next, no repeats");
+    assert_eq!(res.default_package.as_deref(), Some("Other_2pad"));
+    assert_eq!(res.prop_def("PACKAGE").unwrap().default.as_deref(), Some("Other_2pad"));
+    assert_eq!(res.packages[0].pin_map, vec![("1".into(), "2".into()), ("2".into(), "1".into())]);
+}
+
+#[test]
+fn a_map_default_package_that_does_not_exist_is_a_failure() {
+    let map = fs::read_to_string(data("map.toml"))
+        .unwrap()
+        .replace(r#""Passives:GND" = { name = "GROUND" }"#, r#""Passives:GND" = { name = "GROUND", default_package = "Nowhere" }"#);
+    let (report, lib, _) = convert_with("map_default_missing", &map);
+    assert_eq!(report.failures.len(), 1, "{report:#?}");
+    assert!(report.failures[0].what.contains("Passives:GND") && report.failures[0].error.contains("Nowhere"));
+    assert!(lib.get("GROUND").unwrap().packages.is_empty(), "the device is still converted");
 }
 
 #[test]

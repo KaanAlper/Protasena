@@ -6,7 +6,7 @@ use std::collections::HashSet;
 use protasena_kicad::symbol::Symbol as KSymbol;
 use protasena_library::{Device, PropDef, PropKind, Source};
 
-use crate::link::{FootprintIndex, Links};
+use crate::link::{FootprintIndex, Links, Preferred};
 use crate::map::Map;
 use crate::report::Notes;
 use crate::symbol;
@@ -39,10 +39,11 @@ pub fn build(lib: &str, s: &KSymbol, map: &Map, fps: &FootprintIndex, notes: &mu
     let value = s.value_of("Value").unwrap_or_default();
     let symbol = symbol::convert(s, notes);
     let pins = pin_numbers(&symbol);
-    let mut links = fps.link(s.value_of("Footprint").unwrap_or_default(), s.value_of("ki_fp_filters").unwrap_or_default(), &pins);
+    let preferred = entry.and_then(|e| e.default_package.as_deref().map(|footprint| Preferred { footprint, pin_map: e.pin_map.as_ref() }));
+    let mut links = fps.link(preferred, s.value_of("Footprint").unwrap_or_default(), s.value_of("ki_fp_filters").unwrap_or_default(), &pins);
     let mut prop_defs = vec![PropDef::new("VALUE", if s.power { "Net" } else { "Value" }, PropKind::String, Some(value))];
     let packages = std::mem::take(&mut links.packages);
-    let default_package = links.default.clone().or_else(|| packages.first().map(|p| p.name.clone()));
+    let default_package = links.default.clone();
     if let Some(def) = &default_package {
         prop_defs.push(PropDef::new("PACKAGE", "PCB Package", PropKind::Package, Some(def)).hidden());
     }

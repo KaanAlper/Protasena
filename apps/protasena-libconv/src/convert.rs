@@ -103,7 +103,8 @@ fn footprints(opts: &Options, report: &mut Report) -> Result<Vec<(FpEntry, Packa
         }
         r.package.library = format!("{}{FOOTPRINT_LIB_SUFFIX}", r.file.lib);
         let pads: HashSet<String> = r.package.pads.iter().map(|p| p.name.clone()).collect();
-        out.push((FpEntry { lib: r.file.lib, name: r.file.name, package: r.package.name.clone(), pads }, r.package));
+        let tht = r.package.pads.iter().any(|p| !p.name.is_empty() && p.drill.is_some());
+        out.push((FpEntry { lib: r.file.lib, name: r.file.name, package: r.package.name.clone(), pads, tht }, r.package));
     }
     Ok(out)
 }
@@ -130,7 +131,11 @@ fn finish_devices(drafts: Vec<Draft>, report: &mut Report) -> Vec<Device> {
                 footprint: d.links.field.clone(),
             });
         }
-        report.counts.footprint_field_links += usize::from(d.links.default.is_some());
+        if let Some(problem) = &d.links.map_problem {
+            report.failures.push(Failure { what: format!("map.toml/{}:{}", d.lib, d.symbol), error: problem.clone() });
+        }
+        report.counts.footprint_field_links += usize::from(d.links.field_linked);
+        report.counts.map_default_links += usize::from(d.links.map_linked);
         report.counts.filter_links += d.links.filter_links;
         report.counts.filter_capped_devices += usize::from(d.links.capped);
         d.device.name = name;
