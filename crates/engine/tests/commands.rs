@@ -214,3 +214,29 @@ fn a_new_library_keeps_the_design_and_the_devices_list() {
     assert!(s.revision() > rev, "the window redraws");
     assert!(s.execute("place-component", &json!({ "at": [500, 0] })).is_err(), "the device is gone with the old library");
 }
+
+#[test]
+fn reference_and_value_go_where_no_pin_leaves_the_body() {
+    let mut s = Session::new();
+    let place = |s: &mut Session, device: &str, at: [i32; 2], orient: i32| {
+        let r = exec(s, "place-component", json!({ "device": device, "at": at, "orient": orient }));
+        let id = protasena_doc::ComponentId(r["id"].as_u64().unwrap());
+        s.project().component(id).unwrap().clone()
+    };
+    let flat = place(&mut s, "RES", [0, 0], 0);
+    assert!(flat.reference_label.offset.y > 0.0 && flat.reference_label.offset.x.abs() < 1e-9, "above a horizontal resistor");
+    assert!(flat.value_label.offset.y < 0.0, "value below it");
+    let upright = place(&mut s, "RES", [2000, 0], 90);
+    assert!(
+        upright.reference_label.offset.x > 0.0 && upright.value_label.offset.x > 0.0,
+        "beside an upright resistor: {:?}",
+        upright.reference_label
+    );
+    assert!(upright.reference_label.offset.y > upright.value_label.offset.y, "reference over value");
+    let q = place(&mut s, "NPN", [4000, 0], 0);
+    assert!(q.reference_label.offset.x > 0.0, "a transistor's pins leave up, down and left: texts on the right");
+    let vcc = place(&mut s, "POWER", [6000, 0], 0);
+    assert!(vcc.value_label.offset.y > 0.0, "a supply's net name sits above its bar");
+    let gnd = place(&mut s, "GROUND", [8000, 0], 0);
+    assert!(gnd.value_label.offset.y < 0.0, "a ground's below");
+}

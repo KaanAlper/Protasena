@@ -22,6 +22,9 @@ const MAX_RESULTS: u64 = 10_000;
 /// Gap between a part's body and its reference/value texts, in thou.
 const LABEL_GAP: f64 = 50.0;
 
+/// Half the gap between a reference and a value stacked beside a body, in thou.
+const SIDE_SPLIT: f64 = 10.0;
+
 pub(super) fn specs() -> Vec<CommandSpec> {
     vec![
         CommandSpec::new("pick-device", "Pick Parts", pick_device)
@@ -113,12 +116,36 @@ pub(crate) fn new_component(s: &Session, d: &Device, id: ComponentId, at: Pt, tr
     let mut c = Component::new(id, DeviceRef::new(&d.library, &d.name), &reference, &value).placed(transform);
     c.package = package;
     c.properties = Properties::from_pairs(others);
-    let body = body_bounds(&s.library, &c);
+    let (reference_at, value_at) = label_anchors(s, d, &c);
     let origin = at.to_vec();
-    let mid = body.center().x;
-    c.reference_label = FieldLabel { offset: Vec2::new(mid, body.max.y + LABEL_GAP) - origin, visible: !reference.is_empty() };
-    c.value_label = FieldLabel { offset: Vec2::new(mid, body.min.y - LABEL_GAP) - origin, visible: true };
+    c.reference_label = FieldLabel { offset: reference_at.to_vec() - origin, visible: !reference.is_empty() };
+    c.value_label = FieldLabel { offset: value_at.to_vec() - origin, visible: true };
     c
+}
+
+/// Where a new part's reference and value texts go (sheet points): above and below the body
+/// when no pin leaves it upwards, else beside it on the right (reference over value) when no
+/// pin leaves to the right; a power symbol's net name sits on the far side from its pin.
+/// Proteus's own text placement is still to compare.
+fn label_anchors(s: &Session, d: &Device, c: &Component) -> (Pt, Pt) {
+    let body = body_bounds(&s.library, c);
+    let mid = body.center();
+    let above = (Pt::new(mid.x, body.max.y + LABEL_GAP), Pt::new(mid.x, body.min.y - LABEL_GAP));
+    let pins = crate::bodies::visible_pins(&s.library, c);
+    let leaves = |v: Vec2| pins.iter().any(|p| crate::bodies::outward(p).dot(v) > 0.5);
+    if d.symbol.power {
+        let pin_below = pins.iter().all(|p| p.at.y <= mid.y);
+        let net = if pin_below { above.0 } else { above.1 };
+        return (above.0, net);
+    }
+    if !leaves(Vec2::new(0.0, 1.0)) {
+        return above;
+    }
+    if !leaves(Vec2::new(1.0, 0.0)) {
+        let x = body.max.x + LABEL_GAP;
+        return (Pt::new(x, mid.y + SIDE_SPLIT), Pt::new(x, mid.y - SIDE_SPLIT));
+    }
+    above
 }
 
 fn place_component(s: &mut Session, a: &Args) -> Result<Value> {

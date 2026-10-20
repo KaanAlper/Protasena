@@ -51,9 +51,9 @@ fn bjt_pins(collector_up: bool) -> Vec<Pin> {
     let (cy, ey) = if collector_up { (200.0, -200.0) } else { (-200.0, 200.0) };
     let toward = |y: f64| if y > 0.0 { PinDir::Down } else { PinDir::Up };
     vec![
-        pin("1", "B", PinKind::Input, (-200.0, 0.0), PinDir::Right, 160.0),
-        pin("2", "C", PinKind::Passive, (100.0, cy), toward(cy), 100.0),
-        pin("3", "E", PinKind::Passive, (100.0, ey), toward(ey), 100.0),
+        pin("1", "B", PinKind::Input, (-200.0, 0.0), PinDir::Right, 160.0).bare(),
+        pin("2", "C", PinKind::Passive, (100.0, cy), toward(cy), 100.0).bare(),
+        pin("3", "E", PinKind::Passive, (100.0, ey), toward(ey), 100.0).bare(),
     ]
 }
 
