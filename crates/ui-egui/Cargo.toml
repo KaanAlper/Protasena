@@ -1,0 +1,26 @@
+[package]
+name = "protasena-ui-egui"
+description = "Protasena user interface: Proteus's window layout on egui with our own theme"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+# egui 0.36 needs Rust 1.95
+rust-version = "1.95"
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+protasena-doc.workspace = true
+protasena-engine.workspace = true
+protasena-geom.workspace = true
+protasena-library.workspace = true
+protasena-render.workspace = true
+egui.workspace = true
+image.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+egui_kittest.workspace = true

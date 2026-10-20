@@ -1,0 +1,262 @@
+(footprint "Test_Package_2x3"
+	(version 20241229)
+	(generator "protasena_fixture")
+	(generator_version "1.0")
+	(layer "F.Cu")
+	(descr "Synthetic test footprint")
+	(tags "test synthetic")
+	(property "Reference" "REF**"
+		(at 0 -3 0)
+		(layer "F.SilkS")
+		(uuid "00000000-0000-4000-8000-000000000001")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "Test_Package_2x3"
+		(at 0 3 0)
+		(unlocked yes)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "00000000-0000-4000-8000-000000000002")
+		(effects
+			(font
+				(size 1 1)
+			)
+			(justify mirror)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(solder_mask_margin 0.05)
+	(clearance 0.2)
+	(zone_connect 2)
+	(attr smd exclude_from_bom allow_missing_courtyard)
+	(fp_line
+		(start -2 -1.5)
+		(end 2 -1.5)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(layer "F.SilkS")
+		(uuid "00000000-0000-4000-8000-000000000003")
+	)
+	(fp_rect
+		(start -2.5 -2)
+		(end 2.5 2)
+		(stroke
+			(width 0.05)
+			(type default)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "00000000-0000-4000-8000-000000000004")
+	)
+	(fp_circle
+		(center 0 0)
+		(end 0.5 0)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(fill yes)
+		(layer "F.Fab")
+		(uuid "00000000-0000-4000-8000-000000000005")
+	)
+	(fp_arc
+		(start -1 0)
+		(mid 0 -1)
+		(end 1 0)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "00000000-0000-4000-8000-000000000006")
+	)
+	(fp_poly
+		(pts
+			(xy -1 1) (xy 1 1) (xy 0 1.5)
+		)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill solid)
+		(layer "F.SilkS")
+		(uuid "00000000-0000-4000-8000-000000000007")
+	)
+	(fp_curve
+		(pts
+			(xy 0 0) (xy 0.5 0.5) (xy 1 0.5) (xy 1.5 0)
+		)
+		(stroke
+			(width 0.1)
+			(type default)
+		)
+		(layer "F.Fab")
+		(uuid "00000000-0000-4000-8000-000000000008")
+	)
+	(fp_text user "${REFERENCE}"
+		(at 0 0 90)
+		(layer "F.Fab" knockout)
+		(uuid "00000000-0000-4000-8000-000000000009")
+		(effects
+			(font
+				(size 0.5 0.5)
+				(thickness 0.08)
+			)
+		)
+	)
+	(fp_text_box "Box"
+		(start -1 -1)
+		(end 1 1)
+		(margins 0.1 0.1 0.1 0.1)
+		(layer "Cmts.User")
+		(uuid "00000000-0000-4000-8000-00000000000a")
+		(effects
+			(font
+				(size 0.5 0.5)
+			)
+		)
+		(border yes)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+	)
+	(pad "1" thru_hole circle
+		(at -1.27 -0.635)
+		(size 1.2 1.2)
+		(drill 0.7)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "00000000-0000-4000-8000-00000000000b")
+	)
+	(pad "2" thru_hole oval
+		(at 0 -0.635 90)
+		(size 1.2 1.8)
+		(drill oval 0.6 1.2
+			(offset 0 0.1)
+		)
+		(layers "*.Cu" "*.Mask")
+		(uuid "00000000-0000-4000-8000-00000000000c")
+	)
+	(pad "3" smd roundrect
+		(at 1.27 -0.635)
+		(size 1 0.6)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.25)
+		(solder_paste_margin_ratio -0.1)
+		(uuid "00000000-0000-4000-8000-00000000000d")
+	)
+	(pad "4" smd roundrect
+		(at -1.27 0.635)
+		(size 1 0.6)
+		(layers "F.Cu" "F.Mask" "F.Paste")
+		(roundrect_rratio 0.25)
+		(chamfer_ratio 0.2)
+		(chamfer top_left bottom_right)
+		(property pad_prop_heatsink)
+		(uuid "00000000-0000-4000-8000-00000000000e")
+	)
+	(pad "5" smd custom
+		(at 0 0.635)
+		(size 0.5 0.5)
+		(layers "F.Cu" "F.Mask")
+		(thermal_bridge_angle 45)
+		(options
+			(clearance outline)
+			(anchor rect)
+		)
+		(primitives
+			(gr_poly
+				(pts
+					(xy -0.5 -0.5) (xy 0.5 -0.5) (xy 0 0.5)
+				)
+				(width 0)
+				(fill yes)
+			)
+			(gr_circle
+				(center 0 0)
+				(end 0.3 0)
+				(width 0.1)
+			)
+			(gr_bbox
+				(start -0.2 -0.2)
+				(end 0.2 0.2)
+			)
+		)
+		(uuid "00000000-0000-4000-8000-00000000000f")
+	)
+	(pad "6" smd trapezoid
+		(at 1.27 0.635)
+		(size 1 0.6)
+		(rect_delta 0 0.2)
+		(layers "F.Cu" "F.Mask")
+	)
+	(pad "" np_thru_hole circle
+		(at 0 2)
+		(size 1 1)
+		(drill 1)
+		(layers "*.Cu" "*.Mask")
+	)
+	(zone
+		(net 0)
+		(net_name "")
+		(layers "F.Cu" "B.Cu")
+		(uuid "00000000-0000-4000-8000-000000000011")
+		(name "Antenna keepout")
+		(hatch edge 0.5)
+		(connect_pads
+			(clearance 0)
+		)
+		(min_thickness 0.25)
+		(filled_areas_thickness no)
+		(keepout
+			(tracks not_allowed)
+			(vias not_allowed)
+			(pads allowed)
+			(copperpour not_allowed)
+			(footprints allowed)
+		)
+		(fill
+			(thermal_gap 0.5)
+			(thermal_bridge_width 0.5)
+		)
+		(polygon
+			(pts
+				(xy -2 -2) (xy 2 -2) (xy 2 -1) (xy -2 -1)
+			)
+		)
+	)
+	(group "Outline"
+		(uuid "00000000-0000-4000-8000-000000000010")
+		(members "00000000-0000-4000-8000-000000000003" "00000000-0000-4000-8000-000000000004")
+	)
+	(embedded_fonts no)
+	(model "${KICAD9_3DMODEL_DIR}/Test.3dshapes/Test_Package_2x3.wrl"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 -90)
+		)
+	)
+	(sparkle "unknown token kept")
+)

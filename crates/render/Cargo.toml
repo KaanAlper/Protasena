@@ -1,0 +1,16 @@
+[package]
+name = "protasena-render"
+description = "Protasena drawing: sheets, symbols and wires to display lists"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+protasena-doc.workspace = true
+protasena-geom.workspace = true
+protasena-library.workspace = true

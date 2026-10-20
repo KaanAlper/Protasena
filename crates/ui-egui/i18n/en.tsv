@@ -1,0 +1,272 @@
+# Protasena interface strings: English. One string per line, `key<TAB>text`; a key alone
+# means the text is the key. Keys are the English texts the code uses (tl!("…"), menu, toolbar
+# and mode tables); crates/ui-egui/tests/i18n.rs checks that every key is used and present.
+(All Categories)
+(All Manufacturers)
+(All Sub-categories)
+(none)
+2D Graphics Arc Mode
+2D Graphics Box Mode
+2D Graphics Circle Mode
+2D Graphics Closed Path Mode
+2D Graphics Line Mode
+2D Graphics Markers Mode
+2D Graphics Symbols Mode
+2D Graphics Text Mode
+3D Visualizer
+ASCII Data Import Tool
+About Protasena
+Active Popup Mode
+Add Traces...
+Align Objects
+Angle
+Animated Single Step
+Annotated
+Apply Styles From Template
+Author
+Base Design
+Bill of Materials
+Block Copy
+Block Delete
+Block Move
+Block Rotate
+Bring To Front
+Buses Mode
+Cancel
+Category
+Center At Cursor
+Clear Graph Data...
+Clear Selection
+Close Project
+Compile To Library
+Component Mode
+Configure Diagnostics
+Configure Power Rails...
+Copy To Clipboard
+Created
+Custom
+Cut To Clipboard
+DEVICES
+Debug
+Decompose
+Description
+Design
+Design Explorer
+Design Title
+Device
+Device Pins Mode
+Doc. No
+Drag a rectangle around the area to show
+Edit
+Edit Component
+Edit Design Notes
+Edit Design Properties
+Edit Graph...
+Edit Project Description
+Edit Sheet Properties
+Edit Terminal
+Edit Text
+Edit Wire Label
+Electrical Rules Check
+Element
+Enable Remote Debug Monitor
+Error
+Exit Application
+Exit to Parent Sheet
+Explore Project Folder
+Export Adobe PDF File
+Export Bitmap
+Export DXF File
+Export Encapsulated Postscript
+Export Graph Data...
+Export Graphics
+Export Metafile
+Export Project Clip
+Export SVG File
+Export Vector File
+File
+Find/Edit Component
+GENERATORS
+GRAPHICS
+GRAPHS
+Generator Mode
+Gerber Viewer
+Global Annotator
+Goto Master Sheet
+Goto Next Root or Sub-sheet
+Goto Previous Root or Sub-sheet
+Goto Sheet
+Graph
+Graph Mode
+Height (th)
+Help
+Hidden
+Home Page
+Horz. Tile Popup Windows
+INSTRUMENTS
+Import ECAD Files
+Import Image
+Import Legacy Project
+Import Parts
+Import Project Clip
+Incremental
+Junction Dot Mode
+Keywords
+Library
+Library Manager
+Licence: MIT OR Apache-2.0
+Loading parts library…
+MARKERS
+Make Device
+Make Symbol
+Manage Changes
+Manufacturer
+Mark Output Area
+Message
+Messages
+Mode
+Model Compiler
+Modified
+Netlist Compiler
+Nets
+New (Root) Sheet
+New Project
+No Messages
+No PCB package
+No errors found.
+No part on this sheet is called
+Not affiliated with Labcenter Electronics. Proteus is a trademark of Labcenter Electronics.
+OK
+Open Project
+Open Sample Project
+Open-source schematic capture whose layout and workflow follow Proteus 8 Schematic Capture.
+Other Properties
+Overview
+PCB Layout
+PCB Package
+PCB Preview
+PINS
+PORTS
+PROBES
+Packaging Tool
+Part Reference
+Part Value
+Parts
+Paste From Clipboard
+Pause
+Pause VSM Debugging
+Pick Devices
+Pick Parts
+Place Library
+Play
+Preview
+Print Design
+Print Setup
+Printer Information
+Probe Mode
+Project Name
+Project Notes
+Property Assignment Tool
+Redo Changes
+Redraw Display
+Remove/Delete Sheet
+Reset Debug Popup Windows
+Reset Persistent Model Data
+Restore Default Settings
+Results
+Revision
+Rotate Anti-clockwise
+Rotate Clockwise
+Rules check findings
+Run Simulation
+Run Simulation (no breakpoints)
+Run Simulation (timed breakpoint)
+Run To Source Line
+SPICE netlist
+SYMBOLS
+Save Design as Template
+Save Project
+Save Project As
+Saved
+Schematic Capture
+Schematic Capture Help
+Schematic Capture Tutorial
+Search & Tag
+Select All Objects
+Selection Mode
+Send To Back
+Set 2D Graphics Defaults
+Set Animation Options
+Set Design Colours
+Set Display Options
+Set Graph & Trace Colours
+Set Graphic Styles
+Set Junction Dot Style
+Set Keyboard Mapping
+Set Property Definitions
+Set Sheet Sizes
+Set Simulation Options
+Set Text Editor
+Set Text Styles
+Sheet Name
+Sheet Size
+Simulate Graph
+Simulation Help
+Snap 0.1in
+Snap 0.5in
+Snap 10th
+Snap 50th
+Source Code
+Start VSM Debugging
+Step
+Step Into Source Line
+Step Out from Source Line
+Step Over Source Line
+Stop
+Stop VSM Debugging
+String
+Sub-category
+Subcircuit Mode
+System
+System Settings
+TERMINALS
+Template
+Terminals Mode
+Text
+Text Script Mode
+Text Viewer
+The design has unsaved changes. Discard them?
+The parts library could not be loaded
+Tidy Design
+Toggle False Origin
+Toggle Grid
+Toggle X-Cursor
+Tool
+Toolbar Configuration
+Total
+Type
+Type keywords or choose a category
+Undo Changes
+Unsaved Changes
+VSM Model/SDK Help
+Verify Files
+Verify Graphs
+Verify Packagings
+Version
+Vertical Tile Popup Windows
+View
+View Simulation Log
+Virtual Instruments Mode
+Warning
+Wire Autorouter
+Wire Label Mode
+X-Mirror
+Y-Mirror
+Zoom In
+Zoom Out
+Zoom To Area
+Zoom To View Entire Sheet
+e.g. RES, 74LS00
+findings
+of
+th

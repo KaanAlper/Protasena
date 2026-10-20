@@ -1,0 +1,28 @@
+Protasena
+Copyright (c) 2026 the Protasena contributors.
+
+Protasena is original work, licensed under the MIT License or the Apache License, Version 2.0,
+at your option (LICENSE-MIT, LICENSE-APACHE). It is a clean-room implementation: its behaviour is
+modelled on Proteus 8 Professional by observing that program from the outside only. It contains
+no code, libraries, models, artwork, icons, help text or sample designs of Labcenter Electronics.
+
+Parts library
+
+Protasena's parts library is converted from KiCad's official symbol and footprint libraries
+(https://gitlab.com/kicad/libraries), Copyright the KiCad Library Team and contributors, licensed
+under the Creative Commons Attribution-ShareAlike 4.0 International licence with the KiCad
+libraries' design exception. The converted pack is distributed separately, with KiCad's licence
+and attribution files, in the KaanAlper/Protasena-library repository; it is not part of this
+repository and is not covered by this repository's licence. The KiCad file reader in
+crates/kicad is written from KiCad's published file format documentation and contains no KiCad
+code. Protasena is not affiliated with the KiCad project.
+
+Third-party material
+
+Software dependencies are listed in Cargo.lock. Every bundled asset is original to Protasena or
+openly licensed; the per-file list is in ATTRIBUTION.md.
+
+Trademarks
+
+Protasena is an independent project and is not affiliated with, sponsored by or endorsed by
+Labcenter Electronics Ltd. Proteus is a trademark of Labcenter Electronics Ltd.

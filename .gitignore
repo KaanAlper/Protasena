@@ -1,2 +1,7 @@
-plan/
+*~
+/target
 target/
+plan/
+.DS_Store
+*.swp
+/.claude/worktrees/

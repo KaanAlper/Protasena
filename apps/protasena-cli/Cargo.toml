@@ -1,0 +1,14 @@
+[package]
+name = "protasena-cli"
+description = "Protasena headless command line: run commands, export netlists"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+publish = false
+
+[lints]
+workspace = true
+
+[dependencies]

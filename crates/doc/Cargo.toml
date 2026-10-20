@@ -1,0 +1,22 @@
+[package]
+name = "protasena-doc"
+description = "Protasena design model: projects, sheets, components, wires, labels, terminals"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[features]
+# Serialize the design model and its operations (the project file format itself lives in `io`).
+serde = ["dep:serde", "protasena-geom/serde"]
+
+[dependencies]
+protasena-geom.workspace = true
+serde = { workspace = true, optional = true }
+
+[dev-dependencies]
+serde_json.workspace = true

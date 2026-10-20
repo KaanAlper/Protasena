@@ -1,0 +1,24 @@
+[package]
+name = "protasena-engine"
+description = "Protasena engine: commands, session, undo, Proteus's tools and modes"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+repository.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+protasena-doc = { workspace = true, features = ["serde"] }
+protasena-geom = { workspace = true, features = ["serde"] }
+protasena-io.workspace = true
+protasena-library.workspace = true
+protasena-netlist.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+
+[dev-dependencies]
+miniz_oxide.workspace = true
+protasena-pdsprj.workspace = true
