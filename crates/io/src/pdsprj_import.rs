@@ -83,7 +83,7 @@ pub fn convert(read: &pds::Project, name: &str) -> (Project, ImportReport) {
         modified: design.header.modified_date.clone(),
         ..DesignProperties::default()
     };
-    let project = Project { name: name.to_owned(), design: design_props, sheets, next_id: ids.0 };
+    let project = Project { name: name.to_owned(), design: design_props, sheets, next_id: ids.0, ..Project::default() };
     report.warnings.extend(project.issues().iter().map(ToString::to_string));
     (project, report)
 }

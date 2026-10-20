@@ -92,7 +92,8 @@ impl App {
 
     /// Asks for a project to open (the native chooser when there is one) and opens it.
     pub fn choose_open(&mut self, discard: bool) {
-        let picked = self.services.pick_open.as_ref().map(|f| f());
+        let start = self.start_dir();
+        let picked = self.services.pick_open.as_ref().map(|f| f(start.as_deref()));
         match picked {
             Some(Some(path)) => {
                 if let Err(e) = self.complete("open", json!({ "path": path.display().to_string(), "discard": discard })) {
@@ -111,7 +112,8 @@ impl App {
             PathPurpose::Netlist => (format!("{name}.json"), &["json", "cir"]),
             _ => (format!("{name}.psproj"), &["psproj"]),
         };
-        let picked = self.services.pick_save.as_ref().map(|f| f(&suggested, exts));
+        let start = self.start_dir();
+        let picked = self.services.pick_save.as_ref().map(|f| f(&suggested, exts, start.as_deref()));
         match picked {
             Some(Some(path)) => {
                 let path = path.display().to_string();
@@ -155,9 +157,15 @@ impl App {
         let current = std::path::Path::new(out.path.trim());
         let name = current.file_name().map(|n| n.to_string_lossy().into_owned()).unwrap_or_default();
         let ext = current.extension().map(|e| e.to_string_lossy().into_owned()).unwrap_or_default();
-        if let Some(p) = pick(&name, &[ext.as_str()]) {
+        let start = current.parent().filter(|d| !d.as_os_str().is_empty()).map(std::path::Path::to_path_buf).or_else(|| self.start_dir());
+        if let Some(p) = pick(&name, &[ext.as_str()], start.as_deref()) {
             out.path = p.display().to_string();
         }
+    }
+
+    /// The folder file choosers start in: System Settings' project folder, if set.
+    fn start_dir(&self) -> Option<std::path::PathBuf> {
+        self.session.settings().project_dir.as_ref().map(std::path::PathBuf::from)
     }
 
     /// A window action from a menu item.

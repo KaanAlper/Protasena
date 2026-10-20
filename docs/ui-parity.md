@@ -1,6 +1,6 @@
 # UI parity
 
-> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (Subcircuit mode, child sheets, Exit to Parent Sheet) · **Target:** Labcenter Proteus 8 Professional (Windows)
+> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (Template and System menu settings) · **Target:** Labcenter Proteus 8 Professional (Windows)
 
 Protasena's Schematic Capture interface element by element against Proteus's: menus, toolbars,
 the mode toolbar, the overview window, the object selector, the editing window, the status bar
@@ -8,7 +8,7 @@ and dialogs. Rows come from the observed UI inventory (`plan/proteus/notes/ui-in
 local), written in our own words. Status: ✅ matches, ◐ partial (differences listed), ✗ missing,
 ★ intentional improvement approved by the owner. Work items: [gaps.md](gaps.md).
 
-**Headline (measured, counted from the rows below): 3 of 263 rows match** (✅ 3, ◐ 156, ✗ 104).
+**Headline (measured, counted from the rows below): 3 of 268 rows match** (✅ 3, ◐ 173, ✗ 92).
 Proteus could only be observed from its menus, window tree and one screenshot (it runs elevated
 on the reference PC, so no click, tooltip or dialog reached it): labels, order, shortcut texts
 and placement are taken from that observation; every behaviour, enabled rule and dialog is
@@ -16,7 +16,7 @@ and placement are taken from that observation; every behaviour, enabled rule and
 is our own by design and is not a parity criterion.
 
 **Items without a command** (shown disabled, listed as ✗ below; measured from the menu and
-toolbar tables in `crates/ui-egui`): 78 menu items (plus the recent-projects and graph lists)
+toolbar tables in `crates/ui-egui`): 66 menu items (plus the recent-projects and graph lists)
 and 13 toolbar buttons have no engine command yet, nor do 8 of the 22 modes, the animation
 buttons, the design variant box and the L button.
 
@@ -137,24 +137,24 @@ enabled when its command's enabled rule allows it.
 | Library ▸ Manage Changes |  | ✗ | Shown disabled: no command yet (item without a command) |
 | Library ▸ Library Manager |  | ✗ | Shown disabled: no command yet (item without a command) |
 | Template ▸ Goto Master Sheet |  | ✗ | Shown disabled: no command yet (item without a command) |
-| Template ▸ Set Design Colours |  | ✗ | Shown disabled: no command yet (item without a command) |
+| Template ▸ Set Design Colours |  | ◐ | Runs `set-design-colours` (dialog first): the design's own paper, grid, highlight and drag colours, saved in the design, one undo step; unset colours are our theme's. Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
 | Template ▸ Set Graph & Trace Colours |  | ✗ | Shown disabled: no command yet (item without a command) |
-| Template ▸ Set Graphic Styles |  | ✗ | Shown disabled: no command yet (item without a command) |
-| Template ▸ Set Text Styles |  | ✗ | Shown disabled: no command yet (item without a command) |
-| Template ▸ Set 2D Graphics Defaults |  | ✗ | Shown disabled: no command yet (item without a command) |
-| Template ▸ Set Junction Dot Style |  | ✗ | Shown disabled: no command yet (item without a command) |
+| Template ▸ Set Graphic Styles |  | ◐ | Runs `set-graphic-styles`: line width, colour and fill of our own style list (component, pin, wire, bus, terminal, subcircuit). Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable); Proteus's named styles not copied |
+| Template ▸ Set Text Styles |  | ◐ | Runs `set-text-styles`: height and colour of references, values, pin names and numbers, wire labels, terminal names, free texts without a height of their own, subcircuit names. Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
+| Template ▸ Set 2D Graphics Defaults |  | ◐ | Runs `set-2d-graphics-defaults`: line width, colour and fill of every 2D graphic (graphics have no style of their own yet). Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
+| Template ▸ Set Junction Dot Style |  | ◐ | Runs `set-junction-style`: dot size (diameter) and shape (circle, square, diamond). Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
 | Template ▸ Apply Styles From Template |  | ✗ | Shown disabled: no command yet (item without a command) |
 | Template ▸ Save Design as Template |  | ✗ | Shown disabled: no command yet (item without a command) |
-| System ▸ System Settings |  | ✗ | Shown disabled: no command yet (item without a command) |
+| System ▸ System Settings |  | ◐ | Runs `system-settings`: the parts library folder (used when neither `--library` nor `PROTASENA_LIBRARY_DIR` is given, at the next start) and the folder the file choosers start in. Saved at once to the user's settings file (`settings.json` in the configuration directory, `PROTASENA_CONFIG_DIR` overrides it); not part of the design or undo. Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
 | System ▸ Text Viewer |  | ✗ | Shown disabled: no command yet (item without a command) |
-| System ▸ Set Display Options |  | ✗ | Shown disabled: no command yet (item without a command) |
-| System ▸ Set Keyboard Mapping |  | ✗ | Shown disabled: no command yet (item without a command) |
-| System ▸ Set Property Definitions |  | ✗ | Shown disabled: no command yet (item without a command) |
-| System ▸ Set Sheet Sizes |  | ✗ | Shown disabled: no command yet (item without a command) |
-| System ▸ Set Text Editor |  | ✗ | Shown disabled: no command yet (item without a command) |
+| System ▸ Set Display Options |  | ◐ | Runs `set-display-options`: grid as lines, the mouse-wheel zoom factor, the pick distance in pixels. Saved at once to the user's settings file (`settings.json` in the configuration directory, `PROTASENA_CONFIG_DIR` overrides it); not part of the design or undo. Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
+| System ▸ Set Keyboard Mapping |  | ◐ | Runs `set-keyboard-mapping`: a table of every command with a menu item or key, its key editable, conflicts shown while typing and refused (no key runs two commands), Restore Defaults; menus show the keys in use. Saved at once to the user's settings file (`settings.json` in the configuration directory, `PROTASENA_CONFIG_DIR` overrides it); not part of the design or undo. Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
+| System ▸ Set Property Definitions |  | ◐ | Runs `set-property-definitions`: names, defaults and descriptions Edit Component offers for every part. Saved at once to the user's settings file (`settings.json` in the configuration directory, `PROTASENA_CONFIG_DIR` overrides it); not part of the design or undo. Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
+| System ▸ Set Sheet Sizes |  | ◐ | Runs `set-sheet-sizes`: the named sizes Edit Sheet Properties offers (A4…A0, A…E by default), editable, with Restore Defaults. Saved at once to the user's settings file (`settings.json` in the configuration directory, `PROTASENA_CONFIG_DIR` overrides it); not part of the design or undo. Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
+| System ▸ Set Text Editor |  | ◐ | Runs `set-text-editor`: font size and a fixed-width font for the text and script editor. Saved at once to the user's settings file (`settings.json` in the configuration directory, `PROTASENA_CONFIG_DIR` overrides it); not part of the design or undo. Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
 | System ▸ Set Animation Options |  | ✗ | Shown disabled: no command yet (item without a command) |
 | System ▸ Set Simulation Options |  | ✗ | Shown disabled: no command yet (item without a command) |
-| System ▸ Restore Default Settings |  | ✗ | Shown disabled: no command yet (item without a command) |
+| System ▸ Restore Default Settings |  | ◐ | Runs `restore-default-settings` after our own question: every system setting back to Protasena's defaults (the design's template is kept). Built the conventional way with our own dialog (to compare: Proteus's dialog, fields and defaults were not observable) |
 | Help ▸ Overview | F1 | ✗ | Shown disabled: no command yet (item without a command) |
 | Help ▸ About Protasena |  | ◐ | Our About window, in place of Proteus's product entries ("About Proteus 8"; "About Qt" is left out) |
 | Help ▸ Schematic Capture Help | F1 | ✗ | Shown disabled: no command yet (item without a command) |
@@ -264,7 +264,7 @@ Buttons mirror the menu item of the same name.
 | Editing window ▸ design | Components from their symbols (pins, names, numbers), reference and value, wires, junction dots, wire labels, terminals, buses, bus entries, texts | ◐ | Our own drawing; text sizes and positions to compare |
 | Editing window ▸ selection | Selected objects drawn in the selection colour | ◐ | Proteus's highlight not compared |
 | Editing window ▸ previews | Ghost of the part to place, the routed wire following the mouse, the bus, dragged objects, the selection box, a ring on pin ends where a wire can start | ◐ | Engine previews; Proteus's feedback (cursor shapes, ghost behaviour) not compared |
-| Editing window ▸ zoom | F6/F7 by 2 about the centre, F8 whole sheet, the wheel by 2 per notch about the cursor | ◐ | Proteus's wheel step and centring to compare |
+| Editing window ▸ zoom | F6/F7 by 2 about the centre, F8 whole sheet, the wheel by the display options' factor (2 by default) per notch about the cursor | ◐ | Proteus's wheel step and centring to compare |
 | Editing window ▸ pan | Middle-button drag; F5 centres at the cursor | ◐ | Not compared |
 | Editing window ▸ cursor | A small cross at the snapped point; X-Cursor (X) draws full-window lines | ◐ | Proteus's cursor shapes not compared |
 | Editing window ▸ Goto Child Sheet | Ctrl+C with a subcircuit selected (`enter-child-sheet`; also Edit Subcircuit's button): shows its child sheet, made empty and named after the subcircuit the first time | ◐ | No menu item (right-click context menus, where Proteus may offer it, are not built); key and behaviour to compare |
@@ -293,18 +293,23 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | Edit Component ▸ Part Reference, Part Value (each with Hidden) | the part's | ◐ | Runs `edit-component`; field set and order to compare |
 | Edit Component ▸ Element | first gate | ◐ | Only for multi-gate devices |
 | Edit Component ▸ PCB Package | the part's | ◐ | The device's packages or none |
-| Edit Component ▸ Other Properties | the device's property definitions | ◐ | A grid of values; an empty value removes the property |
+| Edit Component ▸ Other Properties | the device's property definitions, then System ▸ Set Property Definitions' (with their defaults) | ◐ | A grid of values; an empty value removes the property |
 | Find/Edit Component (nothing selected) | | ◐ | Asks for the reference, then opens Edit Component |
 | Edit Wire Label ▸ String | empty | ◐ | Runs `wire-label` (new) or `edit-item`; Proteus's tabs and options not observed |
 | Edit Wire Label ▸ Global | off | ◐ | Our own checkbox: a global label's name is not prefixed by the instance path in child sheets. How Proteus marks global labels to compare |
 | Subcircuit Port ▸ Port Name, Type | empty; the PORTS list's kind | ◐ | Our own dialog after a click on a subcircuit's edge; runs `subcircuit-port`. To compare |
 | Edit Subcircuit ▸ Name, Ports (name, type, Remove), Goto/Create Child Sheet | the subcircuit's | ◐ | Our own dialog (double click); runs `edit-subcircuit`, or `enter-child-sheet` from the button. Proteus's fields (its Circuit name) to compare |
 | Edit Terminal ▸ String, Type | the terminal's | ◐ | Runs `edit-item` |
-| Text (Text Script, 2D text) ▸ Text, Height | empty, default height | ◐ | Runs `text` or `edit-item` |
+| Text (Text Script, 2D text) ▸ Text, Height | empty, default height | ◐ | Runs `text` or `edit-item`; the editor's font follows System ▸ Set Text Editor |
 | Edit Design Properties | the project's | ◐ | Project Name, Design Title, Doc. No, Revision, Author, Created, Modified; to compare |
-| Edit Sheet Properties | the sheet's | ◐ | Sheet Name and Sheet Size (A4…A0, ANSI A…E); Proteus's size list not observed |
+| Edit Sheet Properties | the sheet's | ◐ | Sheet Name and Sheet Size (the sizes of System ▸ Set Sheet Sizes, A4…A0 and A…E by default); Proteus's size list not observed |
 | Goto Sheet | the current sheet | ◐ | Numbered sheet list in hierarchy order, sub-sheets indented with their instance path |
 | Global Annotator | Incremental | ◐ | Incremental or Total; Proteus's options not observed |
+| Template dialogs (Set Design Colours, Graphic Styles, Text Styles, 2D Graphics Defaults, Junction Dot Style) | our defaults (nothing set) | ◐ | Our own grids of widths, heights (empty: our default) and colours ("Own" with a colour button; off: the theme's colour); OK runs the command with the whole group. Template colours show in the editing window and the overview; exports and prints keep our print palette (widths, heights, fills and dot style are drawn there). To compare |
+| Set Keyboard Mapping ▸ Find, command list, key, Restore Defaults | the keys in use | ◐ | Our own table; a key is a letter, digit, F1–F24, Page-Up/Down, Delete, Space or Enter with Ctrl, Alt, Shift; Escape is kept for cancelling. To compare |
+| Set Property Definitions / Set Sheet Sizes ▸ rows, Add, Remove | the settings in use | ◐ | Our own editable lists. To compare |
+| System Settings, Set Display Options, Set Text Editor | the settings in use | ◐ | Our own forms. To compare |
+| Restore Default Settings | | ◐ | Our own question with OK and Cancel. To compare |
 | Unsaved changes (New, Open, Exit, window close) | | ◐ | Our own question "The design has unsaved changes. Save them?" with Save (saves, asking for a file when the project has none, and carries on once saved), Don't Save, Cancel; Proteus's prompt (wording, buttons, order, default) to compare |
 | Open Project, Save Project As, Netlist Compiler file | | ◐ | The system's file chooser (`.psproj`, `.pdsprj` opens by import); a path prompt when there is none. Proteus's Netlist Compiler options not observed |
 | Electrical Rules Check result | | ◐ | A window listing the findings; Proteus's report window not observed |
@@ -328,3 +333,4 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | 2026-10-20 | minor | Tool ▸ Search & Tag (T) and Property Assignment Tool (A), with their Design Toolbar buttons and dialogs, built the conventional way (to compare) |
 | 2026-10-20 | minor | Edit ▸ Align Objects (Ctrl+A), Send To Back (Ctrl+B), Bring To Front (Ctrl+F) and Tidy Design built the conventional way (to compare) |
 | 2026-10-20 | minor | Subcircuit Mode, the PORTS list, Subcircuit Port and Edit Subcircuit dialogs, Goto Child Sheet (Ctrl+C), Design ▸ Exit to Parent Sheet (Ctrl+X) and its toolbar button, sheets in hierarchy order; Edit Wire Label's Global box. Built the conventional way (to compare); 3 of 263 rows match |
+| 2026-10-20 | minor | Template ▸ Set Design Colours, Graphic Styles, Text Styles, 2D Graphics Defaults, Junction Dot Style and System ▸ System Settings, Set Display Options, Set Keyboard Mapping, Set Property Definitions, Set Sheet Sizes, Set Text Editor, Restore Default Settings built the conventional way with their dialogs (to compare); 3 of 268 rows match |

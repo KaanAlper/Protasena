@@ -47,6 +47,11 @@ impl<'a> Args<'a> {
         self.cmd
     }
 
+    /// The parameters as given (`null` for none).
+    pub fn raw(&self) -> Value {
+        self.map.map_or(Value::Null, |m| Value::Object(m.clone()))
+    }
+
     /// An error about the parameters.
     pub fn bad(&self, msg: impl Into<String>) -> EngineError {
         EngineError::BadParams { cmd: self.cmd.into(), msg: msg.into() }

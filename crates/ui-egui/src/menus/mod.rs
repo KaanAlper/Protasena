@@ -66,7 +66,12 @@ fn entry(ui: &mut Ui, s: &Session, e: &Entry, clicked: &mut Option<Clicked>) {
                 Act::None => false,
             };
             let on = check.is_some_and(|c| is_on(s, c));
-            if item(ui, i18n::t(label), *shortcut, enabled, check.map(|_| on)) {
+            // The keyboard mapping's key, which System ▸ Set Keyboard Mapping may have changed.
+            let key = match act {
+                Act::Cmd(id) => s.shortcut(id),
+                _ => shortcut.map(str::to_owned),
+            };
+            if item(ui, i18n::t(label), key.as_deref(), enabled, check.map(|_| on)) {
                 *clicked = Some(Clicked::Act(*act));
             }
         }

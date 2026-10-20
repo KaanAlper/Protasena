@@ -67,6 +67,13 @@ impl EditComponent {
                 props.push(PropRow { name: name.to_owned(), prompt: name.to_owned(), value: value.to_owned() });
             }
         }
+        // System ▸ Set Property Definitions: the user's own properties, with their defaults.
+        for d in &s.settings().properties {
+            if !props.iter().any(|p| p.name.eq_ignore_ascii_case(&d.name)) {
+                let prompt = if d.description.trim().is_empty() { d.name.clone() } else { format!("{} ({})", d.name, d.description.trim()) };
+                props.push(PropRow { name: d.name.clone(), prompt, value: d.default.clone() });
+            }
+        }
         Some(Self {
             id,
             device: c.device.name.clone(),

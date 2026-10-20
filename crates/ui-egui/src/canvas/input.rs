@@ -96,14 +96,15 @@ fn wheel_zoom(app: &mut App, at: Pt, wheel: f32) {
         let zoom_in = app.canvas.wheel > 0.0;
         app.canvas.wheel -= WHEEL_STEP.copysign(app.canvas.wheel);
         let view = app.session.view();
-        let factor = if zoom_in { 2.0 } else { 0.5 };
+        let step = app.session.settings().display.wheel_zoom;
+        let factor = if zoom_in { step } else { 1.0 / step };
         if (zoom_in && view.zoom >= ZOOM_LIMITS.1) || (!zoom_in && view.zoom <= ZOOM_LIMITS.0) {
             app.canvas.wheel = 0.0;
             return;
         }
         let c = view.center;
         let center = Pt::new(at.x - (at.x - c.x) / factor, at.y - (at.y - c.y) / factor);
-        let _ = app.run(if zoom_in { "zoom-in" } else { "zoom-out" }, json!({ "at": [center.x, center.y] }));
+        let _ = app.run(if zoom_in { "zoom-in" } else { "zoom-out" }, json!({ "at": [center.x, center.y], "factor": step }));
     }
 }
 

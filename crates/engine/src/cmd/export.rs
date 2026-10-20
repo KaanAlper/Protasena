@@ -9,7 +9,7 @@ use std::path::Path;
 
 use protasena_doc::Sheet;
 use protasena_render::export::{DPI_RANGE, Format, Options, Page, SCALE_RANGE, export};
-use protasena_render::{sheet_display_list, sheet_rect};
+use protasena_render::{sheet_rect, styled_sheet_display_list};
 use serde_json::{Value, json};
 
 use super::file::path_param;
@@ -84,7 +84,7 @@ fn range_param(a: &Args, key: &str, range: &std::ops::RangeInclusive<f64>, defau
 
 /// The page of a sheet: everything on it, over the sheet's border and whatever lies beyond it.
 fn page_of(s: &Session, sheet: &Sheet) -> Page {
-    let list = sheet_display_list(sheet, &s.library);
+    let list = styled_sheet_display_list(sheet, &s.library, &s.project.template);
     let area = list.bounds().map_or(sheet_rect(sheet), |b| b.union(sheet_rect(sheet)));
     Page { list, area, title: sheet.name.clone() }
 }

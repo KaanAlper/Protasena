@@ -210,6 +210,12 @@ pub fn sheet_display_list(sheet: &Sheet, library: &Library) -> DisplayList {
     list
 }
 
+/// [`sheet_display_list`] in the design's template settings (widths, text heights, junction
+/// dots, 2D graphics fills; see [`crate::style`]).
+pub fn styled_sheet_display_list(sheet: &Sheet, library: &Library, template: &protasena_doc::Template) -> DisplayList {
+    crate::style::styled(sheet_display_list(sheet, library), sheet, template)
+}
+
 /// The primitives for any one item (for previews of dragged items).
 pub fn item_prims(item: &protasena_doc::Item, library: &Library) -> Vec<Prim> {
     use protasena_doc::Item;

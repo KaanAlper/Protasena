@@ -26,8 +26,14 @@ pub(super) fn specs() -> Vec<CommandSpec> {
         CommandSpec::new("snap-100th", "Snap 0.1in", |s, _| set_snap(s, Snap::In01)).menu(&["View", "Snap 0.1in"]).key("F3").params("{}"),
         CommandSpec::new("snap-500th", "Snap 0.5in", |s, _| set_snap(s, Snap::In05)).menu(&["View", "Snap 0.5in"]).key("F4").params("{}"),
         CommandSpec::new("center-at-cursor", "Center At Cursor", center).menu(&["View", "Center At Cursor"]).key("F5").params("{at?: [x, y]}"),
-        CommandSpec::new("zoom-in", "Zoom In", |s, a| zoom(s, a, ZOOM_STEP)).menu(&["View", "Zoom In"]).key("F6").params("{at?: [x, y]}"),
-        CommandSpec::new("zoom-out", "Zoom Out", |s, a| zoom(s, a, 1.0 / ZOOM_STEP)).menu(&["View", "Zoom Out"]).key("F7").params("{at?: [x, y]}"),
+        CommandSpec::new("zoom-in", "Zoom In", |s, a| zoom(s, a, false))
+            .menu(&["View", "Zoom In"])
+            .key("F6")
+            .params("{at?: [x, y], factor?: 1.1-10}"),
+        CommandSpec::new("zoom-out", "Zoom Out", |s, a| zoom(s, a, true))
+            .menu(&["View", "Zoom Out"])
+            .key("F7")
+            .params("{at?: [x, y], factor?: 1.1-10}"),
         CommandSpec::new("zoom-all", "Zoom To View Entire Sheet", zoom_all).menu(&["View", "Zoom To View Entire Sheet"]).key("F8").params("{}"),
         CommandSpec::new("zoom-area", "Zoom To Area", zoom_area).menu(&["View", "Zoom To Area"]).params("{from: [x, y], to: [x, y]}"),
         CommandSpec::new("pan", "Pan", pan).params("{by?: [dx, dy], center?: [x, y]}"),
@@ -82,7 +88,14 @@ fn center(s: &mut Session, a: &Args) -> Result<Value> {
     view_json(s)
 }
 
-fn zoom(s: &mut Session, a: &Args, factor: f64) -> Result<Value> {
+/// Zooms in (or `out`) by `factor` (the wheel's, from the display options) or by 2.
+fn zoom(s: &mut Session, a: &Args, out: bool) -> Result<Value> {
+    let step = match a.f64("factor")? {
+        None => ZOOM_STEP,
+        Some(f) if (1.1..=10.0).contains(&f) => f,
+        Some(_) => return Err(a.bad("`factor` must be between 1.1 and 10")),
+    };
+    let factor = if out { 1.0 / step } else { step };
     if let Some(p) = a.point("at")? {
         s.view.center = p;
     }

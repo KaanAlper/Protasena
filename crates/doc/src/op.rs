@@ -10,6 +10,7 @@ use crate::ids::{ComponentId, ItemId, SheetId};
 use crate::item::Item;
 use crate::project::{DesignProperties, Project};
 use crate::sheet::{Sheet, SheetSize};
+use crate::template::Template;
 
 /// How deeply [`Op::Batch`]es may nest.
 pub const MAX_BATCH_DEPTH: usize = 64;
@@ -83,6 +84,11 @@ pub enum Op {
         /// New design properties.
         design: DesignProperties,
     },
+    /// Replaces the template settings (Template menu).
+    SetTemplate {
+        /// The new settings.
+        template: Box<Template>,
+    },
     /// Several ops as one step: all are applied or, on the first error, none.
     Batch {
         /// The ops, in order.
@@ -138,6 +144,10 @@ impl Project {
             }
             Op::SetDesign { name, design } => {
                 Ok(Op::SetDesign { name: std::mem::replace(&mut self.name, name), design: std::mem::replace(&mut self.design, design) })
+            }
+            Op::SetTemplate { template } => {
+                template.check()?;
+                Ok(Op::SetTemplate { template: Box::new(std::mem::replace(&mut self.template, *template)) })
             }
             Op::Batch { ops } => self.batch(ops, depth),
         }

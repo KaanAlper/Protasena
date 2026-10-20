@@ -86,6 +86,26 @@ pub enum Request {
     SearchTag,
     /// Property Assignment Tool: the string, action and parts (then `property-assign`).
     PropertyAssign,
+    /// A Template menu dialog for one group of the template settings: `colours`,
+    /// `graphic_styles`, `text_styles`, `graphics_2d` or `junction` (then its `set-*` command).
+    Template {
+        /// The group.
+        section: &'static str,
+    },
+    /// A System menu dialog for one group of the system settings: `folders`, `display` or
+    /// `text_editor` (then `system-settings`, `set-display-options` or `set-text-editor`).
+    System {
+        /// The group.
+        section: &'static str,
+    },
+    /// Set Keyboard Mapping (then `set-keyboard-mapping`).
+    KeyboardMapping,
+    /// Set Property Definitions (then `set-property-definitions`).
+    PropertyDefinitions,
+    /// Set Sheet Sizes (then `set-sheet-sizes`).
+    SheetSizes,
+    /// Restore Default Settings: ask first (then `restore-default-settings`).
+    RestoreDefaults,
     /// Unsaved changes: ask whether to discard them (then the command with `discard: true`).
     ConfirmDiscard {
         /// The command waiting for the answer.

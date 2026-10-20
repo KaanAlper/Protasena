@@ -10,7 +10,9 @@ mod forms;
 pub mod pick_devices;
 pub mod pick_model;
 pub mod results;
+pub mod settings_form;
 pub mod subcircuit;
+pub mod system;
 pub mod tools;
 
 use egui::{Align, Layout, RichText, Ui, vec2};
@@ -68,6 +70,14 @@ pub enum Dialog {
     Port(subcircuit::PortForm),
     /// Edit Subcircuit.
     Subcircuit(subcircuit::SubcircuitForm),
+    /// A Template or System menu settings dialog.
+    Settings(Box<settings_form::SettingsForm>),
+    /// Set Keyboard Mapping.
+    Keymap(Box<system::KeymapForm>),
+    /// Set Property Definitions or Set Sheet Sizes.
+    List(system::ListForm),
+    /// Restore Default Settings: asks first.
+    RestoreDefaults,
     /// Unsaved changes: Save, Don't Save or Cancel?
     SaveChanges {
         /// What waits for the answer.
@@ -111,8 +121,8 @@ impl Dialog {
             Request::WireLabel { at } => Dialog::Label(LabelForm::new_at(at)),
             Request::EditLabel { id } => Dialog::Label(LabelForm::edit(s, id)?),
             Request::EditTerminal { id } => Dialog::Terminal(TerminalForm::new(s, id)?),
-            Request::Text { at } => Dialog::Text(TextForm::new_at(at)),
-            Request::EditText { id } => Dialog::Text(TextForm::edit(s, id)?),
+            Request::Text { at } => Dialog::Text(TextForm::new_at(at).editor(s)),
+            Request::EditText { id } => Dialog::Text(TextForm::edit(s, id)?.editor(s)),
             Request::DesignProperties => Dialog::Design(DesignForm::new(s)),
             Request::SheetProperties { sheet } => Dialog::Sheet(SheetForm::new(s, sheet)?),
             Request::GotoSheet => Dialog::GotoSheet(GotoForm::new(s)),
@@ -122,6 +132,11 @@ impl Dialog {
             Request::PropertyAssign => Dialog::PropertyAssign(tools::PropertyAssignForm::new(!s.selection().is_empty())),
             Request::SubcircuitPort { subcircuit, at } => Dialog::Port(subcircuit::PortForm::new(s, subcircuit, at)),
             Request::EditSubcircuit { id } => Dialog::Subcircuit(subcircuit::SubcircuitForm::new(s, id)?),
+            Request::Template { section } | Request::System { section } => Dialog::Settings(Box::new(settings_form::SettingsForm::new(s, section)?)),
+            Request::KeyboardMapping => Dialog::Keymap(Box::new(system::KeymapForm::new(s))),
+            Request::PropertyDefinitions => Dialog::List(system::ListForm::properties(s)),
+            Request::SheetSizes => Dialog::List(system::ListForm::sheet_sizes(s)),
+            Request::RestoreDefaults => Dialog::RestoreDefaults,
             Request::ConfirmDiscard { then } => Dialog::SaveChanges { then: Then::from_command(then) },
             Request::OpenProject => Dialog::path(PathPurpose::Open { discard: false }, ""),
             Request::SaveProjectAs => Dialog::path(PathPurpose::SaveAs, ""),
@@ -157,6 +172,11 @@ impl Dialog {
             Dialog::Print(_) => tl!("Print Design"),
             Dialog::Port(_) => tl!("Subcircuit Port"),
             Dialog::Subcircuit(_) => tl!("Edit Subcircuit"),
+            Dialog::Settings(d) => d.title,
+            Dialog::Keymap(_) => tl!("Set Keyboard Mapping"),
+            Dialog::List(d) if d.cmd == "set-sheet-sizes" => tl!("Set Sheet Sizes"),
+            Dialog::List(_) => tl!("Set Property Definitions"),
+            Dialog::RestoreDefaults => tl!("Restore Default Settings"),
             Dialog::SaveChanges { .. } => tl!("Unsaved Changes"),
         }
     }
@@ -179,6 +199,10 @@ impl Dialog {
             Dialog::Print(d) => &mut d.out.error,
             Dialog::Port(d) => &mut d.error,
             Dialog::Subcircuit(d) => &mut d.error,
+            Dialog::Settings(d) => &mut d.error,
+            Dialog::Keymap(d) => &mut d.error,
+            Dialog::List(d) => &mut d.error,
+            Dialog::RestoreDefaults => return,
             Dialog::GotoSheet(_) | Dialog::Annotator { .. } | Dialog::Align { .. } | Dialog::SaveChanges { .. } => return,
         };
         *slot = Some(e);
@@ -213,6 +237,10 @@ impl Dialog {
             Dialog::Print(d) => d.ui(ui),
             Dialog::Port(d) => d.ui(ui),
             Dialog::Subcircuit(d) => d.ui(ui),
+            Dialog::Settings(d) => d.ui(ui),
+            Dialog::Keymap(d) => d.ui(ui),
+            Dialog::List(d) => d.ui(ui),
+            Dialog::RestoreDefaults => system::restore(ui),
             Dialog::SaveChanges { then } => ConfirmForm::ui(ui, *then),
         }
     }

@@ -44,10 +44,11 @@ pub use keys::shortcut_name;
 /// path in its own small dialog.
 #[derive(Default)]
 pub struct Services {
-    /// Choose a project to open.
-    pub pick_open: Option<Box<dyn Fn() -> Option<PathBuf>>>,
-    /// Choose where to save: suggested file name and the extensions offered.
-    pub pick_save: Option<Box<dyn Fn(&str, &[&str]) -> Option<PathBuf>>>,
+    /// Choose a project to open, starting in a folder (System Settings' project folder).
+    pub pick_open: Option<Box<dyn Fn(Option<&std::path::Path>) -> Option<PathBuf>>>,
+    /// Choose where to save: suggested file name, the extensions offered and the folder to
+    /// start in.
+    pub pick_save: Option<Box<dyn Fn(&str, &[&str], Option<&std::path::Path>) -> Option<PathBuf>>>,
     /// Open a file in the system's viewer (Print Design's PDF); `Err` says why it failed.
     pub open_path: Option<Box<dyn Fn(&std::path::Path) -> Result<(), String>>>,
 }

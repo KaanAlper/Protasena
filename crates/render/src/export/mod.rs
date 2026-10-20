@@ -219,11 +219,11 @@ impl Rgb {
 /// The print colour of an ink (our own palette for white paper), or black/white with `mono`.
 pub fn colour(ink: Ink, mono: bool) -> Rgb {
     if mono {
-        return if ink == Ink::BodyFill { Rgb::WHITE } else { Rgb::BLACK };
+        return if matches!(ink, Ink::BodyFill | Ink::GraphicFill | Ink::SubcircuitFill) { Rgb::WHITE } else { Rgb::BLACK };
     }
     match ink {
         Ink::Body | Ink::Pin | Ink::BodyText | Ink::Graphic | Ink::Subcircuit | Ink::Port => Rgb(138, 28, 28),
-        Ink::BodyFill => Rgb(253, 246, 227),
+        Ink::BodyFill | Ink::GraphicFill | Ink::SubcircuitFill => Rgb(253, 246, 227),
         Ink::PinName => Rgb(31, 63, 122),
         Ink::PinNumber => Rgb(85, 85, 85),
         Ink::Reference | Ink::Value | Ink::Text => Rgb(42, 42, 42),

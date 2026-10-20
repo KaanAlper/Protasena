@@ -40,16 +40,18 @@ mod graphics;
 mod items;
 mod package;
 mod prim;
+pub mod style;
 mod subcircuit;
 mod symbol;
 
 pub use graphics::{GRAPHIC_WIDTH, graphic_prims, graphic_shape};
 pub use items::{
     BUS_WIDTH, JUNCTION_RADIUS, LABEL_SIZE, MISSING_HALF, REFERENCE_SIZE, TEXT_SIZE, VALUE_SIZE, WIRE_WIDTH, bus_entry_prims, bus_prims,
-    component_prims, field_align, find_device, item_prims, junction_prims, label_prims, sheet_display_list, sheet_rect, terminal_prims, text_prims,
-    wire_prims,
+    component_prims, field_align, find_device, item_prims, junction_prims, label_prims, sheet_display_list, sheet_rect, styled_sheet_display_list,
+    terminal_prims, text_prims, wire_prims,
 };
 pub use package::package_prims;
 pub use prim::{DisplayList, HAlign, Ink, Prim, Shape, VAlign};
+pub use style::{ink_colour, styled};
 pub use subcircuit::{PORT_LENGTH, subcircuit_prims};
 pub use symbol::{BODY_WIDTH, PIN_TEXT, PIN_WIDTH, body_prims, graphic, pin_prims, symbol_prims};

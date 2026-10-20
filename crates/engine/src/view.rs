@@ -37,7 +37,7 @@ pub const ZOOM_RANGE: (f64, f64) = (1e-4, 10.0);
 /// Factor of one Zoom In / Zoom Out step.
 pub const ZOOM_STEP: f64 = 2.0;
 
-/// Pick tolerance in screen pixels.
+/// Pick tolerance in screen pixels by default (System ▸ Set Display Options changes it).
 const PICK_PX: f64 = 6.0;
 
 /// What the editing window shows.
@@ -59,6 +59,8 @@ pub struct View {
     pub viewport: (f64, f64),
     /// Counts Redraw Display requests.
     pub redraws: u64,
+    /// The pick tolerance in screen pixels.
+    pub pick_pixels: f64,
 }
 
 impl Default for View {
@@ -72,6 +74,7 @@ impl Default for View {
             false_origin: None,
             viewport: (1000.0, 700.0),
             redraws: 0,
+            pick_pixels: PICK_PX,
         }
     }
 }
@@ -79,7 +82,8 @@ impl Default for View {
 impl View {
     /// The pick tolerance in thou at the current zoom.
     pub fn pick_tolerance(&self) -> f64 {
-        (PICK_PX / self.zoom).clamp(2.0, 60.0)
+        let px = if self.pick_pixels.is_finite() { self.pick_pixels.clamp(1.0, 50.0) } else { PICK_PX };
+        (px / self.zoom).clamp(2.0, 60.0)
     }
 
     /// Sets the zoom, clamped to [`ZOOM_RANGE`]; non-finite values are ignored.

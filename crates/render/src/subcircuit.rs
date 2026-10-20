@@ -37,8 +37,9 @@ fn port_outline(kind: PortKind, at: Pt, dx: f64) -> Vec<Pt> {
 /// A subcircuit: box, name and ports.
 pub fn subcircuit_prims(s: &Subcircuit) -> Vec<Prim> {
     let r = s.rect();
-    let mut out =
-        vec![Prim::new(Shape::Polyline { points: r.corners().to_vec(), closed: true }, Ink::Subcircuit).width(BODY_WIDTH).fill(Some(Ink::BodyFill))];
+    let mut out = vec![
+        Prim::new(Shape::Polyline { points: r.corners().to_vec(), closed: true }, Ink::Subcircuit).width(BODY_WIDTH).fill(Some(Ink::SubcircuitFill)),
+    ];
     if !s.name.trim().is_empty() {
         let at = Pt::new(r.min.x, r.max.y + NAME_LIFT);
         out.push(Prim::new(

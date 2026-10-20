@@ -74,6 +74,8 @@ pub struct Style<'a> {
     pub texts: bool,
     /// Smallest stroke, in points.
     pub min_width: f32,
+    /// The design's template: its styles' colours replace the theme's.
+    pub template: Option<&'a protasena_doc::Template>,
 }
 
 /// Paints primitives.
@@ -94,7 +96,10 @@ impl Paint<'_> {
         if owner.is_some_and(|o| self.style.selected.contains(&o)) {
             return self.style.tokens.selection;
         }
-        self.style.tokens.ink(ink)
+        match self.style.template.and_then(|t| protasena_render::ink_colour(t, ink)) {
+            Some(c) => crate::theme::colour(c),
+            None => self.style.tokens.ink(ink),
+        }
     }
 
     /// The fill of a closed shape: a selected item's body fill is a soft tint of the selection

@@ -80,6 +80,9 @@ pub struct Session {
     pub(crate) commits: u64,
     pub(crate) guard: Option<Guard>,
     pub(crate) log: Vec<String>,
+    /// The system settings (System menu), with the file they are saved to.
+    pub(crate) settings: protasena_io::SystemSettings,
+    pub(crate) settings_path: Option<PathBuf>,
 }
 
 impl Default for Session {
@@ -125,6 +128,8 @@ impl Session {
             commits: 0,
             guard: None,
             log: Vec::new(),
+            settings: protasena_io::SystemSettings::default(),
+            settings_path: None,
         }
     }
 

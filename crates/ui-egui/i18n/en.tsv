@@ -19,6 +19,7 @@ ASCII Data Import Tool
 About Protasena
 Action
 Active Popup Mode
+Add
 Add Traces...
 Align Objects
 All Parts in the Design
@@ -41,15 +42,19 @@ Block Rotate
 Bottom Edges
 Bring To Front
 Browse...
+Bus
 Buses Mode
 Cancel
 Category
 Center At Cursor
+Circle
 Clear Graph Data...
 Clear Selection
 Click on the left or right edge in Subcircuit mode to add a port.
 Close Project
+Colour
 Compile To Library
+Component
 Component Mode
 Configure Diagnostics
 Configure Power Rails...
@@ -65,14 +70,17 @@ Cut To Clipboard
 DEVICES
 Debug
 Decompose
+Default
 Description
 Design
 Design Explorer
 Design Title
 Device
 Device Pins Mode
+Diamond
 Doc. No
 Don't Save
+Drag
 Drag a rectangle around the area to show
 Edit
 Edit Component
@@ -92,6 +100,7 @@ Ends
 Enter a number
 Equals
 Error
+Escape always cancels
 Exit Application
 Exit to Parent Sheet
 Explore Project Folder
@@ -107,13 +116,18 @@ Export SVG File
 Export Vector File
 Exported to
 File
+Fill
+Find
 Find/Edit Component
+Fixed-width font
+Font size (points)
 Format
 GENERATORS
 GRAPHICS
 GRAPHS
 Generator Mode
 Gerber Viewer
+Give each key to one command only.
 Global (the same net in every sub-sheet)
 Global Annotator
 Goto Child Sheet
@@ -124,9 +138,12 @@ Goto Sheet
 Graph
 Graph Mode
 Greater Than
+Grid
+Grid as lines
 Height (th)
 Help
 Hidden
+Highlight
 Home Page
 Horizontal Centres
 Horz. Tile Popup Windows
@@ -144,7 +161,10 @@ Left Edges
 Less Than
 Library
 Library Manager
+Library folder
 Licence: MIT OR Apache-2.0
+Line Colour
+Line Width (th)
 Line up the selected objects by their
 Loading parts library…
 MARKERS
@@ -184,6 +204,7 @@ Open-source schematic capture whose layout and workflow follow Proteus 8 Schemat
 Operator
 Other Properties
 Overview
+Own
 PCB Layout
 PCB Package
 PCB Preview
@@ -191,6 +212,7 @@ PINS
 PORTS
 PROBES
 Packaging Tool
+Paper
 Part Reference
 Part Value
 Parts
@@ -200,6 +222,10 @@ Pause
 Pause VSM Debugging
 Pick Devices
 Pick Parts
+Pick distance (pixels)
+Pin
+Pin Name
+Pin Number
 Place Library
 Play
 Port
@@ -214,10 +240,13 @@ Prints to a PDF file.
 Probe Mode
 Project Name
 Project Notes
+Project folder
 Property
 Property Assignment Tool
+Put every system setting (folders, display, keys, property definitions, sheet sizes, text editor) back to Protasena's defaults?
 Redo Changes
 Redraw Display
+Reference
 Remove
 Remove/Delete Sheet
 Rename
@@ -225,6 +254,7 @@ Reset Debug Popup Windows
 Reset Persistent Model Data
 Resolution (dpi)
 Restore Default Settings
+Restore Defaults
 Results
 Revision
 Right Edges
@@ -265,15 +295,18 @@ Set Sheet Sizes
 Set Simulation Options
 Set Text Editor
 Set Text Styles
+Shape
 Sheet Name
 Sheet Size
 Simulate Graph
 Simulation Help
+Size (th)
 Snap 0.1in
 Snap 0.5in
 Snap 10th
 Snap 50th
 Source Code
+Square
 Start VSM Debugging
 Step
 Step Into Source Line
@@ -283,6 +316,7 @@ Stop
 Stop VSM Debugging
 String
 Sub-category
+Subcircuit
 Subcircuit Mode
 Subcircuit Port
 System
@@ -291,6 +325,7 @@ TERMINALS
 Tagged
 Tagged Parts
 Template
+Terminal
 Terminals Mode
 Text
 Text Script Mode
@@ -312,6 +347,7 @@ Type the file name: this window has no file chooser
 Undo Changes
 Unsaved Changes
 VSM Model/SDK Help
+Value
 Verify Files
 Verify Graphs
 Verify Packagings
@@ -322,7 +358,11 @@ View
 View Simulation Log
 Virtual Instruments Mode
 Warning
+Wheel zoom factor
+Width (th)
+Wire
 Wire Autorouter
+Wire Label
 Wire Label Mode
 X-Mirror
 Y-Mirror
@@ -330,9 +370,15 @@ Zoom In
 Zoom Out
 Zoom To Area
 Zoom To View Entire Sheet
+also
+default
 devices removed
 e.g. RES, 74LS00
 findings
+is not a number
+none
+not a key
 objects removed
 of
 th
+width and height must be numbers

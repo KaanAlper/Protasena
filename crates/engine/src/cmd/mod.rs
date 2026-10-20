@@ -14,7 +14,9 @@ mod items;
 mod place;
 mod sheets;
 mod subcircuit;
+mod system;
 mod tag;
+mod template;
 mod view;
 mod wire;
 
@@ -49,6 +51,8 @@ pub(crate) fn all_specs() -> Vec<CommandSpec> {
     v.extend(assign::specs());
     v.extend(sheets::specs());
     v.extend(subcircuit::specs());
+    v.extend(template::specs());
+    v.extend(system::specs());
     v
 }
 

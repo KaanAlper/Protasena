@@ -145,27 +145,37 @@ impl DesignForm {
     }
 }
 
-/// The sheet sizes offered, with their parameter names.
-const SIZES: [(SheetSize, &str, &str); 10] = [
-    (SheetSize::A4, "a4", "A4"),
-    (SheetSize::A3, "a3", "A3"),
-    (SheetSize::A2, "a2", "A2"),
-    (SheetSize::A1, "a1", "A1"),
-    (SheetSize::A0, "a0", "A0"),
-    (SheetSize::A, "a", "A (ANSI)"),
-    (SheetSize::B, "b", "B (ANSI)"),
-    (SheetSize::C, "c", "C (ANSI)"),
-    (SheetSize::D, "d", "D (ANSI)"),
-    (SheetSize::E, "e", "E (ANSI)"),
+/// The named sheet sizes, with their parameter names (other sizes are sent as custom sizes).
+const NAMED: [(SheetSize, &str); 10] = [
+    (SheetSize::A4, "a4"),
+    (SheetSize::A3, "a3"),
+    (SheetSize::A2, "a2"),
+    (SheetSize::A1, "a1"),
+    (SheetSize::A0, "a0"),
+    (SheetSize::A, "a"),
+    (SheetSize::B, "b"),
+    (SheetSize::C, "c"),
+    (SheetSize::D, "d"),
+    (SheetSize::E, "e"),
 ];
 
-/// Edit Sheet Properties.
+/// The `size` parameter for a width and height in thou.
+fn size_param(width: f64, height: f64) -> serde_json::Value {
+    match NAMED.iter().find(|(z, _)| z.dimensions() == (width, height)) {
+        Some((_, id)) => json!(id),
+        None => json!({ "custom": { "width": width, "height": height } }),
+    }
+}
+
+/// Edit Sheet Properties: the sizes offered are System ▸ Set Sheet Sizes'.
 pub struct SheetForm {
     /// The sheet.
     pub sheet: SheetId,
     /// Its name.
     pub name: String,
-    /// Index into the size list (`None`: a custom size, kept).
+    /// The sizes offered: name, width and height in thou.
+    pub sizes: Vec<(String, f64, f64)>,
+    /// Index into the sizes (`None`: the sheet's own size, kept).
     pub size: Option<usize>,
     /// The last refusal.
     pub error: Option<String>,
@@ -175,17 +185,20 @@ impl SheetForm {
     /// The form for `sheet`.
     pub fn new(s: &Session, sheet: SheetId) -> Option<Self> {
         let sh = s.project().sheet(sheet)?;
-        Some(Self { sheet, name: sh.name.clone(), size: SIZES.iter().position(|z| z.0 == sh.size), error: None })
+        let sizes: Vec<(String, f64, f64)> = s.settings().sheet_sizes.iter().map(|z| (z.name.clone(), z.width, z.height)).collect();
+        let (w, h) = sh.size.dimensions();
+        let size = sizes.iter().position(|z| (z.1 - w).abs() < 0.5 && (z.2 - h).abs() < 0.5);
+        Some(Self { sheet, name: sh.name.clone(), sizes, size, error: None })
     }
 
     pub(super) fn ui(&mut self, ui: &mut Ui) -> Reply {
         egui::Grid::new("sheet-properties").num_columns(2).spacing([12.0, 8.0]).show(ui, |ui| {
             field(ui, tl!("Sheet Name"), &mut self.name, 260.0);
             ui.label(tl!("Sheet Size"));
-            let shown = self.size.and_then(|i| SIZES.get(i)).map_or(tl!("Custom"), |z| z.2);
+            let shown = self.size.and_then(|i| self.sizes.get(i)).map_or(tl!("Custom").to_owned(), |z| z.0.clone());
             egui::ComboBox::from_id_salt("sheet-size").selected_text(shown).show_ui(ui, |ui| {
-                for (i, z) in SIZES.iter().enumerate() {
-                    ui.selectable_value(&mut self.size, Some(i), z.2);
+                for (i, z) in self.sizes.iter().enumerate() {
+                    ui.selectable_value(&mut self.size, Some(i), &z.0);
                 }
             });
             ui.end_row();
@@ -197,8 +210,8 @@ impl SheetForm {
         }
         if ok {
             let mut params = json!({ "sheet": self.sheet.0, "name": self.name.trim() });
-            if let (Some(z), Some(o)) = (self.size.and_then(|i| SIZES.get(i)), params.as_object_mut()) {
-                o.insert("size".into(), json!(z.1));
+            if let (Some(z), Some(o)) = (self.size.and_then(|i| self.sizes.get(i)), params.as_object_mut()) {
+                o.insert("size".into(), size_param(z.1, z.2));
             }
             return Reply::Run { cmd: "sheet-properties", params, keep: false };
         }
@@ -215,5 +228,11 @@ mod tests {
         assert_eq!(netlist_format("a/b.CIR"), "spice");
         assert_eq!(netlist_format("x.json"), "json");
         assert_eq!(netlist_format("x"), "json");
+    }
+
+    #[test]
+    fn named_sizes_keep_their_names_and_others_are_custom() {
+        assert_eq!(size_param(11_693.0, 8_268.0), json!("a4"));
+        assert_eq!(size_param(20_000.0, 5_000.0), json!({ "custom": { "width": 20_000.0, "height": 5_000.0 } }));
     }
 }

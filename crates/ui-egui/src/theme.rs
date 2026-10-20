@@ -217,11 +217,25 @@ impl Tokens {
         Self::of(ACTIVE.with(Cell::get))
     }
 
+    /// The palette with a design's own colours (Template ▸ Set Design Colours) where it sets
+    /// them: the paper, the grid, the highlight of selected objects and dragged ones.
+    pub fn with_design(self, c: &protasena_doc::DesignColours) -> Tokens {
+        let pick = |c: Option<protasena_doc::Colour>, d: Color32| c.map_or(d, colour);
+        Tokens {
+            sheet: pick(c.paper, self.sheet),
+            grid: pick(c.grid, self.grid),
+            grid_line: c.grid.map_or(self.grid_line, |g| colour(g).gamma_multiply(0.6)),
+            selection: pick(c.highlight, self.selection),
+            preview: pick(c.drag, self.preview),
+            ..self
+        }
+    }
+
     /// The colour of a drawing ink.
     pub fn ink(&self, ink: Ink) -> Color32 {
         match ink {
             Ink::Body | Ink::Pin | Ink::BodyText => self.body,
-            Ink::BodyFill => self.body_fill,
+            Ink::BodyFill | Ink::GraphicFill | Ink::SubcircuitFill => self.body_fill,
             Ink::PinName => self.pin_name,
             Ink::PinNumber => self.pin_number,
             Ink::Reference => self.reference,
@@ -239,6 +253,12 @@ impl Tokens {
             Ink::Silk => self.silk,
         }
     }
+}
+
+/// A design colour as an egui colour.
+pub fn colour(c: protasena_doc::Colour) -> Color32 {
+    let [r, g, b] = c.0;
+    Color32::from_rgb(r, g, b)
 }
 
 const fn hex(rgb: u32) -> Color32 {

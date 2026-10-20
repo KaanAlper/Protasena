@@ -2,7 +2,7 @@
 //!
 //! A [`Project`] holds [`Sheet`]s (name, [`SheetSize`]) with their [`Component`]s, [`Wire`]s,
 //! [`Junction`]s, net [`Label`]s, [`Bus`]es, [`BusEntry`]s, [`Terminal`]s, [`Text`]s, 2D
-//! [`Graphic`]s and [`Subcircuit`]s, plus [`DesignProperties`]. A subcircuit's child sheet makes
+//! [`Graphic`]s and [`Subcircuit`]s, plus [`DesignProperties`] and the [`Template`] settings. A subcircuit's child sheet makes
 //! the sheets a hierarchy ([`Project::sheet_tree`]). Every sheet and item has a stable typed id ([`ComponentId`], …) from
 //! one project-wide counter.
 //!
@@ -51,6 +51,7 @@ mod properties;
 mod serde_impl;
 mod sheet;
 mod subcircuit;
+mod template;
 
 pub use annotate::split_reference;
 pub use error::DocError;
@@ -64,3 +65,7 @@ pub use project::{DesignProperties, FIRST_SHEET_NAME, Project};
 pub use properties::Properties;
 pub use sheet::{Sheet, SheetSize};
 pub use subcircuit::{MAX_PORTS, Port, PortKind, PortSide, Subcircuit};
+pub use template::{
+    Colour, DesignColours, GraphicStyle, GraphicStyles, Graphics2d, JunctionShape, JunctionStyle, MAX_JUNCTION_SIZE, MAX_STYLE_HEIGHT,
+    MAX_STYLE_WIDTH, Template, TextStyle, TextStyles,
+};

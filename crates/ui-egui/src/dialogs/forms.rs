@@ -170,6 +170,8 @@ pub struct TextForm {
     pub text: String,
     /// Character height in thou, as typed (empty: the default).
     pub size: String,
+    /// System ▸ Set Text Editor: the editor's font size in points and whether it is fixed-width.
+    pub font: (f32, bool),
     /// The last refusal.
     pub error: Option<String>,
 }
@@ -177,19 +179,27 @@ pub struct TextForm {
 impl TextForm {
     /// A new text at `at`.
     pub fn new_at(at: Pt) -> Self {
-        Self { target: Target::New(at), text: String::new(), size: String::new(), error: None }
+        Self { target: Target::New(at), text: String::new(), size: String::new(), font: (crate::theme::BODY_SIZE, false), error: None }
     }
 
     /// An existing text.
     pub fn edit(s: &Session, id: TextId) -> Option<Self> {
         let t = s.sheet()?.texts.iter().find(|t| t.id == id)?;
         let size = if t.size > 0.0 { format!("{}", t.size) } else { String::new() };
-        Some(Self { target: Target::Edit(id), text: t.text.clone(), size, error: None })
+        Some(Self { target: Target::Edit(id), text: t.text.clone(), size, font: (crate::theme::BODY_SIZE, false), error: None })
+    }
+
+    /// The same form with the text editor of the system settings.
+    pub fn editor(self, s: &Session) -> Self {
+        let e = s.settings().text_editor;
+        Self { font: (e.font_size as f32, e.monospace), ..self }
     }
 
     pub(super) fn ui(&mut self, ui: &mut Ui) -> Reply {
         ui.label(tl!("Text"));
-        let r = ui.add(egui::TextEdit::multiline(&mut self.text).desired_rows(4).desired_width(340.0));
+        let family = if self.font.1 { egui::FontFamily::Monospace } else { egui::FontFamily::Proportional };
+        let font = egui::FontId::new(self.font.0.clamp(6.0, 48.0), family);
+        let r = ui.add(egui::TextEdit::multiline(&mut self.text).font(font).desired_rows(4).desired_width(340.0));
         control::record(ui, &r, tl!("Text"), "field", None);
         egui::Grid::new("text-size").num_columns(2).spacing([12.0, 8.0]).show(ui, |ui| field(ui, tl!("Height (th)"), &mut self.size, 80.0));
         error_line(ui, self.error.as_ref());

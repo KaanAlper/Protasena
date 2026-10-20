@@ -35,7 +35,7 @@ use serde_json::Value;
 
 use crate::error::{EngineError, Result};
 use crate::hit::{Hit, hit};
-use crate::registry::{Outcome, command_for_key};
+use crate::registry::Outcome;
 use crate::request::Request;
 use crate::session::Session;
 
@@ -191,7 +191,7 @@ impl Session {
             self.cancel();
             return Ok(if was_busy { Feedback::handled() } else { Feedback::default() });
         }
-        let Some(spec) = command_for_key(k) else { return Ok(Feedback::default()) };
+        let Some(spec) = crate::keymap::command_for(&self.settings.keys, k) else { return Ok(Feedback::default()) };
         if spec.id == "delete" && self.selection.is_empty() {
             return Ok(Feedback::default());
         }

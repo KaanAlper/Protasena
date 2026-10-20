@@ -41,10 +41,14 @@ pub enum Ink {
     Text,
     /// A 2D graphic (line, box, circle, arc, closed path).
     Graphic,
+    /// The fill of a closed 2D graphic (when the 2D graphics defaults give one).
+    GraphicFill,
     /// A subcircuit's box and name.
     Subcircuit,
     /// A subcircuit's ports and their names.
     Port,
+    /// The fill of a subcircuit's box.
+    SubcircuitFill,
     /// The sheet border.
     SheetBorder,
     /// A package pad.

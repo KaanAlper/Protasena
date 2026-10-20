@@ -13,7 +13,16 @@ const CAP: f64 = 0.7;
 /// Layers: name and AutoCAD colour index, for each ink.
 fn layer(ink: Ink) -> (&'static str, u8) {
     match ink {
-        Ink::Body | Ink::BodyFill | Ink::BodyText | Ink::Pin | Ink::Missing | Ink::Graphic | Ink::Subcircuit | Ink::Port => ("BODY", 1),
+        Ink::Body
+        | Ink::BodyFill
+        | Ink::BodyText
+        | Ink::Pin
+        | Ink::Missing
+        | Ink::Graphic
+        | Ink::GraphicFill
+        | Ink::Subcircuit
+        | Ink::SubcircuitFill
+        | Ink::Port => ("BODY", 1),
         Ink::PinName | Ink::PinNumber => ("PINTEXT", 5),
         Ink::Reference | Ink::Value | Ink::Text => ("TEXT", 7),
         Ink::Wire | Ink::Junction => ("WIRES", 3),

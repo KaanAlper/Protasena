@@ -92,9 +92,15 @@ fn overview(app: &mut App, ui: &mut Ui, clicked: &mut Option<Clicked>) {
     let x = Xform::fit(rect, paper, 8.0);
     let painter = ui.painter_at(rect);
     painter.rect_filled(egui::Rect::from_two_pos(x.to_screen(paper.min), x.to_screen(paper.max)), 0.0, t.sheet);
-    let list = protasena_render::sheet_display_list(sheet, app.session.library());
+    let template = app.session.project().template;
+    let list = protasena_render::styled_sheet_display_list(sheet, app.session.library(), &template);
     let none = HashSet::new();
-    let p = Paint { painter: &painter, x, style: Style { tokens: t, ink: None, selected: &none, texts: false, min_width: 0.8 } };
+    let t = t.with_design(&template.colours);
+    let p = Paint {
+        painter: &painter,
+        x,
+        style: Style { tokens: t, ink: None, selected: &none, texts: false, min_width: 0.8, template: Some(&template) },
+    };
     p.all(&list.prims);
     if let Some(cx) = app.canvas.xform {
         let v = cx.visible();
