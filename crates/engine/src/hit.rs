@@ -2,7 +2,7 @@
 
 use std::collections::HashSet;
 
-use protasena_doc::{BusEntryId, BusId, ComponentId, ItemId, JunctionId, LabelId, Sheet, TerminalId, TextId, WireId};
+use protasena_doc::{BusEntryId, BusId, ComponentId, GraphicId, ItemId, JunctionId, LabelId, Sheet, TerminalId, TextId, WireId};
 use protasena_geom::{Orient, Pt, Rect, Segment, Vec2};
 use protasena_library::Library;
 use serde::Serialize;
@@ -81,6 +81,11 @@ pub enum Hit {
         /// The bus entry.
         id: BusEntryId,
     },
+    /// A 2D graphic's outline.
+    Graphic {
+        /// The graphic.
+        id: GraphicId,
+    },
     /// A component body.
     Component {
         /// The component.
@@ -100,6 +105,7 @@ impl Hit {
             Hit::Text { id } => ItemId::Text(*id),
             Hit::Bus { id, .. } => ItemId::Bus(*id),
             Hit::BusEntry { id } => ItemId::BusEntry(*id),
+            Hit::Graphic { id } => ItemId::Graphic(*id),
         }
     }
 
@@ -126,7 +132,7 @@ impl Hit {
             Hit::Terminal { .. } | Hit::Label { .. } => 2,
             Hit::Text { .. } => 3,
             Hit::Wire { .. } => 4,
-            Hit::Bus { .. } | Hit::BusEntry { .. } => 5,
+            Hit::Bus { .. } | Hit::BusEntry { .. } | Hit::Graphic { .. } => 5,
             Hit::Component { .. } => 6,
         }
     }
@@ -194,6 +200,12 @@ pub fn hits(sheet: &Sheet, library: &Library, p: Pt, tol: f64) -> Vec<Hit> {
             found.push((Hit::BusEntry { id: e.id }, d));
         }
     }
+    for g in &sheet.graphics {
+        let d = crate::graphics::distance(&g.shape, p);
+        if d <= tol {
+            found.push((Hit::Graphic { id: g.id }, d));
+        }
+    }
     found.sort_by(|(a, da), (b, db)| a.rank().cmp(&b.rank()).then(da.total_cmp(db)));
     found.into_iter().map(|(h, _)| h).collect()
 }
@@ -214,6 +226,7 @@ pub fn item_bounds(sheet: &Sheet, library: &Library, id: ItemId) -> Option<Rect>
         ItemId::Label(i) => sheet.labels.iter().find(|l| l.id == i).map(|l| Rect::from_point(l.at)),
         ItemId::Text(i) => sheet.texts.iter().find(|t| t.id == i).map(|t| Rect::from_point(t.at)),
         ItemId::BusEntry(i) => sheet.bus_entries.iter().find(|e| e.id == i).map(|e| Rect::new(e.bus_end, e.wire_end)),
+        ItemId::Graphic(i) => sheet.graphics.iter().find(|g| g.id == i).and_then(|g| g.shape.bounds()),
     }
 }
 
@@ -241,6 +254,7 @@ fn every_bounds(sheet: &Sheet, library: &Library) -> Vec<(ItemId, Rect)> {
     out.extend(sheet.labels.iter().map(|l| (ItemId::Label(l.id), Rect::from_point(l.at))));
     out.extend(sheet.texts.iter().map(|t| (ItemId::Text(t.id), Rect::from_point(t.at))));
     out.extend(sheet.bus_entries.iter().map(|e| (ItemId::BusEntry(e.id), Rect::new(e.bus_end, e.wire_end))));
+    out.extend(sheet.graphics.iter().filter_map(|g| Some((ItemId::Graphic(g.id), g.shape.bounds()?))));
     out
 }
 

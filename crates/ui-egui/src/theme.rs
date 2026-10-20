@@ -228,6 +228,7 @@ impl Tokens {
             Ink::Label => self.label,
             Ink::Terminal | Ink::TerminalText => self.terminal,
             Ink::Text => self.text_item,
+            Ink::Graphic => self.body,
             Ink::SheetBorder => self.sheet_border,
             Ink::Pad => self.pad,
             Ink::Silk => self.silk,

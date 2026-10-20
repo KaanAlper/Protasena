@@ -192,7 +192,7 @@ pub fn sheet_rect(sheet: &Sheet) -> Rect {
 }
 
 /// Everything on a sheet in drawing order: border, buses, wires, components, labels,
-/// terminals, texts, junction dots on top.
+/// terminals, 2D graphics, texts, junction dots on top.
 pub fn sheet_display_list(sheet: &Sheet, library: &Library) -> DisplayList {
     let mut list = DisplayList::default();
     let r = sheet_rect(sheet);
@@ -203,6 +203,7 @@ pub fn sheet_display_list(sheet: &Sheet, library: &Library) -> DisplayList {
     sheet.components.iter().for_each(|c| list.extend(component_prims(c, library)));
     sheet.labels.iter().for_each(|l| list.extend(label_prims(l)));
     sheet.terminals.iter().for_each(|t| list.extend(terminal_prims(t)));
+    sheet.graphics.iter().for_each(|g| list.extend(crate::graphics::graphic_prims(g)));
     sheet.texts.iter().for_each(|t| list.extend(text_prims(t)));
     sheet.junctions.iter().for_each(|j| list.extend(junction_prims(j)));
     list
@@ -220,6 +221,7 @@ pub fn item_prims(item: &protasena_doc::Item, library: &Library) -> Vec<Prim> {
         Item::Bus(b) => bus_prims(b),
         Item::BusEntry(e) => bus_entry_prims(e),
         Item::Text(t) => text_prims(t),
+        Item::Graphic(g) => crate::graphics::graphic_prims(g),
     }
 }
 

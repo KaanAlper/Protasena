@@ -3,6 +3,7 @@
 use protasena_geom::{Pt, Vec2};
 
 use crate::error::DocError;
+use crate::graphic::Graphic;
 use crate::ids::ItemId;
 use crate::items::{Bus, BusEntry, Component, Junction, Label, Terminal, Text, Wire};
 
@@ -27,6 +28,8 @@ pub enum Item {
     BusEntry(BusEntry),
     /// A free text.
     Text(Text),
+    /// A 2D graphic.
+    Graphic(Graphic),
 }
 
 impl Item {
@@ -41,6 +44,7 @@ impl Item {
             Self::Bus(b) => ItemId::Bus(b.id),
             Self::BusEntry(e) => ItemId::BusEntry(e.id),
             Self::Text(t) => ItemId::Text(t.id),
+            Self::Graphic(g) => ItemId::Graphic(g.id),
         }
     }
 
@@ -69,6 +73,7 @@ impl Item {
                 finite(t.at, "text position")?;
                 if t.size.is_finite() && t.size >= 0.0 { Ok(()) } else { Err(DocError::NonFinite("text size")) }
             }
+            Self::Graphic(g) => g.shape.check(),
         }
     }
 
@@ -92,6 +97,7 @@ impl Item {
             Self::Terminal(t) => Self::Terminal(Terminal { at: t.at + by, ..t.clone() }),
             Self::BusEntry(e) => Self::BusEntry(BusEntry { bus_end: e.bus_end + by, wire_end: e.wire_end + by, ..*e }),
             Self::Text(t) => Self::Text(Text { at: t.at + by, ..t.clone() }),
+            Self::Graphic(g) => Self::Graphic(Graphic { id: g.id, shape: g.shape.map(|p| p + by) }),
         };
         moved.check()?;
         Ok(moved)

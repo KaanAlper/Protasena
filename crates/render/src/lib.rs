@@ -32,11 +32,13 @@
 #![warn(missing_docs)]
 
 pub mod geometry;
+mod graphics;
 mod items;
 mod package;
 mod prim;
 mod symbol;
 
+pub use graphics::{GRAPHIC_WIDTH, graphic_prims, graphic_shape};
 pub use items::{
     BUS_WIDTH, JUNCTION_RADIUS, LABEL_SIZE, MISSING_HALF, REFERENCE_SIZE, TEXT_SIZE, VALUE_SIZE, WIRE_WIDTH, bus_entry_prims, bus_prims,
     component_prims, field_align, find_device, item_prims, junction_prims, label_prims, sheet_display_list, sheet_rect, terminal_prims, text_prims,

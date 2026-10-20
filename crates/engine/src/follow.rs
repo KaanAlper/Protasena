@@ -4,7 +4,7 @@
 
 use std::collections::HashSet;
 
-use protasena_doc::{Bus, BusEntry, Component, DocError, Item, ItemId, Junction, Label, Op, Sheet, Terminal, Text, Wire, WireId};
+use protasena_doc::{Bus, BusEntry, Component, DocError, Graphic, Item, ItemId, Junction, Label, Op, Sheet, Terminal, Text, Wire, WireId};
 use protasena_geom::{Orient, Pt, Transform, Vec2};
 use protasena_library::Library;
 
@@ -36,12 +36,14 @@ pub fn transformed(item: &Item, t: Transform) -> Result<Item, DocError> {
         Item::Terminal(x) => Item::Terminal(Terminal { at: t.apply_pt(x.at), orient: turned(x.orient), ..x.clone() }),
         Item::Text(x) => Item::Text(Text { at: t.apply_pt(x.at), orient: turned(x.orient), ..x.clone() }),
         Item::BusEntry(e) => Item::BusEntry(BusEntry { id: e.id, bus_end: t.apply_pt(e.bus_end), wire_end: t.apply_pt(e.wire_end) }),
+        Item::Graphic(g) => Item::Graphic(Graphic { id: g.id, shape: g.shape.map(|p| t.apply_pt(p)) }),
     };
     out.check()?;
     Ok(out)
 }
 
-/// A component turned by `o` about its own origin.
+/// An item turned by `o` about its own origin (a component's origin, a text's anchor, a
+/// polyline's or graphic's first point).
 pub fn turned_in_place(item: &Item, o: Orient) -> Result<Item, DocError> {
     let pivot = match item {
         Item::Component(c) => c.origin(),
@@ -52,6 +54,9 @@ pub fn turned_in_place(item: &Item, o: Orient) -> Result<Item, DocError> {
         Item::Wire(w) => w.points.first().copied().unwrap_or(Pt::ORIGIN),
         Item::Bus(b) => b.points.first().copied().unwrap_or(Pt::ORIGIN),
         Item::BusEntry(e) => e.bus_end,
+        // A circle turns about its centre, the other shapes about their first point (it stays
+        // on the grid).
+        Item::Graphic(g) => g.shape.points().first().copied().unwrap_or(Pt::ORIGIN),
     };
     transformed(item, Transform::about(pivot, o))
 }

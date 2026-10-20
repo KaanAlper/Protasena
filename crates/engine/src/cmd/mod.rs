@@ -6,6 +6,7 @@ mod clip;
 mod design;
 mod edit;
 mod file;
+mod graphics;
 mod items;
 mod place;
 mod sheets;
@@ -32,6 +33,7 @@ pub(crate) fn all_specs() -> Vec<CommandSpec> {
     v.extend(view::specs());
     v.extend(place::specs());
     v.extend(items::specs());
+    v.extend(graphics::specs());
     v.extend(wire::specs());
     v.extend(design::specs());
     v.extend(sheets::specs());
@@ -54,5 +56,6 @@ pub(crate) fn with_id(item: &Item, raw: u64) -> Item {
         Item::Bus(b) => Item::Bus(protasena_doc::Bus { id: Id::from_raw(raw), ..b.clone() }),
         Item::BusEntry(e) => Item::BusEntry(protasena_doc::BusEntry { id: Id::from_raw(raw), ..*e }),
         Item::Text(t) => Item::Text(protasena_doc::Text { id: Id::from_raw(raw), ..t.clone() }),
+        Item::Graphic(g) => Item::Graphic(protasena_doc::Graphic { id: Id::from_raw(raw), shape: g.shape.clone() }),
     }
 }

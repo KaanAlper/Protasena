@@ -68,6 +68,8 @@ pub struct Session {
     pub(crate) view: View,
     pub(crate) cursor: Pt,
     pub(crate) raw_cursor: Pt,
+    /// Where the last press of a 2D graphic was (to tell a drag from a click).
+    pub(crate) press_at: Pt,
     pub(crate) hover: Option<Hit>,
     pub(crate) machine: Machine,
     pub(crate) undo: Vec<Step>,
@@ -112,6 +114,7 @@ impl Session {
             view: View::default(),
             cursor: Pt::ORIGIN,
             raw_cursor: Pt::ORIGIN,
+            press_at: Pt::ORIGIN,
             hover: None,
             machine: Machine::Idle,
             undo: Vec::new(),

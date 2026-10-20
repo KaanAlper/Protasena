@@ -48,6 +48,7 @@ mod bodies;
 mod cmd;
 mod error;
 mod follow;
+pub mod graphics;
 pub mod hit;
 pub mod interact;
 mod mode;

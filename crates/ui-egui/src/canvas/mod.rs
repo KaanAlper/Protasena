@@ -16,7 +16,7 @@ use egui::{Color32, CornerRadius, Frame, Pos2, Rect, Sense, Stroke, Ui, pos2, ve
 use protasena_doc::{ItemId, Sheet};
 use protasena_engine::{Hit, Preview};
 use protasena_geom::Pt;
-use protasena_render::{DisplayList, Prim, component_prims, item_prims, sheet_display_list, sheet_rect};
+use protasena_render::{DisplayList, GRAPHIC_WIDTH, Ink, Prim, component_prims, graphic_shape, item_prims, sheet_display_list, sheet_rect};
 use serde_json::json;
 
 pub use paint::{Paint, Style, Xform};
@@ -123,6 +123,9 @@ fn previews(app: &App, painter: &egui::Painter, x: Xform) {
     }
     for item in &pv.moved {
         ghost.all(&item_prims(item, app.session.library()));
+    }
+    if let Some(shape) = &pv.graphic {
+        ghost.all(&[Prim::new(graphic_shape(shape), Ink::Graphic).width(GRAPHIC_WIDTH)]);
     }
     for (pts, width) in [(&pv.wire, 2.0), (&pv.bus, 4.0)] {
         if pts.len() >= 2 {

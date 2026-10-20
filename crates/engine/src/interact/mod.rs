@@ -15,6 +15,7 @@
 //! - **Junction Dot**, **Terminals**: a click places one. **Wire Label**: a click on a wire asks
 //!   for the label text. **Buses**: clicks add corners, a double click or the right button
 //!   finishes. **Text Script**, **2D Graphics Text**: a click asks for the text.
+//! - **2D Graphics Line, Box, Circle, Arc, Closed Path**: see [`crate::graphics`].
 
 mod machine;
 mod modes;

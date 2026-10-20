@@ -39,6 +39,8 @@ pub enum Ink {
     TerminalText,
     /// Free text.
     Text,
+    /// A 2D graphic (line, box, circle, arc, closed path).
+    Graphic,
     /// The sheet border.
     SheetBorder,
     /// A package pad.

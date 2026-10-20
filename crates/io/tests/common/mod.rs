@@ -18,8 +18,8 @@ fn add(p: &mut Project, sheet: SheetId, item: Item) {
     p.apply(Op::Add { sheet, item, index: None }).unwrap();
 }
 
-/// Two sheets with a resistor divider, a label, a terminal, a junction, a bus, a text and
-/// properties, built only through operations (including an insertion in the middle of a list).
+/// Two sheets with a resistor divider, a label, a terminal, a junction, a bus, a text, one 2D
+/// graphic of each kind and properties, built only through operations (including an insertion in the middle of a list).
 pub fn sample_project() -> Project {
     let mut p = Project::new("divider");
     let design = DesignProperties { title: "Divider \"test\" ünïcode".into(), author: "Tester".into(), ..DesignProperties::default() };
@@ -58,6 +58,17 @@ pub fn sample_project() -> Project {
     add(&mut p, s2, Item::BusEntry(BusEntry { id: e, bus_end: Pt::new(0.0, 500.0), wire_end: Pt::new(100.0, 600.0) }));
     let x: TextId = p.fresh_id().unwrap();
     add(&mut p, s2, Item::Text(Text { id: x, at: Pt::new(-1.0, 2.0), text: "line 1\nline 2\t✓".into(), size: 12.5, orient: Orient::IDENTITY }));
+    let pt = Pt::new;
+    for shape in [
+        GraphicShape::Line { a: pt(0.0, 0.0), b: pt(500.0, 0.0) },
+        GraphicShape::Box { a: pt(-100.0, -100.0), b: pt(300.0, 200.5) },
+        GraphicShape::Circle { center: pt(1000.0, 0.0), radius: 0.1 + 0.2 },
+        GraphicShape::Arc { start: pt(0.0, 0.0), mid: pt(100.0, 100.0), end: pt(200.0, 0.0) },
+        GraphicShape::Path { points: vec![pt(0.0, 0.0), pt(400.0, 0.0), pt(200.0, 300.0)] },
+    ] {
+        let id: GraphicId = p.fresh_id().unwrap();
+        add(&mut p, s2, Item::Graphic(Graphic { id, shape }));
+    }
     assert!(p.issues().is_empty(), "{:?}", p.issues());
     p
 }

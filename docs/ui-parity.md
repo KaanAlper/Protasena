@@ -1,6 +1,6 @@
 # UI parity
 
-> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (unsaved-changes question on Exit and window close) · **Target:** Labcenter Proteus 8 Professional (Windows)
+> **Last reviewed:** 2026-10-20 · **Last updated:** 2026-10-20 · **Change:** minor (2D graphics Line, Box, Circle, Arc and Closed Path modes) · **Target:** Labcenter Proteus 8 Professional (Windows)
 
 Protasena's Schematic Capture interface element by element against Proteus's: menus, toolbars,
 the mode toolbar, the overview window, the object selector, the editing window, the status bar
@@ -8,7 +8,7 @@ and dialogs. Rows come from the observed UI inventory (`plan/proteus/notes/ui-in
 local), written in our own words. Status: ✅ matches, ◐ partial (differences listed), ✗ missing,
 ★ intentional improvement approved by the owner. Work items: [gaps.md](gaps.md).
 
-**Headline (measured, counted from the rows below): 3 of 253 rows match** (✅ 3, ◐ 124, ✗ 126).
+**Headline (measured, counted from the rows below): 3 of 253 rows match** (✅ 3, ◐ 129, ✗ 121).
 Proteus could only be observed from its menus, window tree and one screenshot (it runs elevated
 on the reference PC, so no click, tooltip or dialog reached it): labels, order, shortcut texts
 and placement are taken from that observation; every behaviour, enabled rule and dialog is
@@ -230,11 +230,11 @@ Buttons mirror the menu item of the same name.
 | Generator Mode |  | ✗ | Shown disabled: the engine has no machine for it yet. Object selector caption GENERATORS (list empty) |
 | Probe Mode |  | ✗ | Shown disabled: the engine has no machine for it yet. Object selector caption PROBES (list empty) |
 | Virtual Instruments Mode |  | ✗ | Shown disabled: the engine has no machine for it yet. Object selector caption INSTRUMENTS (list empty) |
-| 2D Graphics Line Mode |  | ✗ | Shown disabled: the engine has no machine for it yet. Object selector caption GRAPHICS (list empty) |
-| 2D Graphics Box Mode |  | ✗ | Shown disabled: the engine has no machine for it yet. Object selector caption GRAPHICS (list empty) |
-| 2D Graphics Circle Mode |  | ✗ | Shown disabled: the engine has no machine for it yet. Object selector caption GRAPHICS (list empty) |
-| 2D Graphics Arc Mode |  | ✗ | Shown disabled: the engine has no machine for it yet. Object selector caption GRAPHICS (list empty) |
-| 2D Graphics Closed Path Mode |  | ✗ | Shown disabled: the engine has no machine for it yet. Object selector caption GRAPHICS (list empty) |
+| 2D Graphics Line Mode |  | ◐ | Engine machine (`line`): two clicks or a press-drag-release give the ends, on the grid. **To compare** (Proteus not observed): clicks, rubber band, line style, defaults. Object selector: GRAPHICS (list empty) |
+| 2D Graphics Box Mode |  | ◐ | Engine machine (`box`): two clicks or a press-drag-release give opposite corners. **To compare**: clicks, style, fill, defaults. Object selector: GRAPHICS (list empty) |
+| 2D Graphics Circle Mode |  | ◐ | Engine machine (`circle`): centre, then a point on the circle (or a drag). **To compare**: clicks (centre or corner first), style, fill. Object selector: GRAPHICS (list empty) |
+| 2D Graphics Arc Mode |  | ◐ | Engine machine (`arc`): three clicks (start, end, a point on the arc) or a drag from start to end and a click. **To compare**: Proteus's arc construction (it may draw quarter arcs), style. Object selector: GRAPHICS (list empty) |
+| 2D Graphics Closed Path Mode |  | ◐ | Engine machine (`closed-path`): a click per corner, a double click or the right button closes it (three corners or more), Escape cancels. **To compare**: clicks, curved segments, fill. Object selector: GRAPHICS (list empty) |
 | 2D Graphics Text Mode |  | ◐ | Engine machine (set-mode `2D Graphics Text Mode`); clicks, drags and defaults not compared. Object selector: GRAPHICS |
 | 2D Graphics Symbols Mode |  | ✗ | Shown disabled: the engine has no machine for it yet. Object selector caption SYMBOLS (list empty) |
 | 2D Graphics Markers Mode |  | ✗ | Shown disabled: the engine has no machine for it yet. Object selector caption MARKERS (list empty) |
@@ -311,3 +311,4 @@ Our own layouts following each dialog's purpose; Proteus's dialogs were not obse
 | 2026-10-20 | major | First version: empty skeleton, sections for the Schematic Capture layout |
 | 2026-10-20 | major | Rows for every menu item, toolbar button, mode, pane element, status field and dialog of the M1 Task 9 window; 3 of 253 rows match (layout order), behaviour not yet compared |
 | 2026-10-20 | minor | Exit Application and the window's close button ask Save / Don't Save / Cancel with unsaved changes, as New and Open do (to compare) |
+| 2026-10-20 | minor | 2D Graphics Line, Box, Circle, Arc and Closed Path modes built the conventional way (to compare) |

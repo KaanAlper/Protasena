@@ -1,11 +1,12 @@
 //! Pointer events per mode.
 
 use protasena_doc::ItemId;
-use protasena_geom::Rect;
+use protasena_geom::{Pt, Rect};
 use serde_json::{Value, json};
 
 use super::{Feedback, Machine, PointerEvent};
 use crate::error::Result;
+use crate::graphics;
 use crate::hit::{Hit, items_in};
 use crate::mode::Mode;
 use crate::request::Request;
@@ -44,6 +45,7 @@ impl Session {
                 self.machine = Machine::Bus(points);
                 return Ok(Feedback::handled());
             }
+            Machine::Graphic { mode, points } => return self.graphic_click(mode, points),
             Machine::Idle | Machine::Press { .. } => {}
         }
         if self.mode.starts_wires()
@@ -71,6 +73,11 @@ impl Session {
                 Ok(Feedback::handled())
             }
             Mode::TextScript | Mode::Text2d => Ok(Feedback::request(Request::Text { at: self.cursor })),
+            m if graphics::draws_shape(m) => {
+                self.machine = Machine::Graphic { mode: m, points: vec![self.cursor] };
+                self.press_at = ev.at;
+                Ok(Feedback::handled())
+            }
             m => Ok(Feedback::message(format!("{} is not available yet", m.label()))),
         }
     }
@@ -122,9 +129,39 @@ impl Session {
         )
     }
 
+    /// A click while a 2D graphic is being drawn: fixes a point, and makes the shape once it
+    /// has all its points.
+    fn graphic_click(&mut self, mode: Mode, mut points: Vec<Pt>) -> Result<Feedback> {
+        if points.last() == Some(&self.cursor) {
+            self.machine = Machine::Graphic { mode, points };
+            return Ok(Feedback::handled());
+        }
+        if points.len() >= graphics::MAX_DRAWN_CORNERS {
+            self.machine = Machine::Graphic { mode, points };
+            return Ok(Feedback::message("A closed path takes at most 1000 corners: double-click to close it"));
+        }
+        points.push(self.cursor);
+        self.press_at = self.raw_cursor;
+        if graphics::points_needed(mode) == Some(points.len()) {
+            return self.finish_graphic(mode, &points);
+        }
+        self.machine = Machine::Graphic { mode, points };
+        Ok(Feedback::handled())
+    }
+
+    /// Runs the command that makes the drawn shape.
+    fn finish_graphic(&mut self, mode: Mode, points: &[Pt]) -> Result<Feedback> {
+        self.machine = Machine::Idle;
+        match graphics::command(mode, points) {
+            Some((id, params)) => self.run(id, params),
+            None => Ok(Feedback::message("A closed path needs three corners or more")),
+        }
+    }
+
     pub(super) fn on_right(&mut self) -> Result<Feedback> {
         match std::mem::take(&mut self.machine) {
             Machine::Bus(points) if points.len() >= 2 => self.finish_bus(points),
+            Machine::Graphic { mode: Mode::ClosedPath2d, points } if points.len() >= 3 => self.finish_graphic(Mode::ClosedPath2d, &points),
             Machine::Idle => Ok(Feedback::default()),
             _ => Ok(Feedback::handled()),
         }
@@ -137,6 +174,15 @@ impl Session {
     }
 
     pub(super) fn on_release(&mut self, ev: PointerEvent) -> Result<Feedback> {
+        // A press, drag and release fixes the second point of a 2D graphic.
+        if let Machine::Graphic { mode, points } = &self.machine
+            && points.len() == 1
+            && self.press_at.distance(ev.at) > self.view.pick_tolerance()
+            && points.last() != Some(&self.cursor)
+        {
+            let (mode, points) = (*mode, points.clone());
+            return self.graphic_click(mode, points);
+        }
         let Machine::Press { from, raw, on_item, dragging, add } = self.machine else { return Ok(Feedback::default()) };
         self.machine = Machine::Idle;
         match (on_item, dragging) {
@@ -172,6 +218,11 @@ impl Session {
                 return self.finish_wire(draft, end);
             }
             Machine::Bus(points) if points.len() >= 2 => return self.finish_bus(points),
+            Machine::Graphic { mode: Mode::ClosedPath2d, points } if points.len() >= 3 => return self.finish_graphic(Mode::ClosedPath2d, &points),
+            Machine::Graphic { mode, points } => {
+                self.machine = Machine::Graphic { mode, points };
+                return Ok(Feedback::handled());
+            }
             Machine::Bus(_) | Machine::Idle | Machine::Press { .. } => {}
         }
         Ok(match found {

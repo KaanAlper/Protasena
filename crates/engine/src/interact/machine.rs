@@ -20,6 +20,14 @@ pub enum Machine {
     Wire(WireDraft),
     /// A bus is being drawn: its corners so far.
     Bus(Vec<Pt>),
+    /// A 2D graphic is being drawn in `mode`: the points clicked so far (see
+    /// [`crate::graphics`]).
+    Graphic {
+        /// The 2D Graphics mode.
+        mode: crate::mode::Mode,
+        /// Points fixed by clicks.
+        points: Vec<Pt>,
+    },
     /// The left button is down in Selection mode.
     Press {
         /// The snapped press point.

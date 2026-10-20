@@ -28,6 +28,7 @@
 //! ```
 #![warn(missing_docs)]
 
+mod arc;
 mod error;
 mod orient;
 mod ortho;
@@ -39,6 +40,7 @@ mod serde_impl;
 mod snap;
 mod transform;
 
+pub use arc::{ArcGeom, arc_through};
 pub use error::GeomError;
 pub use orient::Orient;
 pub use ortho::{elbow, is_horizontal, is_vertical, manhattan};

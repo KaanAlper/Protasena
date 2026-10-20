@@ -38,6 +38,7 @@
 
 mod annotate;
 mod error;
+mod graphic;
 mod ids;
 mod item;
 mod items;
@@ -50,7 +51,8 @@ mod sheet;
 
 pub use annotate::split_reference;
 pub use error::DocError;
-pub use ids::{BusEntryId, BusId, ComponentId, Id, ItemId, JunctionId, LabelId, SheetId, TerminalId, TextId, WireId};
+pub use graphic::{Graphic, GraphicShape, MAX_PATH_POINTS};
+pub use ids::{BusEntryId, BusId, ComponentId, GraphicId, Id, ItemId, JunctionId, LabelId, SheetId, TerminalId, TextId, WireId};
 pub use item::Item;
 pub use items::{Bus, BusEntry, Component, DeviceRef, FieldLabel, Junction, Label, Terminal, TerminalKind, Text, Wire};
 pub use op::{MAX_BATCH_DEPTH, Op};

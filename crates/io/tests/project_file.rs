@@ -52,6 +52,27 @@ fn the_list_order_of_the_model_is_kept() {
 }
 
 #[test]
+fn graphics_are_saved_by_kind_and_files_without_them_still_load() {
+    let p = sample_project();
+    let text = encode(&p).unwrap();
+    for kind in ["line", "box", "circle", "arc", "path"] {
+        assert!(text.contains(&format!("\"kind\": \"{kind}\"")), "{kind}");
+    }
+    let mut older = p.clone();
+    for s in &mut older.sheets {
+        s.graphics.clear();
+    }
+    let without: serde_json::Value = serde_json::from_str(&encode(&older).unwrap()).unwrap();
+    let mut stripped = without.clone();
+    for s in stripped["project"]["sheets"].as_array_mut().unwrap() {
+        s.as_object_mut().unwrap().remove("graphics");
+    }
+    let (back, report) = decode(stripped.to_string().as_bytes()).unwrap();
+    assert_eq!(back, older);
+    assert!(report.warnings.is_empty(), "{:?}", report.warnings);
+}
+
+#[test]
 fn unknown_fields_are_ignored() {
     let text = encode(&sample_project()).unwrap();
     let extended = text.replacen("\"version\": 1,", "\"version\": 1,\n  \"written_by\": {\"app\": \"future\"},", 1).replacen(
