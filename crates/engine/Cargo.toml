@@ -18,3 +18,7 @@ protasena-library.workspace = true
 protasena-netlist.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+
+[dev-dependencies]
+miniz_oxide.workspace = true
+protasena-pdsprj.workspace = true

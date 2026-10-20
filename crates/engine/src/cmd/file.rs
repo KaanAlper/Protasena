@@ -1,5 +1,5 @@
-//! File menu: New Project, Open Project, Save Project, Save Project As; Tool ▸ Netlist
-//! Compiler (netlist export).
+//! File menu: New Project, Open Project (Protasena `.psproj` files, and Proteus `.pdsprj` files,
+//! which are imported), Save Project, Save Project As; Tool ▸ Netlist Compiler (netlist export).
 //!
 //! Paths are used as given: the callers (the window, the CLI and the local control channel)
 //! act for the user who runs Protasena, with that user's file access.
@@ -77,17 +77,47 @@ fn new(s: &mut Session, a: &Args) -> Result<Value> {
 fn open(s: &mut Session, a: &Args) -> Result<Value> {
     refuse_unsaved(s, a)?;
     let path = path_param(a, "path")?.ok_or_else(|| a.bad("`path` (string) is required"))?;
+    if is_pdsprj(&path) {
+        return import(s, path);
+    }
     let (mut project, report) = protasena_io::load(&path)?;
     let warnings: Vec<String> = report.warnings.iter().map(ToString::to_string).collect();
-    if project.sheets.is_empty() {
-        let id: SheetId = project.fresh_id()?;
-        project.sheets.push(Sheet::new(id, FIRST_SHEET_NAME, SheetSize::A4));
-    }
+    ensure_sheet(&mut project)?;
     s.replace_project(project, Some(path.clone()));
     for w in &warnings {
         s.note(format!("{}: {w}", path.display()));
     }
     Ok(json!({ "path": path.display().to_string(), "warnings": warnings }))
+}
+
+/// Whether `path` names a Proteus project (`.pdsprj`, any case).
+fn is_pdsprj(path: &Path) -> bool {
+    path.extension().and_then(|e| e.to_str()).is_some_and(|e| e.eq_ignore_ascii_case("pdsprj"))
+}
+
+/// Opens a Proteus project by importing it. The imported project has no file of its own: Save
+/// asks for a new one, so the `.pdsprj` is never written over.
+fn import(s: &mut Session, path: PathBuf) -> Result<Value> {
+    let (mut project, report) = protasena_io::import_pdsprj(&path).map_err(|e| EngineError::Other(format!("{}: {e}", path.display())))?;
+    ensure_sheet(&mut project)?;
+    s.replace_project(project, None);
+    s.note(format!("Imported {}: {} components, {} wires, {} terminals", path.display(), report.components, report.wires, report.terminals));
+    for w in &report.warnings {
+        s.note(format!("{}: {w}", path.display()));
+    }
+    Ok(json!({
+        "path": path.display().to_string(), "imported": true, "warnings": report.warnings,
+        "components": report.components, "wires": report.wires, "terminals": report.terminals,
+    }))
+}
+
+/// Gives a project without sheets its first sheet.
+fn ensure_sheet(project: &mut Project) -> Result<()> {
+    if project.sheets.is_empty() {
+        let id: SheetId = project.fresh_id()?;
+        project.sheets.push(Sheet::new(id, FIRST_SHEET_NAME, SheetSize::A4));
+    }
+    Ok(())
 }
 
 fn write(s: &mut Session, path: PathBuf) -> Result<Value> {

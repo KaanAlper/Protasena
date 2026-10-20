@@ -123,6 +123,16 @@ impl Session {
         }
     }
 
+    /// Replaces the device library (for example once the parts pack has loaded in the
+    /// background). The design is unchanged: parts whose device the new library lacks are drawn
+    /// as boxes, and the DEVICES list keeps its names.
+    pub fn set_library(&mut self, library: Library) {
+        self.library = library;
+        self.hover = None;
+        self.machine = Machine::Idle;
+        self.touch();
+    }
+
     // ----- read access for the UI -----
 
     /// The project.

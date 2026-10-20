@@ -199,3 +199,18 @@ fn delete_keeps_attached_wires() {
     assert!(s.execute("delete", &json!({ "ids": [{ "component": r1.0 }] })).is_err(), "already gone");
     let _ = ItemId::Component(r1);
 }
+
+#[test]
+fn a_new_library_keeps_the_design_and_the_devices_list() {
+    let mut s = Session::new();
+    exec(&mut s, "pick-device", json!({ "pick": "RES" }));
+    exec(&mut s, "place-component", json!({ "at": [0, 0] }));
+    let before = s.project().clone();
+    let rev = s.revision();
+    s.set_library(protasena_library::Library::default());
+    assert_eq!(s.project(), &before);
+    assert_eq!(s.picked().len(), 1);
+    assert!(s.library().is_empty());
+    assert!(s.revision() > rev, "the window redraws");
+    assert!(s.execute("place-component", &json!({ "at": [500, 0] })).is_err(), "the device is gone with the old library");
+}

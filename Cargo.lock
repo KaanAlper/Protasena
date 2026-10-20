@@ -168,11 +168,13 @@ dependencies = [
 name = "protasena-engine"
 version = "0.1.0"
 dependencies = [
+ "miniz_oxide",
  "protasena-doc",
  "protasena-geom",
  "protasena-io",
  "protasena-library",
  "protasena-netlist",
+ "protasena-pdsprj",
  "serde",
  "serde_json",
 ]
