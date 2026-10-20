@@ -95,10 +95,18 @@ A feature is not done until step 3 shows no differences, or the remaining ones a
 `docs/gaps.md`. Never mark ★ without the owner's approval.
 
 ## Running the app
-The application does not exist yet (M1 Task 9 builds it). Today the apps are placeholders that
-answer `--help`/`--version`: `cargo run -p protasena-cli -- --help`. When the UI lands, this
-section documents `--control PORT` (JSON-lines control channel: `ui.screenshot`, `ui.click`,
-`engine.execute`, `ui.elements`); look at screenshots of every UI change.
+`cargo run -p protasena -- [PROJECT] [--library DIR] [--control PORT] [--theme light|dark]` opens
+the window (a `.psproj`, or a Proteus `.pdsprj`, which is imported). `--control PORT` (or
+`PROTASENA_CONTROL_PORT`) serves the JSON-lines control channel on `127.0.0.1:PORT`: one
+`{"id", "method", "params"}` object per line, one reply per line. Methods (full list:
+`control.methods`, or `crates/ui-egui/src/control.rs`): `engine.execute {command, params}` (a
+command's JSON form, never a dialog), `engine.invoke` (as a menu pick), `engine.state`,
+`ui.inspect` (areas and the editing window's transform), `ui.elements {label?, role?}`,
+`ui.click`/`ui.move`/`ui.drag` (screen points), `ui.pointer {x, y, action}` (sheet points),
+`ui.key`, `ui.text`, `ui.set {theme, grid_style}`, `ui.screenshot {path}`, `ui.dialog`,
+`app.open`, `app.quit`. Look at screenshots of every UI change (`ui.screenshot`, then open the
+PNG); screenshots of our own window may be kept locally, never ones showing Proteus or its
+sample designs. `protasena-cli` is still a placeholder.
 
 **Parts library**: the converted KiCad pack lives outside this repo
 (`KaanAlper/Protasena-library`, CC-BY-SA 4.0). Point `PROTASENA_LIBRARY_DIR` at its `pack/`
